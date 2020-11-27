@@ -42,7 +42,7 @@ public class UserTokenService {
 		UserToken idToken = UserTokenHelper.decodeToken(secret, idTokenValue);
 		
 		if(idToken.getStopDate().getTime() - idToken.getStartDate().getTime() != age) {
-    		throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid."));
+    		throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid: age."));
     	}
 		
 		return idToken;
@@ -69,7 +69,7 @@ public class UserTokenService {
 		UserToken refreshToken = UserTokenHelper.decodeToken(secret, refreshTokenValue);
 		
 		if(refreshToken.getStopDate().getTime() - refreshToken.getStartDate().getTime() != age) {
-    		throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid."));
+    		throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid: age."));
     	}
 		
 		return refreshToken;

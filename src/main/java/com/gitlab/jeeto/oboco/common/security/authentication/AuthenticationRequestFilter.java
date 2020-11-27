@@ -122,6 +122,8 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    	try {
 		    		idToken = tokenService.getIdToken(idTokenValue);
 				} catch (Exception e) {
+					logger.info("The user is not authenticated: invalid userToken: " + e.getMessage());
+					
 					ResponseBuilder responseBuilder = Response.status(401);
 					responseBuilder.header("WWW-Authenticate", "Bearer realm=\"oboco\"");
 					responseBuilder.entity(new ProblemDto(401, "PROBLEM_USER_NOT_AUTHENTICATED", "The user is not authenticated."));
@@ -134,6 +136,8 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    	User user = userService.getUserByName(idToken.getName());
 				
 				if(user == null) {
+					logger.info("The user is not authenticated: invalid userToken: name.");
+					
 					ResponseBuilder responseBuilder = Response.status(401);
 					responseBuilder.header("WWW-Authenticate", "Bearer realm=\"oboco\"");
 					responseBuilder.entity(new ProblemDto(401, "PROBLEM_USER_NOT_AUTHENTICATED", "The user is not authenticated."));
@@ -144,6 +148,8 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 				}
 				
 				if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(idToken.getStartDate()) >= 0) {
+					logger.info("The user is not authenticated: invalid userToken: startDate.");
+					
 					ResponseBuilder responseBuilder = Response.status(401);
 					responseBuilder.header("WWW-Authenticate", "Bearer realm=\"oboco\"");
 					responseBuilder.entity(new ProblemDto(401, "PROBLEM_USER_NOT_AUTHENTICATED", "The user is not authenticated."));

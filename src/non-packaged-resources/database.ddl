@@ -15,8 +15,8 @@ create index bookMarkFileId on bookMarks (fileId)
 create index bookFileId on books (fileId)
 alter table books add constraint bookFilePath unique (filePath)
 alter table users add constraint userName unique (name)
-alter table bookCollections add constraint FKiufb3ykonq6jxly95he6muql0 foreign key (parentBookCollectionId) references bookCollections
-alter table bookMarkReferences add constraint FKecm9391i4glkb7dddnsqvd5rb foreign key (bookId) references books
-alter table bookMarkReferences add constraint FKl2ijhkebftw3gdgmlkseo49kp foreign key (bookMarkId) references bookMarks
-alter table books add constraint FKe6gb0v6dtxns6rgtd8bv4ri0h foreign key (bookCollectionId) references bookCollections
-alter table userRoles add constraint FKgqpfwr3766gtqga2i0kgmlwlu foreign key (userId) references users
+alter table bookCollections add constraint FKiufb3ykonq6jxly95he6muql0 foreign key (parentBookCollectionId) references bookCollections(id) on delete cascade
+alter table bookMarkReferences add constraint FKecm9391i4glkb7dddnsqvd5rb foreign key (bookId) references books(id)
+alter table bookMarkReferences add constraint FKl2ijhkebftw3gdgmlkseo49kp foreign key (bookMarkId) references bookMarks(id)
+alter table books add constraint FKe6gb0v6dtxns6rgtd8bv4ri0h foreign key (bookCollectionId) references bookCollections(id)
+alter table userRoles add constraint FKgqpfwr3766gtqga2i0kgmlwlu foreign key (userId) references users(id)

@@ -75,7 +75,7 @@ public class Main {
     				}
     				scanner.close();
     			} catch(Exception e) {
-    				logger.info("error", e);
+    				logger.error("error", e);
     			}
     			
     			ddlFile.delete();
@@ -94,7 +94,7 @@ public class Main {
     				}
     				scanner.close();
     			} catch(Exception e) {
-    				logger.info("error", e);
+    				logger.error("error", e);
     			}
 				
 				sqlFile.delete();

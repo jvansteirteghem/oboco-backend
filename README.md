@@ -16,6 +16,7 @@ in Dockerfile:
 add parameter "-Dquarkus.datasource.jdbc.url=jdbc:mysql://192.168.0.124:3306/oboco"
 
 docker build -f Dockerfile -t oboco/2.0.0 .
-docker run -i --rm -p 8080:8080 -v c:/data1:/data1 -v c:/data2:/data2 --name oboco oboco/2.0.0
+docker build -f Dockerfile-mandrel -t oboco/2.0.0 .
+docker run -e TZ=Europe/Brussels -i --rm -p 8080:8080 -v c:/data1:/data1 -v c:/data2:/data2 --name oboco oboco/2.0.0
 docker stop oboco
 docker ps -a

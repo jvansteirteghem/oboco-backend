@@ -27,10 +27,10 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<quarkus-plugin.version>1.9.2.Final</quarkus-plugin.version>
+		<quarkus-plugin.version>1.8.3.Final</quarkus-plugin.version>
 		<quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
 		<quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-		<quarkus.platform.version>1.9.2.Final</quarkus.platform.version>
+		<quarkus.platform.version>1.8.3.Final</quarkus.platform.version>
 		<surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
 		<!-- <<< quarkus -->
     </properties>
@@ -164,13 +164,6 @@
 		    <artifactId>sevenzipjbinding-linux-armv5</artifactId>
 		    <version>16.02-2.01</version>
 		</dependency>
-		
-		<!-- image -->
-		<dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-jpeg</artifactId>
-            <version>3.5</version>
-        </dependency>
         
         <!-- log -->		
 		<!-- >>> quarkus -->
@@ -374,7 +367,7 @@
             </build>
 			<properties>
 				<quarkus.package.type>native</quarkus.package.type>
-				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.impl.ArchiveReaderImpl,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.image.impl.ImageManagerImpl,--initialize-at-run-time=io.netty.internal.tcnative.SSL</quarkus.native.additional-build-args>
+				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.impl.ArchiveReaderImpl,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.image.impl.ImageManagerImpl,--initialize-at-run-time=org.libjpegturbo.turbojpeg,--initialize-at-run-time=io.netty.internal.tcnative.SSL</quarkus.native.additional-build-args>
 			  </properties>
         </profile>
     </profiles>

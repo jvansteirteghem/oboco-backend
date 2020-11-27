@@ -1,18 +1,39 @@
-## https://quarkus.io/guides/building-native-image
-
 ## Stage 1 : build with maven builder image with native capabilities
-FROM quay.io/quarkus/centos-quarkus-maven:20.2.0-java11 AS build
+FROM ubuntu:18.04 AS build
+
+RUN apt-get update && apt-get -y upgrade
+RUN apt-get -y install gcc zlib1g-dev build-essential wget libjpeg-dev
+
+RUN wget https://github.com/graalvm/mandrel/releases/download/mandrel-20.3.0.0.Beta1/mandrel-java11-linux-amd64-20.3.0.0.Beta1.tar.gz -P /tmp
+RUN tar xf /tmp/mandrel-java11-linux-amd64-20.3.0.0.Beta1.tar.gz -C /opt
+RUN ln -s /opt/mandrel-java11-20.3.0.0.Beta1 /opt/mandrel-java11
+
+ENV JAVA_HOME=/opt/mandrel-java11
+ENV GRAALVM_HOME=/opt/mandrel-java11
+ENV PATH=${JAVA_HOME}/bin:${PATH}
+
+RUN wget https://www-eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz -P /tmp
+RUN tar xf /tmp/apache-maven-3.6.3-bin.tar.gz -C /opt
+RUN ln -s /opt/apache-maven-3.6.3 /opt/maven
+
+ENV M2_HOME=/opt/maven
+ENV MAVEN_HOME=/opt/maven
+ENV PATH=${M2_HOME}/bin:${PATH}
+
+RUN mvn --version
+
 COPY pom.xml /usr/src/app/
 RUN mvn -f /usr/src/app/pom.xml -B de.qaware.maven:go-offline-maven-plugin:1.2.5:resolve-dependencies
 COPY src /usr/src/app/src
-USER root
-RUN chown -R quarkus /usr/src/app
-USER quarkus
 COPY src/non-packaged-resources/lib-native/turbojpeg/linux/amd64/libturbojpeg.so /usr/java/packages/lib/libturbojpeg.so
 RUN mvn -f /usr/src/app/pom.xml -Pnative clean package
 
 ## Stage 2 : create the docker final image
 FROM registry.access.redhat.com/ubi8/ubi-minimal
+
+RUN microdnf update
+RUN microdnf install libjpeg
+
 WORKDIR /work/
 COPY --from=build /usr/src/app/target/*-runner /work/application
 COPY --from=build /usr/src/app/target/application.properties /work/application.properties

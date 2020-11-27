@@ -1,8 +1,5 @@
 package com.gitlab.jeeto.oboco.common.image.impl;
 
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Iterator;
@@ -13,7 +10,6 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
@@ -23,36 +19,55 @@ import javax.imageio.stream.FileImageOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileWrapper;
+import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
-import com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReaderSpi;
-import com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageWriterSpi;
+
+import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageReaderSpi;
+import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriteParam;
+import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriterSpi;
+import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegUtilities;
 
 public class ImageManagerImpl implements ImageManager {
 	private static Logger logger = LoggerFactory.getLogger(ImageManagerImpl.class.getName());
 	
 	static {
 		try {
+			logger.info("load library");
+        	TurboJpegUtilities.loadTurboJpeg();
+    		
+        	logger.info("get registry");
 			IIORegistry registry = IIORegistry.getDefaultInstance();
 			
-			ImageReaderSpi imageReaderSpi = new JPEGImageReaderSpi();
+			logger.info("get jpegImageReaderSpi");
+			com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi jpegImageReaderSpi = registry.getServiceProviderByClass(com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi.class);
+			logger.info("deregister jpegImageReaderSpi");
+			registry.deregisterServiceProvider(jpegImageReaderSpi, ImageReaderSpi.class);
 			
-			registry.registerServiceProvider(imageReaderSpi);
+			logger.info("get jpegImageWriterSpi");
+			com.sun.imageio.plugins.jpeg.JPEGImageWriterSpi jpegImageWriterSpi = registry.getServiceProviderByClass(com.sun.imageio.plugins.jpeg.JPEGImageWriterSpi.class);
+			logger.info("deregister jpegImageWriterSpi");
+			registry.deregisterServiceProvider(jpegImageWriterSpi, ImageWriterSpi.class);
 			
+			logger.info("create turboJpegImageReaderSpi");
+			TurboJpegImageReaderSpi turboJpegImageReaderSpi = new TurboJpegImageReaderSpi();
+			logger.info("register turboJpegImageReaderSpi");
+			registry.registerServiceProvider(turboJpegImageReaderSpi);
+			
+			logger.info("create turboJpegImageWriterSpi");
+			TurboJpegImageWriterSpi turboJpegImageWriterSpi = new TurboJpegImageWriterSpi();
+			logger.info("register turboJpegImageWriterSpi");
+			registry.registerServiceProvider(turboJpegImageWriterSpi);
+        	
 			Iterator<ImageReader> imageReaders = ImageIO.getImageReadersByFormatName("jpg");
 		    while(imageReaders.hasNext()) {
-		    	logger.debug("imageReader: " + imageReaders.next());
+		    	logger.info("imageReader: " + imageReaders.next());
 		    }
-			
-			ImageWriterSpi imageWriterSpi = new JPEGImageWriterSpi();
-			
-			registry.registerServiceProvider(imageWriterSpi);
 		    
 		    Iterator<ImageWriter> imageWriters = ImageIO.getImageWritersByFormatName("jpg");
 		    while(imageWriters.hasNext()) {
-		    	logger.debug("imageWriter: " + imageWriters.next());
+		    	logger.info("imageWriter: " + imageWriters.next());
 		    }
 		} catch(Exception e) {
 			logger.error("Error", e);
@@ -77,93 +92,6 @@ public class ImageManagerImpl implements ImageManager {
 	
 	public FileWrapper<File> createImage(FileWrapper<File> inputFileWrapper, FileType outputFileType) throws Exception {
 		return createImage(inputFileWrapper, outputFileType, null, null, null);
-	}
-	
-	// https://stackoverflow.com/questions/11959758/java-maintaining-aspect-ratio-of-jpanel-background-image/11959928#11959928
-	
-	private double calculateScaleFactor(int originalSize, int targetSize) {
-		double scaleFactor = 1;
-		
-		if(originalSize > targetSize) {
-			scaleFactor = (double) targetSize / (double) originalSize;
-		}
-		
-		return scaleFactor;
-
-	}
-	
-	private double getScaleFactor(Dimension originalSize, Dimension targetSize, ScaleType scaleType) {
-		double scaleFactor = 1d;
-		
-		if(originalSize != null && targetSize != null) {
-			double scaleWidth = calculateScaleFactor(originalSize.width, targetSize.width);
-			double scaleHeight = calculateScaleFactor(originalSize.height, targetSize.height);
-			
-			if(ScaleType.FIT.equals(scaleType)) {
-				scaleFactor = Math.min(scaleWidth, scaleHeight);
-			} else if(ScaleType.FILL.equals(scaleType)) {
-				scaleFactor = Math.max(scaleWidth, scaleHeight);
-			}
-		}
-
-		return scaleFactor;
-	}
-	
-	private BufferedImage scale(BufferedImage inputImage, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-		BufferedImage outputBufferedImage = null;
-		
-		if(ScaleType.DEFAULT.equals(outputScaleType)) {
-			double scaleFactor = 1d;
-			
-			if(outputScaleWidth != null) {
-				scaleFactor = calculateScaleFactor(inputImage.getWidth(), outputScaleWidth);
-			} else if(outputScaleHeight != null) {
-				scaleFactor = calculateScaleFactor(inputImage.getHeight(), outputScaleHeight);
-			}
-			
-			int scaleWidth = (int) Math.round(inputImage.getWidth() * scaleFactor);
-			int scaleHeight = (int) Math.round(inputImage.getHeight() * scaleFactor);
-			
-			Image scaledInputImage = inputImage.getScaledInstance(scaleWidth, scaleHeight, Image.SCALE_SMOOTH);
-			
-			outputBufferedImage = new BufferedImage(scaleWidth, scaleHeight, BufferedImage.TYPE_INT_RGB);
-			
-			Graphics2D g2d = outputBufferedImage.createGraphics();
-			g2d.drawImage(scaledInputImage, 0, 0, null);
-			g2d.dispose();
-			
-			scaledInputImage.flush();
-		} else if(ScaleType.FIT.equals(outputScaleType) || ScaleType.FILL.equals(outputScaleType)) {
-			if(outputScaleWidth == null) {
-				outputScaleWidth = inputImage.getWidth();
-			}
-			
-			if(outputScaleHeight == null) {
-				outputScaleHeight = inputImage.getHeight();
-			}
-			
-			double scaleFactor = Math.min(1d, getScaleFactor(new Dimension(inputImage.getWidth(), inputImage.getHeight()), new Dimension(outputScaleWidth, outputScaleHeight), outputScaleType));
-			
-			int scaleWidth = (int) Math.round(inputImage.getWidth() * scaleFactor);
-			int scaleHeight = (int) Math.round(inputImage.getHeight() * scaleFactor);
-
-			Image scaledInputImage = inputImage.getScaledInstance(scaleWidth, scaleHeight, Image.SCALE_SMOOTH);
-
-			int x = (outputScaleWidth - 1 - scaledInputImage.getWidth(null)) / 2;
-			int y = (outputScaleHeight - 1 - scaledInputImage.getHeight(null)) / 2;
-			  
-			outputBufferedImage = new BufferedImage(outputScaleWidth, outputScaleHeight, BufferedImage.TYPE_INT_RGB);
-			
-			Graphics2D g2d = outputBufferedImage.createGraphics();
-			g2d.drawImage(scaledInputImage, x, y, null);
-			g2d.dispose();
-			
-			scaledInputImage.flush();
-		} else {
-			outputBufferedImage = inputImage;
-		}
-		
-		return outputBufferedImage;
 	}
 	
 	private BufferedImage read(FileWrapper<File> inputFileWrapper) throws Exception {
@@ -211,7 +139,7 @@ public class ImageManagerImpl implements ImageManager {
 		return bufferedImage;
 	}
 	
-	private void write(FileWrapper<File> outputFileWrapper, BufferedImage outputImage) throws Exception {
+	private void write(FileWrapper<File> outputFileWrapper, BufferedImage outputImage, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
 		FileType outputFileType = outputFileWrapper.getFileType();
 		File outputFile = outputFileWrapper.getFile();
 		
@@ -221,9 +149,15 @@ public class ImageManagerImpl implements ImageManager {
 		if(FileType.JPG.equals(outputFileType)) {
 			imageWriter = getImageWriter("jpg");
 			
-			JPEGImageWriteParam jpegImageWriteParam = new JPEGImageWriteParam(null);
+			TurboJpegImageWriteParam jpegImageWriteParam = new TurboJpegImageWriteParam(null);
 			jpegImageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			jpegImageWriteParam.setCompressionType("JPEG");
 			jpegImageWriteParam.setCompressionQuality(0.9f);
+			
+			if(outputScaleWidth != null || outputScaleHeight != null) {
+				jpegImageWriteParam.setScaleWidth(outputScaleWidth);
+				jpegImageWriteParam.setScaleHeight(outputScaleHeight);
+			}
 			
 			imageWriteParam = jpegImageWriteParam;
 		}
@@ -261,17 +195,13 @@ public class ImageManagerImpl implements ImageManager {
 		
 		BufferedImage inputBufferedImage = read(inputFileWrapper);
 		
-		BufferedImage outputBufferedImage = scale(inputBufferedImage, outputScaleType, outputScaleWidth, outputScaleHeight);
-		
-		inputBufferedImage.flush();
-		
 		File outputFile = File.createTempFile("oboco-plugin-image-jdk-", ".tmp");
 		
 		outputFileWrapper = new FileWrapper<File>(outputFile, outputFileType);
 		
-		write(outputFileWrapper, outputBufferedImage);
+		write(outputFileWrapper, inputBufferedImage, outputScaleType, outputScaleWidth, outputScaleHeight);
 		
-		outputBufferedImage.flush();
+		inputBufferedImage.flush();
 		
 		return outputFileWrapper;
 	}
