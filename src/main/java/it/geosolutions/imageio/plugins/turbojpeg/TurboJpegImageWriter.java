@@ -16,8 +16,6 @@
  */
 package it.geosolutions.imageio.plugins.turbojpeg;
 
-import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
@@ -37,8 +35,6 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.libjpegturbo.turbojpeg.TJ;
 import org.libjpegturbo.turbojpeg.TJCompressor;
-import org.libjpegturbo.turbojpeg.TJDecompressor;
-import org.libjpegturbo.turbojpeg.TJScalingFactor;
 
 
 /**
@@ -125,65 +121,6 @@ public class TurboJpegImageWriter extends ImageWriter
         img.copyData(raster);
         return result;
     }
-    
-    // https://stackoverflow.com/questions/11959758/java-maintaining-aspect-ratio-of-jpanel-background-image/11959928#11959928
-	
- 	private double calculateScaleFactor(int originalSize, int targetSize) {
- 		double scaleFactor = 1;
- 		
- 		if(originalSize > targetSize) {
- 			scaleFactor = (double) targetSize / (double) originalSize;
- 		}
- 		
- 		return scaleFactor;
-
- 	}
-    
-    private TJScalingFactor getScalingFactor(BufferedImage inputImage, Integer outputScaleWidth, Integer outputScaleHeight) {
-    	Dimension originalSize = new Dimension(inputImage.getWidth(), inputImage.getHeight());
-    	Dimension targetSize = new Dimension(outputScaleWidth, outputScaleHeight);
-    	
-		double scaleFactor = 1d;
-		
-		if(originalSize != null && targetSize != null) {
-			double scaleWidth = calculateScaleFactor(originalSize.width, targetSize.width);
-			double scaleHeight = calculateScaleFactor(originalSize.height, targetSize.height);
-			
-			scaleFactor = Math.max(scaleWidth, scaleHeight);
-		}
-		
-		scaleFactor = Math.min(1d, scaleFactor);
-		
-		LOGGER.log(Level.INFO, "scaleFactor=" + scaleFactor);
-		
-		TJScalingFactor tjScalingFactor = null;
-		TJScalingFactor[] tjScalingFactors = TJ.getScalingFactors();
-		for(int i = 0; i < tjScalingFactors.length; i = i + 1) {
-			double tjScaleFactor = (double) tjScalingFactors[i].getNum() / (double) tjScalingFactors[i].getDenom();
-			
-			LOGGER.log(Level.INFO, "tjScalingFactor-" + i + ":" + tjScalingFactors[i].getNum() + "/" + tjScalingFactors[i].getDenom() + "=" + tjScaleFactor);
-		    
-		    if(tjScaleFactor == scaleFactor) {
-		    	tjScalingFactor = tjScalingFactors[i];
-		    	break;
-		    } else if(tjScaleFactor < scaleFactor) {
-		    	if(i > 0) {
-		    		tjScalingFactor = tjScalingFactors[i - 1];
-		    	}
-		    	break;
-		    }
-		}
-		
-		if(tjScalingFactor == null) {
-		    	throw new IllegalArgumentException("ScalingFactor not supported.");
-		}
-		
-		double tjScaleFactor = (double) tjScalingFactor.getNum() / (double) tjScalingFactor.getDenom();
-		
-		LOGGER.log(Level.INFO, "tjScalingFactor:" + tjScalingFactor.getNum() + "/" + tjScalingFactor.getDenom() + "=" + tjScaleFactor);
-		
-		return tjScalingFactor;
-	}
 
     @Override
     public void write(IIOMetadata metadata, IIOImage image, ImageWriteParam writeParam) throws IOException
@@ -217,52 +154,6 @@ public class TurboJpegImageWriter extends ImageWriter
                 compressor.setSubsamp(componentSampling);
                 
                 outputImageData = compressor.compress(TJ.FLAG_FASTDCT);
-                
-                if(writeParam instanceof TurboJpegImageWriteParam) {
-                	TurboJpegImageWriteParam tjWriteParam = (TurboJpegImageWriteParam) writeParam;
-	    			
-                	int outputScaleWidth = tjWriteParam.getScaleWidth();
-            		int outputScaleHeight = tjWriteParam.getScaleHeight();
-            		
-                	if(outputScaleWidth != 0 || outputScaleHeight != 0) {
-            			if(outputScaleWidth == 0) {
-            				outputScaleWidth = inputImage.getWidth();
-            			}
-            			
-            			if(outputScaleHeight == 0) {
-            				outputScaleHeight = inputImage.getHeight();
-            			}
-            			
-            			LOGGER.log(Level.INFO, "outputScaleWidth=" + outputScaleWidth + ",outputScaleHeight=" + outputScaleHeight);
-            			
-            			TJScalingFactor tjScalingFactor = getScalingFactor(inputImage, outputScaleWidth, outputScaleHeight);
-                		
-                		if(tjScalingFactor.isOne() == false) {
-                			int scaleWidth = tjScalingFactor.getScaled(inputImage.getWidth());
-                			int scaleHeight = tjScalingFactor.getScaled(inputImage.getHeight());
-                			
-                			LOGGER.log(Level.INFO, "scaleWidth=" + scaleWidth + ",scaleHeight=" + scaleHeight);
-                			
-                			TJDecompressor decompressor = new TJDecompressor();
-    		    			decompressor.setSourceImage(outputImageData, outputImageData.length);
-    		    			inputImage = decompressor.decompress(scaleWidth, scaleHeight, inputImage.getType(), TJ.FLAG_FASTUPSAMPLE);
-    		    			
-    		    			int regionX = (scaleWidth - outputScaleWidth) / 2;
-                			int regionY = (scaleHeight - outputScaleHeight) / 2;
-                			int regionWidth = scaleWidth - (scaleWidth - outputScaleWidth);
-                			int regionHeight = scaleHeight - (scaleHeight - outputScaleHeight);
-                			
-                			LOGGER.log(Level.INFO, "regionX=" + regionX + ",regionY=" + regionY + ",regionWidth=" + regionWidth + ",regionHeight=" + regionHeight);
-    		    			
-    		    			compressor = new TJCompressor();
-    		                compressor.setSourceImage(inputImage, regionX, regionY, regionWidth, regionHeight);
-    		                compressor.setJPEGQuality(quality);
-    		                compressor.setSubsamp(componentSampling);
-    		                
-    		                outputImageData = compressor.compress(TJ.FLAG_FASTDCT);
-                		}
-                	}
-                }
             } catch (Exception ex) {
                 throw new IOException("Error in turbojpeg compressor: " + ex.getMessage(), ex);
             }            

@@ -53,12 +53,16 @@ public class TurboJpegImageReader extends ImageReader {
     private static final int DEFAULT_READ_BUFFER_SIZE = 1024 * 4;
     
     private static final List<ImageTypeSpecifier> FIXEDIMGETYPES = Collections
+            .unmodifiableList(Arrays.asList());
+    /*
+    private static final List<ImageTypeSpecifier> FIXEDIMGETYPES = Collections
             .unmodifiableList(Arrays.asList(
                     ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_RGB),
                     ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_ARGB),
                     ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_3BYTE_BGR),
                     ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_4BYTE_ABGR),
                     ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_BYTE_GRAY)));
+                    */
 
     private int width = -1;
 

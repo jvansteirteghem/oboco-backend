@@ -27,10 +27,10 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<quarkus-plugin.version>1.8.3.Final</quarkus-plugin.version>
+		<quarkus-plugin.version>1.10.1.Final</quarkus-plugin.version>
 		<quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
 		<quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-		<quarkus.platform.version>1.8.3.Final</quarkus.platform.version>
+		<quarkus.platform.version>1.10.1.Final</quarkus.platform.version>
 		<surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
 		<!-- <<< quarkus -->
     </properties>
@@ -164,6 +164,22 @@
 		    <artifactId>sevenzipjbinding-linux-armv5</artifactId>
 		    <version>16.02-2.01</version>
 		</dependency>
+		
+		<!-- java-image-scaling -->
+		<!-- https://github.com/mortennobel/java-image-scaling -->
+		<!-- https://github.com/martinheidegger/java-image-scaling -->
+		<!--
+		<dependency>
+		    <groupId>com.mortennobel</groupId>
+		    <artifactId>java-image-scaling</artifactId>
+		    <version>0.8.6</version>
+		</dependency>
+		-->
+		<dependency>
+            <groupId>com.jhlabs</groupId>
+            <artifactId>filters</artifactId>
+            <version>2.0.235</version>
+        </dependency>
         
         <!-- log -->		
 		<!-- >>> quarkus -->

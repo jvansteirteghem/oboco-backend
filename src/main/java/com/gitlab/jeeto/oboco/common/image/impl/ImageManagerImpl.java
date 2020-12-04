@@ -10,6 +10,7 @@ import javax.imageio.ImageReadParam;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
@@ -23,9 +24,9 @@ import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
+import com.mortennobel.imagescaling.ResampleOp;
 
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageReaderSpi;
-import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriteParam;
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriterSpi;
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegUtilities;
 
@@ -139,7 +140,7 @@ public class ImageManagerImpl implements ImageManager {
 		return bufferedImage;
 	}
 	
-	private void write(FileWrapper<File> outputFileWrapper, BufferedImage outputImage, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
+	private void write(FileWrapper<File> outputFileWrapper, BufferedImage outputImage) throws Exception {
 		FileType outputFileType = outputFileWrapper.getFileType();
 		File outputFile = outputFileWrapper.getFile();
 		
@@ -149,17 +150,9 @@ public class ImageManagerImpl implements ImageManager {
 		if(FileType.JPG.equals(outputFileType)) {
 			imageWriter = getImageWriter("jpg");
 			
-			TurboJpegImageWriteParam jpegImageWriteParam = new TurboJpegImageWriteParam(null);
-			jpegImageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-			jpegImageWriteParam.setCompressionType("JPEG");
-			jpegImageWriteParam.setCompressionQuality(0.9f);
-			
-			if(outputScaleWidth != null || outputScaleHeight != null) {
-				jpegImageWriteParam.setScaleWidth(outputScaleWidth);
-				jpegImageWriteParam.setScaleHeight(outputScaleHeight);
-			}
-			
-			imageWriteParam = jpegImageWriteParam;
+			imageWriteParam = new JPEGImageWriteParam(null);
+			imageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			imageWriteParam.setCompressionQuality(0.9f);
 		}
 		
 		if(imageWriter == null) {
@@ -190,18 +183,38 @@ public class ImageManagerImpl implements ImageManager {
 		}
 	}
 	
+	private BufferedImage scale(BufferedImage inputImage, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
+		double scaleFactor = Math.min(inputImage.getWidth() / outputScaleWidth, inputImage.getHeight() / outputScaleHeight);
+	    
+		int regionWidth = (int) (outputScaleWidth * scaleFactor);
+		int regionHeight = (int) (outputScaleHeight * scaleFactor);
+		int regionX = (inputImage.getWidth() - regionWidth) / 2;
+		int regionY = (inputImage.getHeight() - regionHeight) / 2;
+	    
+		BufferedImage outputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
+		
+	    ResampleOp resampleOp = new ResampleOp(outputScaleWidth, outputScaleHeight);
+		outputImage = resampleOp.filter(outputImage, null);
+		
+		return outputImage;
+	}
+	
 	public FileWrapper<File> createImage(FileWrapper<File> inputFileWrapper, FileType outputFileType, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-		FileWrapper<File> outputFileWrapper = null;
+FileWrapper<File> outputFileWrapper = null;
 		
 		BufferedImage inputBufferedImage = read(inputFileWrapper);
+		
+		BufferedImage outputBufferedImage = scale(inputBufferedImage, outputScaleType, outputScaleWidth, outputScaleHeight);
+		
+		inputBufferedImage.flush();
 		
 		File outputFile = File.createTempFile("oboco-plugin-image-jdk-", ".tmp");
 		
 		outputFileWrapper = new FileWrapper<File>(outputFile, outputFileType);
 		
-		write(outputFileWrapper, inputBufferedImage, outputScaleType, outputScaleWidth, outputScaleHeight);
+		write(outputFileWrapper, outputBufferedImage);
 		
-		inputBufferedImage.flush();
+		outputBufferedImage.flush();
 		
 		return outputFileWrapper;
 	}
