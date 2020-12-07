@@ -100,7 +100,7 @@ public class BookByBookCollectionResource {
 			bookPageableList = bookService.getBooksByBookCollectionId(bookCollectionId, page, pageSize);
 		}
 		
-		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(bookPageableList, graphDto);;
+		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(userName, bookPageableList, graphDto);;
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookPageableListDto);
@@ -128,8 +128,10 @@ public class BookByBookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
+		String userName = securityContext.getUserPrincipal().getName();
+		
 		PageableList<Book> bookPageableList = bookService.getBooksByBookCollectionIdAndId(bookCollectionId, bookId);
-		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(bookPageableList, graphDto);
+		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(userName, bookPageableList, graphDto);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookPageableListDto);

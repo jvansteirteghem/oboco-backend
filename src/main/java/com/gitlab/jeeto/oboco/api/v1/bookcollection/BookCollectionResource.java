@@ -12,6 +12,7 @@ import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -42,6 +43,8 @@ import com.gitlab.jeeto.oboco.common.security.authorization.Authorization;
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 public class BookCollectionResource {
+	@Context
+    SecurityContext securityContext;
 	@Context
 	ResourceContext resourceContext;
 	@Context
@@ -76,6 +79,8 @@ public class BookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
+		String userName = securityContext.getUserPrincipal().getName();
+		
 		PageableList<BookCollection> bookCollectionPageableList = null;
 		
 		if(uriInfo.getQueryParameters().containsKey("parentBookCollectionId")) {
@@ -92,7 +97,7 @@ public class BookCollectionResource {
 			}
 		}
 		
-		PageableListDto<BookCollectionDto> bookCollectionPageableListDto = bookCollectionDtoMapper.getBookCollectionsDto(bookCollectionPageableList, graphDto);
+		PageableListDto<BookCollectionDto> bookCollectionPageableListDto = bookCollectionDtoMapper.getBookCollectionsDto(userName, bookCollectionPageableList, graphDto);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookCollectionPageableListDto);
@@ -120,13 +125,15 @@ public class BookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
+		String userName = securityContext.getUserPrincipal().getName();
+		
 		BookCollection bookCollection = bookCollectionService.getRootBookCollection();
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));
 		}
 		
-		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(bookCollection, graphDto);
+		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(userName, bookCollection, graphDto);
 	        
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookCollectionDto);
@@ -155,13 +162,15 @@ public class BookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
+		String userName = securityContext.getUserPrincipal().getName();
+		
 		BookCollection bookCollection = bookCollectionService.getBookCollectionById(bookCollectionId);
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));
 		}
 		
-		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(bookCollection, graphDto);
+		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(userName, bookCollection, graphDto);
 	        
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookCollectionDto);

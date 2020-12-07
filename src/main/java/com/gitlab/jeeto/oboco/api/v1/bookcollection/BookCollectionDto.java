@@ -3,6 +3,7 @@ package com.gitlab.jeeto.oboco.api.v1.bookcollection;
 import java.util.Date;
 import java.util.List;
 
+import javax.json.bind.annotation.JsonbDateFormat;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -35,6 +36,7 @@ public class BookCollectionDto {
 	public void setId(Long id) {
 		this.id = id;
 	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
 	@Schema(name = "updateDate")
 	@XmlElement(name = "updateDate")
 	public Date getUpdateDate() {

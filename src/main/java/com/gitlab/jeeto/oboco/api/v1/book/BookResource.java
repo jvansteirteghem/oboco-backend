@@ -17,6 +17,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -47,6 +48,8 @@ import com.gitlab.jeeto.oboco.common.security.authorization.Authorization;
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 public class BookResource {
+	@Context
+    SecurityContext securityContext;
 	@Context
 	ResourceContext resourceContext;
 	@Context
@@ -80,6 +83,8 @@ public class BookResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
+		String userName = securityContext.getUserPrincipal().getName();
+		
 		PageableList<Book> bookPageableList = null;
 		
 		if(uriInfo.getQueryParameters().containsKey("name")) {
@@ -88,7 +93,7 @@ public class BookResource {
 			bookPageableList = bookService.getBooks(page, pageSize);
 		}
 		
-		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(bookPageableList, graphDto);
+		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(userName, bookPageableList, graphDto);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookPageableListDto);
@@ -117,13 +122,15 @@ public class BookResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
+		String userName = securityContext.getUserPrincipal().getName();
+		
 		Book book = bookService.getBookById(bookId);
 		
 		if(book == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_NOT_FOUND", "The book is not found."));
 		}
 		
-		BookDto bookDto = bookDtoMapper.getBookDto(book, graphDto);
+		BookDto bookDto = bookDtoMapper.getBookDto(userName, book, graphDto);
 	        
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookDto);

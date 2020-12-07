@@ -28,7 +28,7 @@ public class BookMarkDtoMapper {
 		return bookDtoMapper;
 	}
 	
-	public BookMarkDto getBookMarkDto(BookMarkReference bookMarkReference, GraphDto graphDto) throws ProblemException {
+	public BookMarkDto getBookMarkDto(String userName, BookMarkReference bookMarkReference, GraphDto graphDto) throws ProblemException {
 		BookMarkDto bookMarkDto = null;
 		if(bookMarkReference != null) {
 			bookMarkDto = new BookMarkDto();
@@ -45,7 +45,7 @@ public class BookMarkDtoMapper {
 					GraphDto nestedGraphDto = graphDto.get("book");
 					
 					Book book = bookMarkReference.getBook();
-					BookDto bookDto = getBookDtoMapper().getBookDto(book, nestedGraphDto);
+					BookDto bookDto = getBookDtoMapper().getBookDto(userName, book, nestedGraphDto);
 					
 					bookMarkDto.setBook(bookDto);
 				}
@@ -55,14 +55,14 @@ public class BookMarkDtoMapper {
 		return bookMarkDto;
 	}
 	
-	public PageableListDto<BookMarkDto> getBookMarksDto(PageableList<BookMarkReference> bookMarkReferencePageableList, GraphDto graphDto) throws ProblemException {
+	public PageableListDto<BookMarkDto> getBookMarksDto(String userName, PageableList<BookMarkReference> bookMarkReferencePageableList, GraphDto graphDto) throws ProblemException {
 		PageableListDto<BookMarkDto> bookMarkPageableListDto = null;
 		if(bookMarkReferencePageableList != null) {
 			bookMarkPageableListDto = new PageableListDto<BookMarkDto>();
 			
 			List<BookMarkDto> bookMarkListDto = new ArrayList<BookMarkDto>();
 			for(BookMarkReference bookMarkReference: bookMarkReferencePageableList.getElements()) {
-				BookMarkDto bookMarkDto = getBookMarkDto(bookMarkReference, graphDto);
+				BookMarkDto bookMarkDto = getBookMarkDto(userName, bookMarkReference, graphDto);
 				
 				bookMarkListDto.add(bookMarkDto);
 			}

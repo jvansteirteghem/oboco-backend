@@ -3,6 +3,7 @@ package com.gitlab.jeeto.oboco.api.v1.user;
 import java.util.Date;
 import java.util.List;
 
+import javax.json.bind.annotation.JsonbDateFormat;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -54,6 +55,7 @@ public class UserDto {
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
 	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
 	@Schema(name = "updateDate")
 	@XmlElement(name = "updateDate")
 	public Date getUpdateDate() {

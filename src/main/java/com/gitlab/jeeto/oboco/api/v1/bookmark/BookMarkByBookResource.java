@@ -138,7 +138,7 @@ public class BookMarkByBookResource {
 			
 			bookMarkReference = bookMarkService.getBookMarkReferenceByUserNameAndBookId(userName, bookId);
 			
-			bookMarkDto = bookMarkDtoMapper.getBookMarkDto(bookMarkReference, graphDto);
+			bookMarkDto = bookMarkDtoMapper.getBookMarkDto(userName, bookMarkReference, graphDto);
 		}
 		
 		ResponseBuilder responseBuilder = Response.status(200);
@@ -218,7 +218,7 @@ public class BookMarkByBookResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_MARK_NOT_FOUND", "The bookMark is not found."));
 		}
 		
-		BookMarkDto bookMarkDto = bookMarkDtoMapper.getBookMarkDto(bookMarkReference, graphDto);
+		BookMarkDto bookMarkDto = bookMarkDtoMapper.getBookMarkDto(userName, bookMarkReference, graphDto);
 	        
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookMarkDto);
