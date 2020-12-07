@@ -1,6 +1,7 @@
 package com.gitlab.jeeto.oboco.common.security.authorization;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -24,19 +25,23 @@ public class AuthorizationRequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-    	Authorization authorization = null;
-    	
-    	authorization = resourceInfo.getResourceMethod().getAnnotation(Authorization.class);
-        if (authorization != null) {
-            doAuthorization(authorization, requestContext);
-            return;
-        }
+    	Method resourceMethod = resourceInfo.getResourceMethod();
+    	if(resourceMethod != null) {
+    		Authorization authorization = resourceMethod.getAnnotation(Authorization.class);
+	        if (authorization != null) {
+	            doAuthorization(authorization, requestContext);
+	            return;
+	        }
+    	}
         
-        authorization = resourceInfo.getResourceClass().getAnnotation(Authorization.class);
-        if (authorization != null) {
-            doAuthorization(authorization, requestContext);
-            return;
-        }
+    	Class<?> resourceClass = resourceInfo.getResourceClass();
+    	if(resourceClass != null) {
+    		Authorization authorization = resourceClass.getAnnotation(Authorization.class);
+	        if (authorization != null) {
+	            doAuthorization(authorization, requestContext);
+	            return;
+	        }
+    	}
     }
 
     private void doAuthorization(Authorization authorization, ContainerRequestContext requestContext) {

@@ -1,6 +1,7 @@
 package com.gitlab.jeeto.oboco.common.security.authentication;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -28,19 +29,23 @@ public class AuthenticationResponseFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-    	Authentication authentication = null;
-    	
-    	authentication = resourceInfo.getResourceMethod().getAnnotation(Authentication.class);
-        if (authentication != null) {
-            handleAuthentication(authentication, requestContext, responseContext);
-            return;
-        }
+    	Method resourceMethod = resourceInfo.getResourceMethod();
+    	if(resourceMethod != null) {
+    		Authentication authentication = resourceMethod.getAnnotation(Authentication.class);
+	        if (authentication != null) {
+	            handleAuthentication(authentication, requestContext, responseContext);
+	            return;
+	        }
+    	}
         
-        authentication = resourceInfo.getResourceClass().getAnnotation(Authentication.class);
-        if (authentication != null) {
-        	handleAuthentication(authentication, requestContext, responseContext);
-            return;
-        }
+    	Class<?> resourceClass = resourceInfo.getResourceClass();
+    	if(resourceClass != null) {
+    		Authentication authentication = resourceClass.getAnnotation(Authentication.class);
+	        if (authentication != null) {
+	        	handleAuthentication(authentication, requestContext, responseContext);
+	            return;
+	        }
+    	}
     }
     
     private void handleAuthentication(Authentication authentication, ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
