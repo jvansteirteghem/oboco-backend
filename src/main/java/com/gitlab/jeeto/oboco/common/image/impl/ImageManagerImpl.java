@@ -184,17 +184,45 @@ public class ImageManagerImpl implements ImageManager {
 	}
 	
 	private BufferedImage scale(BufferedImage inputImage, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-		double scaleFactor = Math.min(inputImage.getWidth() / outputScaleWidth, inputImage.getHeight() / outputScaleHeight);
+		BufferedImage outputImage;
 	    
-		int regionWidth = (int) (outputScaleWidth * scaleFactor);
-		int regionHeight = (int) (outputScaleHeight * scaleFactor);
-		int regionX = (inputImage.getWidth() - regionWidth) / 2;
-		int regionY = (inputImage.getHeight() - regionHeight) / 2;
-	    
-		BufferedImage outputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
-		
-	    ResampleOp resampleOp = new ResampleOp(outputScaleWidth, outputScaleHeight);
-		outputImage = resampleOp.filter(outputImage, null);
+	    if(inputImage.getWidth() < outputScaleWidth || inputImage.getHeight() < outputScaleHeight) {
+	    	int regionWidth;
+	    	int regionX;
+	    	if(inputImage.getWidth() < outputScaleWidth) {
+	    		regionWidth = inputImage.getWidth();
+	    		regionX = 0;
+	    	} else {
+	    		regionWidth = outputScaleWidth;
+	    		regionX = (inputImage.getWidth() - regionWidth) / 2;
+	    	}
+	    	
+	    	int regionHeight;
+	    	int regionY;
+	    	if(inputImage.getHeight() < outputScaleHeight) {
+	    		regionHeight = inputImage.getHeight();
+	    		regionY = 0;
+	    	} else {
+	    		regionHeight = outputScaleHeight;
+	    		regionY = (inputImage.getHeight() - regionHeight) / 2;
+	    	}
+		    
+		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
+		    
+		    outputImage = inputImage;
+	    } else {
+		    double scaleFactor = Math.min(inputImage.getWidth() / outputScaleWidth, inputImage.getHeight() / outputScaleHeight);
+		    
+			int regionWidth = (int) (outputScaleWidth * scaleFactor);
+			int regionHeight = (int) (outputScaleHeight * scaleFactor);
+			int regionX = (inputImage.getWidth() - regionWidth) / 2;
+			int regionY = (inputImage.getHeight() - regionHeight) / 2;
+		    
+		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
+			
+		    ResampleOp resampleOp = new ResampleOp(outputScaleWidth, outputScaleHeight);
+			outputImage = resampleOp.filter(inputImage, null);
+	    }
 		
 		return outputImage;
 	}
