@@ -24,7 +24,7 @@ import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
-import com.mortennobel.imagescaling.ResampleOp;
+import com.mortennobel.imagescaling.experimental.ResampleOpSingleThread;
 
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageReaderSpi;
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriterSpi;
@@ -209,7 +209,8 @@ public class ImageManagerImpl implements ImageManager {
 		    
 		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
 		    
-		    outputImage = inputImage;
+		    ResampleOpSingleThread resampleOp = new ResampleOpSingleThread(regionWidth, regionHeight);
+			outputImage = resampleOp.filter(inputImage, null);
 	    } else {
 		    double scaleFactor = Math.min(inputImage.getWidth() / outputScaleWidth, inputImage.getHeight() / outputScaleHeight);
 		    
@@ -220,7 +221,7 @@ public class ImageManagerImpl implements ImageManager {
 		    
 		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
 			
-		    ResampleOp resampleOp = new ResampleOp(outputScaleWidth, outputScaleHeight);
+		    ResampleOpSingleThread resampleOp = new ResampleOpSingleThread(outputScaleWidth, outputScaleHeight);
 			outputImage = resampleOp.filter(inputImage, null);
 	    }
 		
