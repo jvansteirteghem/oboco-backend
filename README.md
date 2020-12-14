@@ -1,22 +1,71 @@
 # oboco-backend
 
-http://127.0.0.1:8080/swagger-ui/
-http://127.0.0.1:8080/openapi
+the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-native application (work in progress).
 
-mvn compile quarkus:dev
-mvn compile quarkus:dev -Ddebug
+## quarkus
 
-debug on port 5005
+### requirements
 
-in mysql:
-C:\Program Files\MariaDB 10.4\data\my.ini
-add parameter "bind-address = 0.0.0.0" to "[mysqld]"
+- java 8 or 11
+- maven >= 3.6.2
 
-in Dockerfile:
-add parameter "-Dquarkus.datasource.jdbc.url=jdbc:mysql://192.168.0.124:3306/oboco"
+### configuration
 
-docker build -f Dockerfile -t oboco/2.0.0 .
-docker build -f Dockerfile-mandrel -t oboco/2.0.0 .
-docker run -e TZ=Europe/Brussels -i --rm -p 8080:8080 -v c:/data1:/data1 -v c:/data2:/data2 --name oboco oboco/2.0.0
-docker stop oboco
-docker ps -a
+- application
+	- configure src\non-packaged-resources\user.properties
+		- data.path: the data (books, book collections)
+	- configure src\main\resources\application.properties
+		- quarkus.datasource.db-kind: h2
+		- quarkus.datasource.jdbc.url=jdbc:h2:file:./database
+		- quarkus.datasource.username=
+		- quarkus.datasource.password=
+
+### build
+
+- mvn compile quarkus:dev
+- mvn compile quarkus:dev -Ddebug (port: 5005)
+
+### test
+
+- http://127.0.0.1:8080/swagger-ui/
+
+## quarkus-native
+
+### requirements
+
+- docker
+- database: h2, mysql or postgresql
+
+### configuration
+
+- docker
+	- select "settings"
+	- select "resources"
+	- set "memory" to "6.00 gb"
+- database
+	- create database
+		- src\non-packaged-resources\database*.ddl
+		- src\non-packaged-resources\database*.sql
+- application
+	- configure src\main\resources\application.properties
+		- quarkus.datasource.db-kind: "h2", "mysql" or "postgresql"
+
+### build
+
+- docker build -f Dockerfile-mandrel -t oboco/2.0.0 .
+
+### run
+
+- start
+	- docker run -e TZ=Europe/Brussels -e QUARKUS_DATASOURCE_JDBC_URL=jdbc:mysql://192.168.0.124:3306/oboco -e QUARKUS_DATASOURCE_USERNAME=root -e QUARKUS_DATASOURCE_PASSWORD=toor -i --rm -p 8080:8080 -v c:/data:/data --name oboco oboco/2.0.0
+		- "-e TZ=Europe/Brussels": the timezone
+		- "-e QUARKUS_DATASOURCE_JDBC_URL=jdbc:mysql://192.168.0.124:3306/oboco": the database url
+		- "-e QUARKUS_DATASOURCE_USERNAME=root": the database user name
+		- "-e QUARKUS_DATASOURCE_PASSWORD=toor": the database user password
+		- "-v c:/data:/data": the data (books, book collections)
+- stop
+	- docker stop oboco
+
+### test
+
+- http://127.0.0.1:8080/swagger-ui/

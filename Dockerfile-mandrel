@@ -45,7 +45,7 @@ COPY --from=build /usr/src/app/target/data.csv /work/data.csv
 COPY --from=build /usr/src/app/target/logs /work/logs
 COPY --from=build /usr/src/app/target/lib-native /work/lib-native
 
-RUN sed -i 's/data\.path\=C\:\/data1\,C\:\/data2/data\.path\=\/data1,\/data2/' user.properties
+RUN sed -i 's/data\.path\=.*/data\.path\=\/data/' user.properties
 
 # set up permissions for user `1001`
 RUN chmod 775 /work /work/application \
@@ -56,4 +56,4 @@ RUN chmod 775 /work /work/application \
 EXPOSE 8080
 USER 1001
 
-CMD ["./application", "-Dquarkus.http.host=0.0.0.0", "-Dquarkus.datasource.jdbc.url=jdbc:mysql://192.168.0.124:3306/oboco"]
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
