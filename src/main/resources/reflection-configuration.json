@@ -99,7 +99,7 @@
     "allPublicFields" : true
   },
   {
-    "name" : "com.gitlab.jeeto.oboco.common.security.authentication.AuthenticationRequestFilter",
+    "name" : "com.gitlab.jeeto.oboco.common.security.AuthenticationRequestFilter",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -108,7 +108,7 @@
     "allPublicFields" : true
   },
   {
-    "name" : "com.gitlab.jeeto.oboco.common.security.authentication.AuthenticationResource",
+    "name" : "com.gitlab.jeeto.oboco.common.security.AuthenticationResource",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -117,7 +117,7 @@
     "allPublicFields" : true
   },
   {
-    "name" : "com.gitlab.jeeto.oboco.common.security.authentication.AuthenticationResponseFilter",
+    "name" : "com.gitlab.jeeto.oboco.common.security.AuthenticationResponseFilter",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -126,7 +126,7 @@
     "allPublicFields" : true
   },
   {
-    "name" : "com.gitlab.jeeto.oboco.common.security.authorization.AuthorizationRequestFilter",
+    "name" : "com.gitlab.jeeto.oboco.common.security.AuthorizationRequestFilter",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,

@@ -36,6 +36,7 @@ public class BookMarkDto {
 	public Date getUpdateDate() {
 		return updateDate;
 	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
 	}

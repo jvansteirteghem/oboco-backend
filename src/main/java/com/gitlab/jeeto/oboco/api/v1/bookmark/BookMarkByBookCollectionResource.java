@@ -31,8 +31,8 @@ import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
 import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
-import com.gitlab.jeeto.oboco.common.security.authentication.Authentication;
-import com.gitlab.jeeto.oboco.common.security.authorization.Authorization;
+import com.gitlab.jeeto.oboco.common.security.Authentication;
+import com.gitlab.jeeto.oboco.common.security.Authorization;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")

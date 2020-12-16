@@ -18,7 +18,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionResource;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkResource;
 import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerResource;
 import com.gitlab.jeeto.oboco.api.v1.user.UserResource;
-import com.gitlab.jeeto.oboco.common.security.authentication.AuthenticationResource;
+import com.gitlab.jeeto.oboco.common.security.AuthenticationResource;
 
 @OpenAPIDefinition(
     info = @Info(

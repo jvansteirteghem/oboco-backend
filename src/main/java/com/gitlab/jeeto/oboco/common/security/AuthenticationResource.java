@@ -1,4 +1,4 @@
-package com.gitlab.jeeto.oboco.common.security.authentication;
+package com.gitlab.jeeto.oboco.common.security;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;

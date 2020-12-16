@@ -135,6 +135,8 @@ public class UserService {
 	
 	@Transactional
 	public void deleteUser(User user) throws ProblemException {
+		user = entityManager.merge(user);
+		
 		entityManager.remove(user);
 	}
 	

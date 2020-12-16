@@ -131,6 +131,8 @@ public class BookMarkService {
 	
 	@Transactional
 	public void deleteBookMark(BookMark bookMark) throws ProblemException {
+		bookMark = entityManager.merge(bookMark);
+		
 		entityManager.remove(bookMark);
 	}
 	

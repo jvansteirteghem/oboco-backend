@@ -1,4 +1,4 @@
-package com.gitlab.jeeto.oboco.common.security.authentication;
+package com.gitlab.jeeto.oboco.common.security;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
