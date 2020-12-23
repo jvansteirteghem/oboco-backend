@@ -114,6 +114,10 @@ public class UserResource {
 		
 		String userName = securityContext.getUserPrincipal().getName();
 		
+		if(userName.startsWith("test")) {
+			throw new ProblemException(new Problem(403, "PROBLEM_USER_NOT_AUTHORIZED", "The user is not authorized."));
+		}
+		
 		User user = userService.getUserByName(userName);
 		
 		if(user == null) {
