@@ -59,7 +59,15 @@ public class AuthenticationResource {
 				throw new ProblemException(new Problem(400, "PROBLEM_USER_NAME_PASSWORD_INVALID", "The user.name or user.password is invalid."));
 			}
 			
-			userNamePasswordDto.setName(userNamePasswordDto.getName() + "-" + httpRequest.getRemoteAddress());
+			String remoteAddress;
+			List<String> remoteAddresses = httpRequest.getHttpHeaders().getRequestHeader("X-Forwarded-For");
+			if(remoteAddresses != null) {
+				remoteAddress = remoteAddresses.get(0);
+			} else {
+				remoteAddress = httpRequest.getRemoteAddress();
+			}
+			
+			userNamePasswordDto.setName(userNamePasswordDto.getName() + "-" + remoteAddress);
 			
 			user = userService.getUserByName(userNamePasswordDto.getName());
 			
