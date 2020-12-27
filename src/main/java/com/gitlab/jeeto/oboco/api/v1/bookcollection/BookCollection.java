@@ -39,6 +39,7 @@ public class BookCollection {
 	private Integer numberOfBookCollections;
 	private List<Book> books;
 	private Integer numberOfBooks;
+	private Integer number;
 	public BookCollection() {
 		super();
 	}
@@ -115,5 +116,12 @@ public class BookCollection {
 	}
 	public void setNumberOfBooks(Integer numberOfBooks) {
 		this.numberOfBooks = numberOfBooks;
+	}
+	@Column(name = "number", nullable = false)
+	public Integer getNumber() {
+		return number;
+	}
+	public void setNumber(Integer number) {
+		this.number = number;
 	}
 }
