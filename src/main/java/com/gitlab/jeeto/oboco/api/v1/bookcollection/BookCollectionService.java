@@ -83,7 +83,7 @@ public class BookCollectionService {
 		Long bookCollectionListSize = (Long) entityManager.createQuery("select count(bc.id) from BookCollection bc")
 				.getSingleResult();
 	
-		List<BookCollection> bookCollectionList = entityManager.createQuery("select bc from BookCollection bc", BookCollection.class)
+		List<BookCollection> bookCollectionList = entityManager.createQuery("select bc from BookCollection bc order by bc.number", BookCollection.class)
 				.setFirstResult((page - 1) * pageSize)
 				.setMaxResults(pageSize)
 				.getResultList();
@@ -110,7 +110,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString, BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString + " order by bc.number", BookCollection.class);
 		
 		if("".equals(normalizedName) == false) {
 			bookCollectionListQuery.setParameter("normalizedName", "%" + normalizedName + "%");
@@ -143,7 +143,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString, BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString + " order by bc.number", BookCollection.class);
 		
 		if(parentBookCollectionId != null) {
 			bookCollectionListQuery.setParameter("parentBookCollectionId", parentBookCollectionId);
@@ -197,7 +197,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString, BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString + " order by bc.number", BookCollection.class);
 		
 		if("".equals(directoryPath) == false) {
 			bookCollectionListQuery.setParameter("directoryPath", directoryPath + "%");

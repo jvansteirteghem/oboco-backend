@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.paour.natorder.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.api.v1.book.Book;
 import com.gitlab.jeeto.oboco.api.v1.book.BookService;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
@@ -25,15 +27,15 @@ import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
+import com.gitlab.jeeto.oboco.common.FileType;
+import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.NameHelper;
+import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
+import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
-import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.FileWrapper;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 import com.gitlab.jeeto.oboco.common.hash.HashManager;
 import com.gitlab.jeeto.oboco.common.hash.HashManagerFactory;
 import com.gitlab.jeeto.oboco.common.hash.HashType;
@@ -163,7 +165,7 @@ public class DefaultBookScannerService implements BookScannerService {
 	    	
 	    	File directory = new File(directoryPath);
 	    	if(directory.isDirectory() == false) {
-	    		throw new ProblemException(new Problem(500, "PROBLEM_APPLICATION_DATA_PATH_INVALID", "The application.dataPath is invalid."));
+	    		throw new ProblemException(new Problem(500, "PROBLEM_APPLICATION_DATA_PATH_INVALID", "The application.data.path is invalid."));
 	    	}
 			
 			BookCollection bookCollection = bookCollectionService.getBookCollectionByDirectoryPath("");
@@ -185,6 +187,7 @@ public class DefaultBookScannerService implements BookScannerService {
 				bookCollection.setParentBookCollection(null);
 				bookCollection.setNumberOfBookCollections(0);
 				bookCollection.setNumberOfBooks(0);
+				bookCollection.setNumber(1);
 		        
 		        bookCollection = bookCollectionService.createBookCollection(bookCollection);
 			} else {
@@ -201,6 +204,7 @@ public class DefaultBookScannerService implements BookScannerService {
 				bookCollection.setNormalizedName(normalizedName);
 				bookCollection.setNumberOfBookCollections(0);
 				bookCollection.setNumberOfBooks(0);
+				bookCollection.setNumber(1);
 				
 				bookCollection = bookCollectionService.updateBookCollection(bookCollection);
 			}
@@ -213,7 +217,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					path = file.getAbsolutePath();
 			        add(file, bookCollection);
 				} else {
-					throw new ProblemException(new Problem(500, "PROBLEM_USER_DATA_PATH_INVALID", "The user.dataPath is invalid."));
+					throw new ProblemException(new Problem(500, "PROBLEM_USER_DATA_PATH_INVALID", "The user.data.path is invalid."));
 				}
 			}
 			
@@ -253,11 +257,15 @@ public class DefaultBookScannerService implements BookScannerService {
 	}
     
     private void add(File parentFile, BookCollection parentBookCollection) throws Exception {
-    	Integer numberOfBookCollections = 0;
-		Integer numberOfBooks = 0;
+		Integer numberOfBookCollections = parentBookCollection.getNumberOfBookCollections();
+		Integer numberOfBooks = parentBookCollection.getNumberOfBooks();
 		
     	File[] files = parentFile.listFiles();
-		for(File file: files) {
+    	
+    	List<File> fileList = Arrays.asList(files);
+    	fileList.sort(new NaturalOrderComparator());
+    	
+		for(File file: fileList) {
 			if(status.equals(BookScannerServiceStatus.STOPPING)) {
 	    		logger.info("stopping!");
 	    		break;
@@ -270,6 +278,8 @@ public class DefaultBookScannerService implements BookScannerService {
 				
 				if(bookCollection == null) {
 					logger.info("create bookCollection " + path);
+					
+					numberOfBookCollections = numberOfBookCollections + 1;
 					
 					bookCollection = new BookCollection();
 					bookCollection.setDirectoryPath(path);
@@ -285,12 +295,13 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setParentBookCollection(parentBookCollection);
 					bookCollection.setNumberOfBookCollections(0);
 					bookCollection.setNumberOfBooks(0);
+					bookCollection.setNumber(numberOfBookCollections);
 			        
 			        bookCollection = bookCollectionService.createBookCollection(bookCollection);
-			        
-			        numberOfBookCollections = numberOfBookCollections + 1;
 				} else {
 					logger.info("update bookCollection " + path);
+					
+					numberOfBookCollections = numberOfBookCollections + 1;
 					
 					bookCollection.setUpdateDate(updateDate);
 
@@ -303,10 +314,9 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setNormalizedName(normalizedName);
 					bookCollection.setNumberOfBookCollections(0);
 					bookCollection.setNumberOfBooks(0);
+					bookCollection.setNumber(numberOfBookCollections);
 					
 					bookCollection = bookCollectionService.updateBookCollection(bookCollection);
-					
-					numberOfBookCollections = numberOfBookCollections + 1;
 				}
 				
 				add(file, bookCollection);
@@ -325,12 +335,14 @@ public class DefaultBookScannerService implements BookScannerService {
 						
 						try {
 							book = createBook(fileWrapper, parentBookCollection);
-							
-							numberOfBooks = numberOfBooks + 1;
 						} catch(Exception e) {
 							logger.error("error create book " + path, e);
 							continue;
 						}
+						
+						numberOfBooks = numberOfBooks + 1;
+						
+						book.setNumber(numberOfBooks);
 						
 						book = bookService.createBook(book);
 						
@@ -352,12 +364,14 @@ public class DefaultBookScannerService implements BookScannerService {
 						
 						try {
 							book = updateBook(fileWrapper, book);
-							
-							numberOfBooks = numberOfBooks + 1;
 						} catch(Exception e) {
 							logger.error("error update book " + path, e);
 							continue;
 						}
+						
+						numberOfBooks = numberOfBooks + 1;
+						
+						book.setNumber(numberOfBooks);
 						
 						book = bookService.updateBook(book);
 						

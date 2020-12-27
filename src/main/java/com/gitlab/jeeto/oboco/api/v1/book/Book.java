@@ -40,6 +40,7 @@ public class Book {
 	private Integer numberOfPages;
 	private BookCollection bookCollection;
 	private List<BookMarkReference> bookMarkReferences;
+	private Integer number;
 	public Book() {
 		super();
 	}
@@ -109,5 +110,12 @@ public class Book {
 	}
 	public void setBookMarkReferences(List<BookMarkReference> bookMarkReferences) {
 		this.bookMarkReferences = bookMarkReferences;
+	}
+	@Column(name = "number", nullable = false)
+	public Integer getNumber() {
+		return number;
+	}
+	public void setNumber(Integer number) {
+		this.number = number;
 	}
 }

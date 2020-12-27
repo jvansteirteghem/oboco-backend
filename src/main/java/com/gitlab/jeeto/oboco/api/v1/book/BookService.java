@@ -80,7 +80,7 @@ public class BookService {
 		Long bookListSize = (Long) entityManager.createQuery("select count(b.id) from Book b")
 				.getSingleResult();
 	
-		List<Book> bookList = entityManager.createQuery("select b from Book b", Book.class)
+		List<Book> bookList = entityManager.createQuery("select b from Book b order by b.number", Book.class)
 				.setFirstResult((page - 1) * pageSize)
 				.setMaxResults(pageSize)
 				.getResultList();
@@ -107,7 +107,7 @@ public class BookService {
 		
 		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
 		
-		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString, Book.class);
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number", Book.class);
 		
 		if("".equals(normalizedName) == false) {
 			bookListQuery.setParameter("normalizedName", "%" + normalizedName + "%");
@@ -124,7 +124,7 @@ public class BookService {
 	}
 	
 	public PageableList<Book> getBooksByBookCollectionIdAndId(Long bookCollectionId, Long id) throws ProblemException {
-		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b where b.bookCollection.id = :bookCollectionId", Book.class);
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b where b.bookCollection.id = :bookCollectionId order by b.number", Book.class);
 		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
 		
 		List<Book> bookList = bookListQuery.getResultList();
@@ -162,7 +162,7 @@ public class BookService {
 		
 		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
 		
-		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString, Book.class);
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number", Book.class);
 		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
 		
 		bookListQuery.setFirstResult((page - 1) * pageSize);
@@ -192,7 +192,7 @@ public class BookService {
 		
 		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
 		
-		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString, Book.class);
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number", Book.class);
 		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
 		bookListQuery.setParameter("userName", userName);
 		bookListQuery.setFirstResult((page - 1) * pageSize);
