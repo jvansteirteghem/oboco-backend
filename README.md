@@ -69,3 +69,16 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 ### test
 
 - http://127.0.0.1:8080/swagger-ui/
+
+### development
+
+- update test branch with master
+	- git checkout master
+	- git pull
+	- git checkout test
+	- git merge master
+	- git push origin test
+- update master with test branch
+	- git checkout master
+	- git merge test
+	- git push origin master
