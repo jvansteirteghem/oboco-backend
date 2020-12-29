@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 public class UserToken {
-	private String type;
 	private Date startDate;
 	private Date stopDate;
 	private String name;
@@ -12,14 +11,6 @@ public class UserToken {
 	
 	public UserToken() {
 		super();
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
 	}
 
 	public Date getStartDate() {

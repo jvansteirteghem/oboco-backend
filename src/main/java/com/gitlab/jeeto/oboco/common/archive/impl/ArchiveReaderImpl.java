@@ -10,14 +10,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.paour.natorder.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileWrapper;
-import com.gitlab.jeeto.oboco.common.FileWrapperSorter;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
 
 import net.sf.sevenzipjbinding.ExtractOperationResult;
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.SevenZip;
+import net.sf.sevenzipjbinding.SevenZipException;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;
@@ -105,13 +106,16 @@ public class ArchiveReaderImpl implements ArchiveReader {
         logger.debug("readListFile: " + duration + " ms");
         // stop readListFile
         
-        new FileWrapperSorter<ISimpleInArchiveItem>() {
-			@Override
-			public int compare(FileWrapper<ISimpleInArchiveItem> fileWrapper1, FileWrapper<ISimpleInArchiveItem> fileWrapper2) throws Exception {
-				return fileWrapper1.getFile().getPath().compareTo(fileWrapper2.getFile().getPath());
-			}
-        	
-        }.sort(listSimpleInArchiveItemWrapper);
+        listSimpleInArchiveItemWrapper.sort(new NaturalOrderComparator<FileWrapper<ISimpleInArchiveItem>>() {
+        	@Override
+    		public String toString(FileWrapper<ISimpleInArchiveItem> o) {
+        		try {
+					return o.getFile().getPath();
+				} catch (SevenZipException e) {
+					return "";
+				}
+        	}
+		});
 	}
 
 	@Override

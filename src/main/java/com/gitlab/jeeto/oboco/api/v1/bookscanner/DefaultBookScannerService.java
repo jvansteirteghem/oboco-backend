@@ -263,7 +263,22 @@ public class DefaultBookScannerService implements BookScannerService {
     	File[] files = parentFile.listFiles();
     	
     	List<File> fileList = Arrays.asList(files);
-    	fileList.sort(new NaturalOrderComparator());
+    	fileList.sort(new NaturalOrderComparator<File>() {
+    		@Override
+    		public String toString(File o) {
+				String fileName = o.getName();
+				
+				int index = fileName.lastIndexOf('.');
+				if (index != -1) {
+				    fileName = fileName.substring(0, index);
+				}
+				
+				fileName = fileName.replace("_", " ");
+				fileName = fileName.toLowerCase();
+				
+				return fileName;
+		   }
+    	});
     	
 		for(File file: fileList) {
 			if(status.equals(BookScannerServiceStatus.STOPPING)) {
