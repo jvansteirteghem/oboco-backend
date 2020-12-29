@@ -1,7 +1,5 @@
 package com.github.paour.natorder;
 
-import java.io.File;
-
 /*
 NaturalOrderComparator.java -- Perform 'natural order' comparisons of strings in Java.
 Copyright (C) 2003 by Pierre-Luc Paour <natorder@paour.com>
@@ -27,7 +25,7 @@ misrepresented as being the original software.
 */
 import java.util.Comparator;
 
-public class NaturalOrderComparator implements Comparator<File>
+public class NaturalOrderComparator<T> implements Comparator<T>
 {
    int compareRight(String a, String b)
    {
@@ -66,10 +64,10 @@ public class NaturalOrderComparator implements Comparator<File>
    }
    
    @Override
-   public int compare(File o1, File o2)
+   public int compare(T o1, T o2)
    {
-	   String a = getName(o1);
-       String b = getName(o2);
+	   String a = toString(o1);
+       String b = toString(o2);
        
        int ia = 0, ib = 0;
        int nza = 0, nzb = 0;
@@ -148,18 +146,8 @@ public class NaturalOrderComparator implements Comparator<File>
        return a.length() - b.length();
    }
    
-   static String getName(File file) {
-		String fileName = file.getName();
-		fileName = fileName.replace("_", " ");
-		fileName = fileName.replace(".", " ");
-		fileName = fileName.toLowerCase();
-		
-		int index = fileName.lastIndexOf('.');
-		if (index != -1) {
-		    fileName = fileName.substring(0, index);
-		}
-		
-		return fileName;
-	}
+   public String toString(T o) {
+	   return o.toString();
+   }
 }
 
