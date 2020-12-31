@@ -23,6 +23,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 ### build
 
 - mvn compile quarkus:dev
+- mvn compile quarkus:dev -Dquarkus.args="--start=DEFAULT"
 - mvn compile quarkus:dev -Ddebug (port: 5005)
 
 ### test
