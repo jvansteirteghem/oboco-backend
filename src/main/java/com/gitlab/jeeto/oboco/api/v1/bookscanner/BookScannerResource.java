@@ -14,12 +14,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.eclipse.microprofile.context.ManagedExecutor;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -27,6 +26,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.common.GraphDto;
 import com.gitlab.jeeto.oboco.common.GraphDtoHelper;
@@ -42,8 +43,11 @@ import com.gitlab.jeeto.oboco.common.security.Authorization;
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 public class BookScannerResource {
+	private static Logger logger = LoggerFactory.getLogger(BookScannerResource.class.getName());
 	@Inject
 	Instance<BookScannerService> bookScannerServiceProvider;
+	@Inject
+	ManagedExecutor bookScannerServiceExecuter;
 	
 	@Operation(
 		description = "Get the bookScanners."
@@ -130,37 +134,31 @@ public class BookScannerResource {
 	})
 	@Path("{bookScannerId}/start")
 	@POST
-	public void startBookScanner(
-			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId, 
-			@Suspended AsyncResponse asyncResponse) {
-		try {
-			BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerId)).get();
+	public Response startBookScanner(
+			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId) throws ProblemException {
+		BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerId)).get();
+		
+		if(bookScannerService == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
+		}
+		
+		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STOPPED)) {
+			bookScannerServiceExecuter.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+	        			bookScannerService.start();
+	        		} catch(Exception e) {
+	        			logger.error("error", e);
+	        		}
+				}
+    		});
 			
-			if(bookScannerService == null) {
-				throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
-			}
+			ResponseBuilder responseBuilder = Response.status(200);
 			
-			if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STOPPED)) {
-				bookScannerService.start();
-				
-				ResponseBuilder responseBuilder = Response.status(200);
-				
-				asyncResponse.resume(responseBuilder.build());
-			} else {
-				throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid."));
-			}
-		} catch(ProblemException e) {
-			Problem problem = e.getProblem();
-			
-			ProblemDto problemDto = new ProblemDto();
-			problemDto.setStatusCode(problem.getStatusCode());
-			problemDto.setCode(problem.getCode());
-			problemDto.setDescription(problem.getDescription());
-			
-			ResponseBuilder responseBuilder = Response.status(problemDto.getStatusCode());
-			responseBuilder.entity(problemDto);
-			
-			asyncResponse.resume(responseBuilder.build());
+			return responseBuilder.build();
+		} else {
+			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid."));
 		}
 	}
 	
@@ -185,7 +183,7 @@ public class BookScannerResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
 		}
 		
-		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTED)) {
+		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTING) || bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTED)) {
 			bookScannerService.stop();
 			
 			ResponseBuilder responseBuilder = Response.status(200);
