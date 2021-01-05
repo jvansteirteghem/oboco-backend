@@ -16,9 +16,9 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 		- data.path: the data (books, book collections)
 	- configure src\main\resources\application.properties
 		- quarkus.datasource.db-kind: h2
-		- quarkus.datasource.jdbc.url=jdbc:h2:file:./database
-		- quarkus.datasource.username=
-		- quarkus.datasource.password=
+		- quarkus.datasource.jdbc.url: jdbc:h2:file:./database
+		- quarkus.datasource.username: 
+		- quarkus.datasource.password: 
 
 ### build
 
