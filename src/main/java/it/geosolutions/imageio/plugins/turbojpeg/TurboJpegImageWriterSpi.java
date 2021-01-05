@@ -17,12 +17,12 @@
 package it.geosolutions.imageio.plugins.turbojpeg;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriter;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.spi.ServiceRegistry;
 import javax.imageio.stream.ImageOutputStream;
@@ -31,13 +31,9 @@ import javax.imageio.stream.ImageOutputStream;
  * @author Daniele Romagnoli, GeoSolutions SaS
  */
 public class TurboJpegImageWriterSpi extends ImageWriterSpi {
-    
-    static {
-        // Initialization to make sure the native library is available 
-        // before instantiating any writer
-        TurboJpegUtilities.loadTurboJpeg();
-        
-    }
+    /** The LOGGER for this class. */
+    private static final Logger LOGGER = Logger
+            .getLogger("it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriterSpi");
 
     static final String[] suffixes = { "JPEG", "JPG", "jpeg", "jpg" };
 
@@ -75,6 +71,8 @@ public class TurboJpegImageWriterSpi extends ImageWriterSpi {
     static final String[] extraImageMetadataFormatNames = { null };
 
     static final String[] extraImageMetadataFormatClassNames = { null };
+    
+    private boolean registered = false;
     
     /**
      * Default {@link ImageWriterSpi} constructor for JP2K writers.
@@ -118,17 +116,25 @@ public class TurboJpegImageWriterSpi extends ImageWriterSpi {
     @Override
     public void onRegistration(ServiceRegistry registry, Class<?> category) {
         super.onRegistration(registry, category);
-        if (!TurboJpegUtilities.isTurboJpegAvailable()) {
-            IIORegistry iioRegistry = (IIORegistry) registry;
-            final Class<ImageWriterSpi> spiClass = ImageWriterSpi.class;
-            final Iterator<ImageWriterSpi> iter = iioRegistry.getServiceProviders(spiClass,true);
-            while (iter.hasNext()) {
-                final ImageWriterSpi provider = (ImageWriterSpi) iter.next();
-                if (provider instanceof TurboJpegImageWriterSpi) {
-                    registry.deregisterServiceProvider(provider);
-                }
-            }
+        if (registered) {
+            return;
+        }
+        registered = true;
+        
+    	try {
+    		ImageWriterSpi defaultProvider = ImageWriterSpi.class.cast(registry.getServiceProviderByClass(Class.forName("com.sun.imageio.plugins.jpeg.JPEGImageWriterSpi")));
+    		
+    		registry.deregisterServiceProvider(defaultProvider);
+        } catch (Exception e) {
+            // do nothing
         }
     }
-
+    
+    @Override
+    public void onDeregistration(ServiceRegistry registry, Class<?> category) {
+        super.onDeregistration(registry, category);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(getClass().getSimpleName() + " being deregistered");
+        }
+    }
 }

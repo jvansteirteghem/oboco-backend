@@ -2,7 +2,6 @@ package com.gitlab.jeeto.oboco.common.image.impl;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Iterator;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -12,8 +11,6 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.ImageReaderSpi;
-import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 
@@ -28,48 +25,22 @@ import com.mortennobel.imagescaling.experimental.ResampleOpSingleThread;
 
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageReaderSpi;
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriterSpi;
-import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegUtilities;
 
 public class ImageManagerImpl implements ImageManager {
 	private static Logger logger = LoggerFactory.getLogger(ImageManagerImpl.class.getName());
 	
 	static {
 		try {
-			logger.info("load library");
-        	TurboJpegUtilities.loadTurboJpeg();
-    		
-        	logger.info("get registry");
+        	logger.debug("get registry");
 			IIORegistry registry = IIORegistry.getDefaultInstance();
 			
-			logger.info("get jpegImageReaderSpi");
-			com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi jpegImageReaderSpi = registry.getServiceProviderByClass(com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi.class);
-			logger.info("deregister jpegImageReaderSpi");
-			registry.deregisterServiceProvider(jpegImageReaderSpi, ImageReaderSpi.class);
-			
-			logger.info("get jpegImageWriterSpi");
-			com.sun.imageio.plugins.jpeg.JPEGImageWriterSpi jpegImageWriterSpi = registry.getServiceProviderByClass(com.sun.imageio.plugins.jpeg.JPEGImageWriterSpi.class);
-			logger.info("deregister jpegImageWriterSpi");
-			registry.deregisterServiceProvider(jpegImageWriterSpi, ImageWriterSpi.class);
-			
-			logger.info("create turboJpegImageReaderSpi");
+			logger.debug("register turboJpegImageReaderSpi");
 			TurboJpegImageReaderSpi turboJpegImageReaderSpi = new TurboJpegImageReaderSpi();
-			logger.info("register turboJpegImageReaderSpi");
 			registry.registerServiceProvider(turboJpegImageReaderSpi);
 			
-			logger.info("create turboJpegImageWriterSpi");
+			logger.debug("register turboJpegImageWriterSpi");
 			TurboJpegImageWriterSpi turboJpegImageWriterSpi = new TurboJpegImageWriterSpi();
-			logger.info("register turboJpegImageWriterSpi");
 			registry.registerServiceProvider(turboJpegImageWriterSpi);
-        	
-			Iterator<ImageReader> imageReaders = ImageIO.getImageReadersByFormatName("jpg");
-		    while(imageReaders.hasNext()) {
-		    	logger.info("imageReader: " + imageReaders.next());
-		    }
-		    
-		    Iterator<ImageWriter> imageWriters = ImageIO.getImageWritersByFormatName("jpg");
-		    while(imageWriters.hasNext()) {
-		    	logger.info("imageWriter: " + imageWriters.next());
-		    }
 		} catch(Exception e) {
 			logger.error("Error", e);
 		}

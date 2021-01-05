@@ -17,8 +17,6 @@
 package it.geosolutions.imageio.plugins.turbojpeg;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,16 +33,9 @@ import javax.imageio.stream.ImageInputStream;
  * @author Daniele Romagnoli, GeoSolutions SaS
  */
 public class TurboJpegImageReaderSpi extends ImageReaderSpi {
-
-    static {
-        // Initialization to make sure the native library is available
-        // before instantiating any reader
-        TurboJpegUtilities.loadTurboJpeg();
-    }
-
     /** The LOGGER for this class. */
     private static final Logger LOGGER = Logger
-            .getLogger("it.geosolutions.imageio.plugins.turbojpeg");
+            .getLogger("it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageReaderSpi");
 
     // Adding a byte[] supported class. This allows the reader to receive bytes from a tiff reader
     // which may have internally JPEG compressed tiles
@@ -96,91 +87,21 @@ public class TurboJpegImageReaderSpi extends ImageReaderSpi {
                 extraImageMetadataFormatNames,
                 extraImageMetadataFormatClassNames);
     }
-
-    public void onRegistration(ServiceRegistry registry, Class category) {
+    
+    @Override
+    public void onRegistration(ServiceRegistry registry, Class<?> category) {
     	super.onRegistration(registry, category);
         if (registered) {
             return;
         }
         registered = true;
-
-        boolean turboJpegavailable = TurboJpegUtilities.isTurboJpegAvailable();
-
-        if (turboJpegavailable) {
-            deregisterOtherSPIs(registry, category);
-        } else {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Deregistering " + this.getClass().getName());
-            }
-            registry.deregisterServiceProvider(this);
-        }
-    }
-
-    private static Method readerFormatNamesMethod;
-    static {
-        try {
-            readerFormatNamesMethod = ImageReaderSpi.class.getMethod("getFormatNames");
-        } catch (NoSuchMethodException e) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(e.getLocalizedMessage());
-            }
-        }
-    }
-
-    private void deregisterOtherSPIs(ServiceRegistry registry, Class category) {
-
-        if (registry == null) {
-            return;
-        }
-
-        try {
-            Iterator<ImageReaderSpi> iter = registry.getServiceProviders(ImageReaderSpi.class,
-                    new ContainsFilter(readerFormatNamesMethod, "JPEG"), true);
-
-            for (; iter.hasNext();) {
-                ImageReaderSpi spi = iter.next();
-                if (!spi.getClass().equals(this.getClass())) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Deprioritizing " + spi);
-                    }
-                    
-                    // ETj: we used to deregister the other ones, but they may be 
-                    // explicitely requested
-//                  registry.deregisterServiceProvider(spi);
-                    registry.setOrdering(category, this, spi);
-                }
-            }
-        } catch (IllegalArgumentException e) {
-        }
-    }
-
-    static class ContainsFilter implements ServiceRegistry.Filter {
-
-        Method method;
-
-        String name;
-
-        // method returns an array of Strings
-        public ContainsFilter(Method method, String name) {
-            this.method = method;
-            this.name = name;
-        }
-
-        public boolean filter(Object elt) {
-            try {
-                return contains((String[]) method.invoke(elt), name);
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        private static boolean contains(String[] names, String name) {
-            for (int i = 0; i < names.length; i++) {
-                if (name.equalsIgnoreCase(names[i])) {
-                    return true;
-                }
-            }
-            return false;
+        
+    	try {
+    		ImageReaderSpi defaultProvider = ImageReaderSpi.class.cast(registry.getServiceProviderByClass(Class.forName("com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi")));
+    		
+    		registry.deregisterServiceProvider(defaultProvider);
+        } catch (Exception e) {
+            // do nothing
         }
     }
 
