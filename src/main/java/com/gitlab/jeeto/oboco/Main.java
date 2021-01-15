@@ -73,6 +73,9 @@ public class Main {
     	System.setProperty("quarkus.log.file.rotation.max-backup-index", "10");
     	System.setProperty("quarkus.log.file.rotation.file-suffix", ".yyyy-MM-dd");
     	System.setProperty("quarkus.log.file.rotation.rotate-on-boot", "false");
+    	System.setProperty("quarkus.datasource.jdbc.url", getConfiguration().getAsString("application.database.url", ""));
+    	System.setProperty("quarkus.datasource.username", getConfiguration().getAsString("application.database.user.name", ""));
+    	System.setProperty("quarkus.datasource.password", getConfiguration().getAsString("application.database.user.password", ""));
 		
         Quarkus.run(Application.class, args);
     }
@@ -162,7 +165,7 @@ public class Main {
     	void onStart(@Observes @Priority(Interceptor.Priority.APPLICATION + 20) StartupEvent ev) {
     		logger.info("start");
         	
-        	String bookScannerServiceId = getConfiguration().getAsString("--start", "");
+        	String bookScannerServiceId = getConfiguration().getAsString("start", "");
         	
         	if(bookScannerServiceId.equals("") == false) {
 	        	BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerServiceId)).get();

@@ -1,6 +1,8 @@
 ## Stage 1 : build with maven builder image with native capabilities
 FROM ubuntu:18.04 AS build
 
+ARG DATABASE_NAME
+
 RUN apt-get update && apt-get -y upgrade
 RUN apt-get -y install gcc zlib1g-dev build-essential wget libjpeg-dev
 
@@ -26,6 +28,10 @@ COPY pom.xml /usr/src/app/
 RUN mvn -f /usr/src/app/pom.xml -B de.qaware.maven:go-offline-maven-plugin:1.2.5:resolve-dependencies
 COPY src /usr/src/app/src
 COPY src/non-packaged-resources/lib-native/turbojpeg/linux/amd64/libturbojpeg.so /usr/java/packages/lib/libturbojpeg.so
+RUN sed -i "s/quarkus\.datasource\.db\-kind\=.*/quarkus\.datasource\.db\-kind\=${DATABASE_NAME}/" /usr/src/app/src/main/resources/application.properties \
+ && sed -i "s/quarkus\.datasource\.username\=.*/quarkus\.datasource\.username\=/" /usr/src/app/src/main/resources/application.properties \
+ && sed -i "s/quarkus\.datasource\.password\=.*/quarkus\.datasource\.password\=/" /usr/src/app/src/main/resources/application.properties \
+ && sed -i "s/quarkus\.datasource\.jdbc\.url\=.*/quarkus\.datasource\.jdbc\.url\=/" /usr/src/app/src/main/resources/application.properties
 RUN mvn -f /usr/src/app/pom.xml -Pnative clean package
 
 ## Stage 2 : create the docker final image
@@ -45,7 +51,8 @@ COPY --from=build /usr/src/app/target/data.csv /work/data.csv
 COPY --from=build /usr/src/app/target/logs /work/logs
 COPY --from=build /usr/src/app/target/lib-native /work/lib-native
 
-RUN sed -i 's/data\.path\=.*/data\.path\=\/data/' user.properties
+COPY application.sh /usr/local/bin/
+RUN chmod 777 /usr/local/bin/application.sh
 
 # set up permissions for user `1001`
 RUN chmod 775 /work /work/application \
@@ -56,4 +63,4 @@ RUN chmod 775 /work /work/application \
 EXPOSE 8080
 USER 1001
 
-CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
+CMD ["bash", "/usr/local/bin/application.sh"]

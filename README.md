@@ -53,17 +53,20 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 
 ### build
 
-- docker build -f Dockerfile-mandrel -t oboco/2.0.0 .
+- docker build --build-arg DATABASE_NAME=mysql -f Dockerfile-mandrel -t oboco/2.0.0 .
+	- "--build-arg DATABASE_NAME=mysql": the database type (mysql or postgresql).
 
 ### run
 
 - start
-	- docker run -e TZ=Europe/Brussels -e QUARKUS_DATASOURCE_JDBC_URL=jdbc:mysql://192.168.0.124:3306/oboco -e QUARKUS_DATASOURCE_USERNAME=root -e QUARKUS_DATASOURCE_PASSWORD=toor -i --rm -p 8080:8080 -v c:/data:/data --name oboco oboco/2.0.0
+	- docker run -e TZ=Europe/Brussels -e SECRET=secret -e DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco -e DATABASE_USER_NAME=root -e DATABASE_USER_PASSWORD=toor -i --rm -p 8080:8080 -v c:/data/application:/data-application  -v c:/data/user:/data-user --name oboco oboco/2.0.0
 		- "-e TZ=Europe/Brussels": the timezone
-		- "-e QUARKUS_DATASOURCE_JDBC_URL=jdbc:mysql://192.168.0.124:3306/oboco": the database url
-		- "-e QUARKUS_DATASOURCE_USERNAME=root": the database user name
-		- "-e QUARKUS_DATASOURCE_PASSWORD=toor": the database user password
-		- "-v c:/data:/data": the data (books, book collections)
+		- "-e SECRET=secret": the secret
+		- "-e DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco": the database url
+		- "-e DATABASE_USER_NAME=root": the database user name
+		- "-e DATABASE_USER_PASSWORD=toor": the database user password
+		- "-v c:/data/application:/data-application": the application data (book pages)
+		- "-v c:/data/user:/data-user": the user data (books, book collections)
 - stop
 	- docker stop oboco
 
