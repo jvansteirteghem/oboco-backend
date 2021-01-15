@@ -19,7 +19,6 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.paour.natorder.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.api.v1.book.Book;
 import com.gitlab.jeeto.oboco.api.v1.book.BookService;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
@@ -30,6 +29,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.NameHelper;
+import com.gitlab.jeeto.oboco.common.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
@@ -266,17 +266,7 @@ public class DefaultBookScannerService implements BookScannerService {
     	fileList.sort(new NaturalOrderComparator<File>() {
     		@Override
     		public String toString(File o) {
-				String fileName = o.getName();
-				
-				int index = fileName.lastIndexOf('.');
-				if (index != -1) {
-				    fileName = fileName.substring(0, index);
-				}
-				
-				fileName = fileName.replace("_", " ");
-				fileName = fileName.toLowerCase();
-				
-				return fileName;
+				return o.getName();
 		   }
     	});
     	
