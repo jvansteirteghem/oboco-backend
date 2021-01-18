@@ -54,7 +54,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 ### build
 
 - docker build --build-arg DATABASE_NAME=mysql -f Dockerfile-mandrel -t oboco/2.0.0 .
-	- "--build-arg DATABASE_NAME=mysql": the database type ("mysql" or "postgresql").
+	- "--build-arg DATABASE_NAME=mysql": the database type ("h2", "mysql" or "postgresql").
 
 ### run
 
