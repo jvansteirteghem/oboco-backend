@@ -54,7 +54,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 ### build
 
 - docker build --build-arg DATABASE_NAME=mysql -f Dockerfile-mandrel -t oboco/2.0.0 .
-	- "--build-arg DATABASE_NAME=mysql": the database type (mysql or postgresql).
+	- "--build-arg DATABASE_NAME=mysql": the database type ("mysql" or "postgresql").
 
 ### run
 
@@ -74,6 +74,12 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 
 - http://127.0.0.1:8080/swagger-ui/
 
+### registry
+
+you can use the latest docker images:
+	- mysql: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-mysql:latest
+	- postgresql: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-postgresql:latest
+
 ### development
 
 - update test branch with master
@@ -86,3 +92,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 	- git checkout master
 	- git merge test
 	- git push origin master
+- push docker image
+	- docker login registry.gitlab.com -u jeeto -p <token>
+	- docker build --build-arg DATABASE_NAME=<database-name> -f Dockerfile-mandrel -t registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<database-name>:latest .
+	- docker push registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<database-name>:latest
