@@ -77,6 +77,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 ### registry
 
 you can use the latest docker images:
+- h2: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-h2:latest
 - mysql: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-mysql:latest
 - postgresql: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-postgresql:latest
 
