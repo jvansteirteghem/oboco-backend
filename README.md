@@ -53,13 +53,13 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 
 ### build
 
-- docker build --build-arg DATABASE_NAME=mysql -f Dockerfile-mandrel -t oboco/2.0.0 .
+- docker build --build-arg DATABASE_NAME=mysql -f Dockerfile-mandrel -t oboco-backend/2.0.0 .
 	- "--build-arg DATABASE_NAME=mysql": the database type ("h2", "mysql" or "postgresql").
 
 ### run
 
 - start
-	- docker run -e TZ=Europe/Brussels -e SECRET=secret -e DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco -e DATABASE_USER_NAME=root -e DATABASE_USER_PASSWORD=toor -i --rm -p 8080:8080 -v c:/data/application:/data-application  -v c:/data/user:/data-user --name oboco oboco/2.0.0
+	- docker run -e TZ=Europe/Brussels -e SECRET=secret -e DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco -e DATABASE_USER_NAME=root -e DATABASE_USER_PASSWORD=toor -i --rm -p 8080:8080 -v c:/data/application:/data-application  -v c:/data/user:/data-user --name oboco-backend oboco-backend/2.0.0
 		- "-e TZ=Europe/Brussels": the timezone
 		- "-e SECRET=secret": the secret
 		- "-e DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco": the database url
@@ -68,7 +68,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 		- "-v c:/data/application:/data-application": the application data (book pages)
 		- "-v c:/data/user:/data-user": the user data (books, book collections)
 - stop
-	- docker stop oboco
+	- docker stop oboco-backend
 
 ### test
 
@@ -76,7 +76,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 
 ### registry
 
-you can use the latest docker images:
+you can use the latest docker image:
 - h2: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-h2:latest
 - mysql: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-mysql:latest
 - postgresql: registry.gitlab.com/jeeto/oboco-backend/oboco-backend-postgresql:latest
