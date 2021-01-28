@@ -53,20 +53,21 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 
 ### build
 
-- docker build --build-arg DATABASE_NAME=mysql -f Dockerfile-mandrel -t oboco-backend/2.0.0 .
-	- "--build-arg DATABASE_NAME=mysql": the database type ("h2", "mysql" or "postgresql").
+- docker build --build-arg APPLICATION_DATABASE_NAME=mysql -f Dockerfile-mandrel -t oboco-backend/2.0.0 .
+	- "--build-arg APPLICATION_DATABASE_NAME=mysql": the database type ("h2", "mysql" or "postgresql").
 
 ### run
 
 - start
-	- docker run -e TZ=Europe/Brussels -e SECRET=secret -e DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco -e DATABASE_USER_NAME=root -e DATABASE_USER_PASSWORD=toor -i --rm -p 8080:8080 -v c:/data/application:/data-application  -v c:/data/user:/data-user --name oboco-backend oboco-backend/2.0.0
+	- docker run -e TZ=Europe/Brussels -e APPLICATION_AUTHENTICATION_SECRET=secret -e APPLICATION_DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco -e APPLICATION_DATABASE_USER_NAME=root -e APPLICATION_DATABASE_USER_PASSWORD=toor -i --rm -p 8080:8080 -v c:/oboco/application-logger-data:/application-logger-data -v c:/oboco/application-data:/application-data -v c:/oboco/user-data:/user-data --name oboco-backend oboco-backend/2.0.0
 		- "-e TZ=Europe/Brussels": the timezone
-		- "-e SECRET=secret": the secret
-		- "-e DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco": the database url
-		- "-e DATABASE_USER_NAME=root": the database user name
-		- "-e DATABASE_USER_PASSWORD=toor": the database user password
-		- "-v c:/data/application:/data-application": the application data (book pages)
-		- "-v c:/data/user:/data-user": the user data (books, book collections)
+		- "-e APPLICATION_AUTHENTICATION_SECRET=secret": the authentication secret
+		- "-e APPLICATION_DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco": the database url
+		- "-e APPLICATION_DATABASE_USER_NAME=root": the database user name
+		- "-e APPLICATION_DATABASE_USER_PASSWORD=toor": the database user password
+		- "-v c:/oboco/application-logger-data:/application-logger-data": the application logger data
+		- "-v c:/oboco/application-data:/application-data": the application data (book pages)
+		- "-v c:/oboco/user-data:/user-data": the user data (books, book collections)
 - stop
 	- docker stop oboco-backend
 
