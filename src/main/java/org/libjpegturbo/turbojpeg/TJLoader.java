@@ -30,7 +30,12 @@ package org.libjpegturbo.turbojpeg;
 
 import java.io.File;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class TJLoader {
+  private static Logger logger = LoggerFactory.getLogger(TJLoader.class.getName());
+  
   public static void load() {
 	  	String name = System.getProperty("os.name").split(" ")[0].toLowerCase();
 		String architecture = System.getProperty("os.arch").toLowerCase();
@@ -43,8 +48,10 @@ public final class TJLoader {
 			libraryFile = new File("lib-native/turbojpeg/" + name + "/" + architecture + "/libturbojpeg.so");
 		}
 		if(libraryFile.isFile()) {
+			logger.debug("load library: " + libraryFile.getAbsolutePath());
 			System.load(libraryFile.getAbsolutePath());
 		} else {
+			logger.debug("load library: turbojpeg");
 			System.loadLibrary("turbojpeg");
 		}
   }

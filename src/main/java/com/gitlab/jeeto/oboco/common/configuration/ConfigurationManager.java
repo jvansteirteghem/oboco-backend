@@ -1,6 +1,7 @@
 package com.gitlab.jeeto.oboco.common.configuration;
 
 import java.io.FileInputStream;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -44,6 +45,19 @@ public class ConfigurationManager {
 				
 				for(Entry<Object, Object> entry: userProperties.entrySet()) {
 					configuration.set("user." + entry.getKey().toString(), entry.getValue().toString());
+				}
+				
+				Map<String, String> env = System.getenv();
+				for(Entry<String, String> entry: env.entrySet()) {
+					String key = entry.getKey();
+					String value = entry.getValue();
+					
+					if(key.startsWith("APPLICATION_") || key.startsWith("USER_")) {
+						key = key.replace("_", ".");
+						key = key.toLowerCase();
+						
+						configuration.set(key, value);
+					}
 				}
 			} catch(Exception e) {
 				logger.error("Error.", e);

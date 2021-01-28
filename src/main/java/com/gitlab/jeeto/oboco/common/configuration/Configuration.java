@@ -13,10 +13,14 @@ public class Configuration {
 	}
 	
 	public String get(String key) {
+		key = key.toLowerCase();
+		
 		return map.get(key);
 	}
 	
 	public String getAsString(String key, String defaultValue) {
+		key = key.toLowerCase();
+		
 		String value = null;
 		
 		if(map.containsKey(key)) {
@@ -71,6 +75,8 @@ public class Configuration {
 	}
 	
 	public String set(String key, String value) {
+		key = key.toLowerCase();
+		
 		return map.put(key, value);
 	}
 }
