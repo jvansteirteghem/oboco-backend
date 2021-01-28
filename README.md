@@ -96,5 +96,5 @@ you can use the latest docker image:
 	- git push origin master
 - push docker image
 	- docker login registry.gitlab.com -u jeeto -p <token>
-	- docker build --build-arg DATABASE_NAME=<database-name> -f Dockerfile-mandrel -t registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<database-name>:latest .
-	- docker push registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<database-name>:latest
+	- docker build --build-arg APPLICATION_DATABASE_NAME=<application-database-name> -f Dockerfile-mandrel -t registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<application-database-name>:latest .
+	- docker push registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<application-database-name>:latest
