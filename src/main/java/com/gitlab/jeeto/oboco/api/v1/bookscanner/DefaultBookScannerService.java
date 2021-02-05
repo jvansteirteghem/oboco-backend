@@ -342,19 +342,19 @@ public class DefaultBookScannerService implements BookScannerService {
 						
 						book = new Book();
 						
+						String fileId = createFileId(fileWrapper);
+				    	
+				    	book.setFileId(fileId);
+				    	book.setFilePath(file.getPath());
+				    	
+				    	book.setBookCollection(parentBookCollection);
+						
 						try {
 							book = createBookPages(fileWrapper, book);
 						} catch(Exception e) {
 							logger.error("error create book " + path, e);
 							continue;
 						}
-						
-				    	String fileId = createFileId(fileWrapper);
-				    	
-				    	book.setFileId(fileId);
-				    	book.setFilePath(file.getPath());
-				    	
-				    	book.setBookCollection(parentBookCollection);
 				    	
 				    	book.setUpdateDate(updateDate);
 				    	
