@@ -98,3 +98,8 @@ you can use the latest docker image:
 	- docker login registry.gitlab.com -u jeeto -p <token>
 	- docker build --build-arg APPLICATION_DATABASE_NAME=<application-database-name> -f Dockerfile-mandrel -t registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<application-database-name>:latest .
 	- docker push registry.gitlab.com/jeeto/oboco-backend/oboco-backend-<application-database-name>:latest
+
+## license
+
+- mit license
+- [pepper and carrot](https://www.peppercarrot.com/): by david revoy and contributors, licensed under [creative commons attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
