@@ -143,7 +143,7 @@ public class GetBookAsStreamingOutput extends GetAsStreamingOutput {
 	}
 	
 	private FileWrapper<File> createBookPageFileWrapper(Integer page) throws Exception {
-    	String directoryPath = getConfiguration().getAsString("application.data.path", "./data");
+    	String directoryPath = getConfiguration().getAsString("data.path", "./data");
     	
     	String bookPageFilePath = book.getFileId().substring(0, 2) + "/" + book.getFileId().substring(2) + "/" + page + ".jpg";
         

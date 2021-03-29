@@ -16,7 +16,7 @@
 		  <include>database.ddl</include>
 		  <include>database.sql</include>
 		  <include>data.csv</include>
-		  <include>user.properties</include>
+		  <include>data.properties</include>
 		  <include>*-runner.jar</include>
 		</includes>
 	  </fileSet>

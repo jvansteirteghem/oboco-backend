@@ -16,23 +16,25 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.gitlab.jeeto.oboco.api.v1.book.Book;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.api.v1.user.User;
 
 @Entity
 @Table(
 	name = "bookMarkReferences",
 	indexes = {
-		@Index(name = "bookMarkReferenceUserName", columnList = "userName", unique = false),
-		@Index(name = "bookMarkReferenceUserNameBookIdBookMarkId", columnList = "userName,bookId,bookMarkId", unique = true),
+		@Index(name = "bookMarkReferenceUserIdBookIdBookMarkId", columnList = "userId,bookId,bookMarkId", unique = true),
 		@Index(name = "bookMarkReferenceFileId", columnList = "fileId", unique = false)
 	}
 )
 public class BookMarkReference {
 	private Long id;
-	private String userName;
+	private User user;
 	private String fileId;
 	private Date updateDate;
 	private Book book;
 	private BookMark bookMark;
+	private BookCollection rootBookCollection;
 	public BookMarkReference() {
 		super();
 	}
@@ -45,12 +47,13 @@ public class BookMarkReference {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	@Column(name = "userName", length = 255, nullable = false)
-	public String getUserName() {
-		return userName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "userId", referencedColumnName = "id", nullable = false)
+	public User getUser() {
+		return user;
 	}
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUser(User user) {
+		this.user = user;
 	}
 	@Column(name = "fileId", length = 64, nullable = false)
 	public String getFileId() {
@@ -82,5 +85,13 @@ public class BookMarkReference {
 	}
 	public void setBookMark(BookMark bookMark) {
 		this.bookMark = bookMark;
+	}
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "rootBookCollectionId", referencedColumnName = "id", nullable = false)
+	public BookCollection getRootBookCollection() {
+		return rootBookCollection;
+	}
+	public void setRootBookCollection(BookCollection rootBookCollection) {
+		this.rootBookCollection = rootBookCollection;
 	}
 }

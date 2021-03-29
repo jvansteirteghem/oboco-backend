@@ -1,6 +1,7 @@
 package com.gitlab.jeeto.oboco.api.v1.user;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -29,6 +30,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDto;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDtoMapper;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionsDto;
 import com.gitlab.jeeto.oboco.common.GraphDto;
 import com.gitlab.jeeto.oboco.common.GraphDtoHelper;
 import com.gitlab.jeeto.oboco.common.PageableList;
@@ -52,6 +58,10 @@ public class UserResource {
 	UserService userService;
 	@Inject
 	UserDtoMapper userDtoMapper;
+	@Inject
+	BookCollectionService bookCollectionService;
+	@Inject
+	BookCollectionDtoMapper bookCollectionDtoMapper;
 	
 	@Operation(
 		description = "Get the authenticated user."
@@ -70,7 +80,7 @@ public class UserResource {
 	public Response getAuthenticatedUser(
 			@Parameter(name = "graph", description = "A graph. A full graph is ().", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
@@ -108,7 +118,7 @@ public class UserResource {
 	public Response updateAuthenticatedUserPassword( 
 			@Parameter(name = "userPassword", description = "A userPassword.", required = true) UserPasswordDto userPasswordDto) throws ProblemException {
 		GraphDto graphDto = GraphDtoHelper.createGraphDto("()");
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
@@ -163,7 +173,7 @@ public class UserResource {
 	public Response createUser(
 			@Parameter(name = "user", description = "A user.", required = true) UserDto userDto) throws ProblemException {
 		GraphDto graphDto = GraphDtoHelper.createGraphDto("()");
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
@@ -195,6 +205,12 @@ public class UserResource {
 		user.setRoles(userDto.getRoles());
 		user.setUpdateDate(new Date());
 		
+		if(userDto.getRootBookCollection() != null) {
+			BookCollection rootBookCollection = bookCollectionService.getRootBookCollectionById(userDto.getRootBookCollection().getId());
+			
+			user.setRootBookCollection(rootBookCollection);
+		}
+		
 		user = userService.createUser(user);
 		
 		userDto = userDtoMapper.getUserDto(user, graphDto);
@@ -223,7 +239,7 @@ public class UserResource {
 			@Parameter(name = "id", description = "An id.", required = true) @PathParam("id") Long id, 
 			@Parameter(name = "user", description = "A user.", required = true) UserDto userDto) throws ProblemException {
 		GraphDto graphDto = GraphDtoHelper.createGraphDto("()");
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
@@ -242,6 +258,12 @@ public class UserResource {
 		user.setPassword(userDto.getPassword());
 		user.setRoles(userDto.getRoles());
 		user.setUpdateDate(new Date());
+		
+		if(userDto.getRootBookCollection() != null) {
+			BookCollection rootBookCollection = bookCollectionService.getRootBookCollectionById(userDto.getRootBookCollection().getId());
+			
+			user.setRootBookCollection(rootBookCollection);
+		}
 		
 		user = userService.updateUser(user);
 		
@@ -299,7 +321,7 @@ public class UserResource {
 		PageableListDtoHelper.validatePageableList(page, pageSize);
 		
 		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
@@ -329,7 +351,7 @@ public class UserResource {
 			@Parameter(name = "id", description = "An id.", required = true) @PathParam("id") Long id, 
 			@Parameter(name = "graph", description = "A graph. A full graph is ().", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
@@ -343,6 +365,32 @@ public class UserResource {
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(userDto);
+		
+		return responseBuilder.build();
+	}
+	
+	@APIResponses({
+		@APIResponse(responseCode = "200", description = "The bookCollections.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookCollectionsDto.class))),
+		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_GRAPH_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
+	})
+	@Path("bookCollections")
+	@GET
+	public Response getRootBookCollections(
+			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection,bookCollections,books).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
+		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(parentBookCollection,bookCollections,books)");
+		
+		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
+		
+		List<BookCollection> bookCollectionList = bookCollectionService.getRootBookCollections();
+		
+		List<BookCollectionDto> bookCollectionListDto = bookCollectionDtoMapper.getBookCollectionsDto(null, bookCollectionList, graphDto);
+		
+		ResponseBuilder responseBuilder = Response.status(200);
+		responseBuilder.entity(bookCollectionListDto);
 		
 		return responseBuilder.build();
 	}

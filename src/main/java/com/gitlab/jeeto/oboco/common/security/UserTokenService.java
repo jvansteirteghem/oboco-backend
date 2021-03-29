@@ -22,8 +22,8 @@ public class UserTokenService {
 	}
 	
 	public String getIdTokenValue(String name) throws ProblemException {
-		String secret = getConfiguration().getAsString("application.security.authentication.secret", "secret");
-		Long age = getConfiguration().getAsLong("application.security.authentication.idToken.age", "3600") * 1000L;
+		String secret = getConfiguration().getAsString("security.authentication.secret", "secret");
+		Long age = getConfiguration().getAsLong("security.authentication.idToken.age", "3600") * 1000L;
 		
 		UserToken idToken = new UserToken();
 		idToken.setStartDate(new Date());
@@ -36,8 +36,8 @@ public class UserTokenService {
 	}
 	
 	public UserToken getIdToken(String idTokenValue) throws ProblemException {
-		String secret = getConfiguration().getAsString("application.security.authentication.secret", "secret");
-		Long age = getConfiguration().getAsLong("application.security.authentication.idToken.age", "3600") * 1000L;
+		String secret = getConfiguration().getAsString("security.authentication.secret", "secret");
+		Long age = getConfiguration().getAsLong("security.authentication.idToken.age", "3600") * 1000L;
 		
 		UserToken idToken = UserTokenHelper.decodeToken(secret, idTokenValue);
 		
@@ -49,8 +49,8 @@ public class UserTokenService {
 	}
 	
 	public String getRefreshTokenValue(String name) throws ProblemException {
-		String secret = getConfiguration().getAsString("application.security.authentication.secret", "secret");
-		Long age = getConfiguration().getAsLong("application.security.authentication.refreshToken.age", "31536000") * 1000L;
+		String secret = getConfiguration().getAsString("security.authentication.secret", "secret");
+		Long age = getConfiguration().getAsLong("security.authentication.refreshToken.age", "31536000") * 1000L;
 		
 		UserToken refreshToken = new UserToken();
 		refreshToken.setStartDate(new Date());
@@ -63,8 +63,8 @@ public class UserTokenService {
 	}
 	
 	public UserToken getRefreshToken(String refreshTokenValue) throws ProblemException {
-		String secret = getConfiguration().getAsString("application.security.authentication.secret", "secret");
-		Long age = getConfiguration().getAsLong("application.security.authentication.refreshToken.age", "31536000") * 1000L;
+		String secret = getConfiguration().getAsString("security.authentication.secret", "secret");
+		Long age = getConfiguration().getAsLong("security.authentication.refreshToken.age", "31536000") * 1000L;
 		
 		UserToken refreshToken = UserTokenHelper.decodeToken(secret, refreshTokenValue);
 		

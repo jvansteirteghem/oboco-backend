@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDto;
 
 @Schema(name = "User", description = "A user.")
 @XmlRootElement(name = "User")
@@ -20,6 +21,7 @@ public class UserDto {
 	private String password;
 	private List<String> roles;
 	private Date updateDate;
+	private BookCollectionDto rootBookCollection;
 	public UserDto() {
 		super();
 	}
@@ -64,5 +66,13 @@ public class UserDto {
 	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
+	}
+	@Schema(name = "rootBookCollection")
+	@XmlElement(name = "rootBookCollection")
+	public BookCollectionDto getRootBookCollection() {
+		return rootBookCollection;
+	}
+	public void setRootBookCollection(BookCollectionDto rootBookCollection) {
+		this.rootBookCollection = rootBookCollection;
 	}
 }

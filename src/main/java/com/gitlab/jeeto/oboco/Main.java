@@ -55,27 +55,27 @@ public class Main {
     	}
     	
     	System.setProperty("quarkus.shutdown.timeout", "5");
-    	System.setProperty("quarkus.http.port", getConfiguration().getAsString("application.server.port", "8080"));
-    	if(getConfiguration().getAsString("application.server.ssl.port", "").equals("") == false) {
-	    	System.setProperty("quarkus.http.ssl-port", getConfiguration().getAsString("application.server.ssl.port", ""));
-	    	System.setProperty("quarkus.http.ssl.certificate.key-store-file", getConfiguration().getAsString("application.server.ssl.keyStore.path", ""));
+    	System.setProperty("quarkus.http.port", getConfiguration().getAsString("server.port", "8080"));
+    	if(getConfiguration().getAsString("server.ssl.port", "").equals("") == false) {
+	    	System.setProperty("quarkus.http.ssl-port", getConfiguration().getAsString("server.ssl.port", ""));
+	    	System.setProperty("quarkus.http.ssl.certificate.key-store-file", getConfiguration().getAsString("server.ssl.keyStore.path", ""));
 	    	System.setProperty("quarkus.http.ssl.certificate.key-store-file-type", "JKS");
-	    	System.setProperty("quarkus.http.ssl.certificate.key-store-password", getConfiguration().getAsString("application.server.ssl.keyStore.password", ""));
+	    	System.setProperty("quarkus.http.ssl.certificate.key-store-password", getConfiguration().getAsString("server.ssl.keyStore.password", ""));
     	}
-    	System.setProperty("quarkus.log.min-level", getConfiguration().getAsString("application.logger.rootLevel", "ERROR"));
-    	System.setProperty("quarkus.log.level", getConfiguration().getAsString("application.logger.rootLevel", "ERROR"));
-    	System.setProperty("quarkus.log.category.\"com.gitlab.jeeto.oboco\".level", getConfiguration().getAsString("application.logger.level", "INFO"));
-    	System.setProperty("quarkus.log.category.\"com.gitlab.jeeto.oboco\".level", getConfiguration().getAsString("application.logger.level", "INFO"));
+    	System.setProperty("quarkus.log.min-level", getConfiguration().getAsString("logger.rootLevel", "ERROR"));
+    	System.setProperty("quarkus.log.level", getConfiguration().getAsString("logger.rootLevel", "ERROR"));
+    	System.setProperty("quarkus.log.category.\"com.gitlab.jeeto.oboco\".level", getConfiguration().getAsString("logger.level", "INFO"));
+    	System.setProperty("quarkus.log.category.\"com.gitlab.jeeto.oboco\".level", getConfiguration().getAsString("logger.level", "INFO"));
     	System.setProperty("quarkus.log.console.enable", "true");
     	System.setProperty("quarkus.log.file.enable", "true");
-    	System.setProperty("quarkus.log.file.path", getConfiguration().getAsString("application.logger.path", "./logs/application.log"));
+    	System.setProperty("quarkus.log.file.path", getConfiguration().getAsString("logger.path", "./logs/application.log"));
     	System.setProperty("quarkus.log.file.rotation.max-file-size", "10M");
     	System.setProperty("quarkus.log.file.rotation.max-backup-index", "10");
     	System.setProperty("quarkus.log.file.rotation.file-suffix", ".yyyy-MM-dd");
     	System.setProperty("quarkus.log.file.rotation.rotate-on-boot", "false");
-    	System.setProperty("quarkus.datasource.jdbc.url", getConfiguration().getAsString("application.database.url", ""));
-    	System.setProperty("quarkus.datasource.username", getConfiguration().getAsString("application.database.user.name", ""));
-    	System.setProperty("quarkus.datasource.password", getConfiguration().getAsString("application.database.user.password", ""));
+    	System.setProperty("quarkus.datasource.jdbc.url", getConfiguration().getAsString("database.url", ""));
+    	System.setProperty("quarkus.datasource.username", getConfiguration().getAsString("database.user.name", ""));
+    	System.setProperty("quarkus.datasource.password", getConfiguration().getAsString("database.user.password", ""));
 		
         Quarkus.run(Application.class, args);
     }

@@ -28,11 +28,13 @@ import com.gitlab.jeeto.oboco.api.v1.book.Book;
 import com.gitlab.jeeto.oboco.api.v1.book.BookService;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
+import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
 import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 import com.gitlab.jeeto.oboco.common.security.Authentication;
 import com.gitlab.jeeto.oboco.common.security.Authorization;
+import com.gitlab.jeeto.oboco.common.security.UserPrincipal;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")
@@ -74,9 +76,15 @@ public class BookMarkByBookCollectionResource {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response createOrUpdateBookMarksByBookCollection() throws ProblemException {
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
-		BookCollection bookCollection = bookCollectionService.getBookCollectionById(bookCollectionId);
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		BookCollection bookCollection = bookCollectionService.getBookCollectionByBookCollectionIdAndId(rootBookCollectionId, bookCollectionId);
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_COLLECTION_ID_INVALID", "The bookCollection.id is invalid."));
@@ -87,11 +95,11 @@ public class BookMarkByBookCollectionResource {
 		List<Book> bookList = bookCollection.getBooks();
 		
 		for(Book book: bookList) {
-			BookMarkReference bookMarkReference = bookMarkService.getBookMarkReferenceByUserNameAndBookId(userName, book.getId());
+			BookMarkReference bookMarkReference = bookMarkService.getBookMarkReferenceByBookCollectionIdAndUserIdAndBookId(rootBookCollectionId, user.getId(), book.getId());
 			
 			if(bookMarkReference == null) {
 				BookMark bookMark = new BookMark();
-				bookMark.setUserName(userName);
+				bookMark.setUser(user);
 				bookMark.setFileId(book.getFileId());
 				bookMark.setUpdateDate(updateDate);
 				bookMark.setPage(book.getNumberOfPages());
@@ -102,11 +110,12 @@ public class BookMarkByBookCollectionResource {
 				
 				for(Book referencedBook: referencedBookList) {
 					bookMarkReference = new BookMarkReference();
-					bookMarkReference.setUserName(userName);
+					bookMarkReference.setUser(user);
 					bookMarkReference.setFileId(referencedBook.getFileId());
 					bookMarkReference.setUpdateDate(updateDate);
 					bookMarkReference.setBook(referencedBook);
 					bookMarkReference.setBookMark(bookMark);
+					bookMarkReference.setRootBookCollection(referencedBook.getRootBookCollection());
 					
 					bookMarkReferenceList.add(bookMarkReference);
 				}
@@ -142,9 +151,15 @@ public class BookMarkByBookCollectionResource {
 	@Path("")
 	@DELETE
 	public Response deleteBookMarksByBookCollection() throws ProblemException {
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
-		BookCollection bookCollection = bookCollectionService.getBookCollectionById(bookCollectionId);
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		BookCollection bookCollection = bookCollectionService.getBookCollectionByBookCollectionIdAndId(rootBookCollectionId, bookCollectionId);
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_COLLECTION_ID_INVALID", "The bookCollection.id is invalid."));
@@ -153,7 +168,7 @@ public class BookMarkByBookCollectionResource {
 		List<Book> bookList = bookCollection.getBooks();
 		
 		for(Book book: bookList) {
-			BookMarkReference bookMarkReference = bookMarkService.getBookMarkReferenceByUserNameAndBookId(userName, book.getId());
+			BookMarkReference bookMarkReference = bookMarkService.getBookMarkReferenceByBookCollectionIdAndUserIdAndBookId(rootBookCollectionId, user.getId(), book.getId());
 			
 			if(bookMarkReference != null) {
 				BookMark bookMark = bookMarkReference.getBookMark();

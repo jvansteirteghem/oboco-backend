@@ -43,7 +43,7 @@ RUN microdnf install libjpeg
 WORKDIR /work/
 COPY --from=build /usr/src/app/target/*-runner /work/application
 COPY --from=build /usr/src/app/target/application.properties /work/application.properties
-COPY --from=build /usr/src/app/target/user.properties /work/user.properties
+COPY --from=build /usr/src/app/target/data.properties /work/data.properties
 COPY --from=build /usr/src/app/target/data /work/data
 COPY --from=build /usr/src/app/target/data.csv /work/data.csv
 #COPY --from=build /usr/src/app/target/database.ddl /work/database.ddl

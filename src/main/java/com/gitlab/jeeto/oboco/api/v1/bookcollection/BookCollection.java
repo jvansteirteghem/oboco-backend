@@ -12,6 +12,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -34,7 +36,9 @@ public class BookCollection {
 	private Date updateDate;
 	private String name;
 	private String normalizedName;
+	private BookCollection rootBookCollection;
 	private BookCollection parentBookCollection;
+	private List<BookCollection> childBookCollections;
 	private List<BookCollection> bookCollections;
 	private Integer numberOfBookCollections;
 	private List<Book> books;
@@ -82,12 +86,28 @@ public class BookCollection {
 		this.normalizedName = normalizedName;
 	}
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "rootBookCollectionId", referencedColumnName = "id")
+	public BookCollection getRootBookCollection() {
+		return rootBookCollection;
+	}
+	public void setRootBookCollection(BookCollection rootBookCollection) {
+		this.rootBookCollection = rootBookCollection;
+	}
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "parentBookCollectionId", referencedColumnName = "id")
 	public BookCollection getParentBookCollection() {
 		return parentBookCollection;
 	}
 	public void setParentBookCollection(BookCollection parentBookCollection) {
 		this.parentBookCollection = parentBookCollection;
+	}
+	@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	@JoinTable(name = "childBookCollections", joinColumns = {@JoinColumn(name = "bookCollectionId", referencedColumnName = "id")}, inverseJoinColumns = {@JoinColumn(name = "childBookCollectionId", referencedColumnName = "id")})
+	public List<BookCollection> getChildBookCollections() {
+		return childBookCollections;
+	}
+	public void setChildBookCollections(List<BookCollection> childBookCollections) {
+		this.childBookCollections = childBookCollections;
 	}
 	@OneToMany(mappedBy = "parentBookCollection", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	public List<BookCollection> getBookCollections() {

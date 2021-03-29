@@ -12,8 +12,8 @@ import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -26,6 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 
 import com.gitlab.jeeto.oboco.api.v1.book.BookByBookCollectionResource;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkByBookCollectionResource;
+import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.GraphDto;
 import com.gitlab.jeeto.oboco.common.GraphDtoHelper;
 import com.gitlab.jeeto.oboco.common.PageableList;
@@ -36,6 +37,7 @@ import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 import com.gitlab.jeeto.oboco.common.security.Authentication;
 import com.gitlab.jeeto.oboco.common.security.Authorization;
+import com.gitlab.jeeto.oboco.common.security.UserPrincipal;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")
@@ -79,25 +81,31 @@ public class BookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
+		
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
 		
 		PageableList<BookCollection> bookCollectionPageableList = null;
 		
 		if(uriInfo.getQueryParameters().containsKey("parentBookCollectionId")) {
 			if(uriInfo.getQueryParameters().containsKey("name")) {
-				bookCollectionPageableList = bookCollectionService.getBookCollectionsByParentBookCollectionId(parentBookCollectionId, name, page, pageSize);
+				bookCollectionPageableList = bookCollectionService.getBookCollectionsByBookCollectionIdAndName(rootBookCollectionId, parentBookCollectionId, name, page, pageSize);
 			} else {
-				bookCollectionPageableList = bookCollectionService.getBookCollectionsByParentBookCollectionId(parentBookCollectionId, page, pageSize);
+				bookCollectionPageableList = bookCollectionService.getBookCollectionsByBookCollectionId(rootBookCollectionId, parentBookCollectionId, page, pageSize);
 			}
 		} else {
 			if(uriInfo.getQueryParameters().containsKey("name")) {
-				bookCollectionPageableList = bookCollectionService.getBookCollections(name, page, pageSize);
+				bookCollectionPageableList = bookCollectionService.getBookCollectionsByBookCollectionIdAndName(rootBookCollectionId, name, page, pageSize);
 			} else {
-				bookCollectionPageableList = bookCollectionService.getBookCollections(page, pageSize);
+				bookCollectionPageableList = bookCollectionService.getBookCollectionsByBookCollectionId(rootBookCollectionId, page, pageSize);
 			}
 		}
 		
-		PageableListDto<BookCollectionDto> bookCollectionPageableListDto = bookCollectionDtoMapper.getBookCollectionsDto(userName, bookCollectionPageableList, graphDto);
+		PageableListDto<BookCollectionDto> bookCollectionPageableListDto = bookCollectionDtoMapper.getBookCollectionsDto(user, bookCollectionPageableList, graphDto);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookCollectionPageableListDto);
@@ -125,15 +133,21 @@ public class BookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
-		BookCollection bookCollection = bookCollectionService.getRootBookCollection();
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		BookCollection bookCollection = bookCollectionService.getRootBookCollectionById(rootBookCollectionId);
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));
 		}
 		
-		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(userName, bookCollection, graphDto);
+		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(user, bookCollection, graphDto);
 	        
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookCollectionDto);
@@ -162,15 +176,21 @@ public class BookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
-		BookCollection bookCollection = bookCollectionService.getBookCollectionById(bookCollectionId);
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		BookCollection bookCollection = bookCollectionService.getBookCollectionByBookCollectionIdAndId(rootBookCollectionId, bookCollectionId);
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));
 		}
 		
-		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(userName, bookCollection, graphDto);
+		BookCollectionDto bookCollectionDto = bookCollectionDtoMapper.getBookCollectionDto(user, bookCollection, graphDto);
 	        
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookCollectionDto);

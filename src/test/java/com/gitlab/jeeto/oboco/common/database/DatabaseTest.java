@@ -67,6 +67,7 @@ public class DatabaseTest extends TestCase {
 			bookCollection.setNumberOfBookCollections(0);
 			bookCollection.setBooks(null);
 			bookCollection.setNumberOfBooks(0);
+			bookCollection.setNumber(1);
 			
 			entityManager.persist(bookCollection);
 			
@@ -79,14 +80,16 @@ public class DatabaseTest extends TestCase {
 			book.setName("0000000000");
 			book.setNormalizedName("0000000000");
 			book.setNumberOfPages(50);
+			book.setRootBookCollection(bookCollection);
 			book.setBookCollection(bookCollection);
+			book.setNumber(1);
 			
 			entityManager.persist(book);
 			
 			System.out.println("created book " + book.getId());
 			
 			BookMark bookMark = new BookMark();
-			bookMark.setUserName(user.getName());
+			bookMark.setUser(user);
 			bookMark.setFileId("0000000000");
 			bookMark.setUpdateDate(updateDate);
 			bookMark.setPage(1);
@@ -96,11 +99,12 @@ public class DatabaseTest extends TestCase {
 			System.out.println("created bookMark " + bookMark.getId());
 			
 			BookMarkReference bookMarkReference = new BookMarkReference();
-			bookMarkReference.setUserName(user.getName());
+			bookMarkReference.setUser(user);
 			bookMarkReference.setFileId("0000000000");
 			bookMarkReference.setUpdateDate(updateDate);
 			bookMarkReference.setBook(book);
 			bookMarkReference.setBookMark(bookMark);
+			bookMarkReference.setRootBookCollection(bookCollection);
 			
 			entityManager.persist(bookMarkReference);
 			

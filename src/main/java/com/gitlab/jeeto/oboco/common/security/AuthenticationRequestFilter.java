@@ -110,7 +110,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    		return;
 				}
 				
-		    	UserPrincipal userPrincipal = new UserPrincipal(user.getName(), user.getRoles());
+				UserPrincipal userPrincipal = new UserPrincipal(user);
 		    	
 		    	UserSecurityContext userSecurityContext = new UserSecurityContext(requestContext.getSecurityContext(), userPrincipal);
 		        requestContext.setSecurityContext(userSecurityContext);
@@ -164,7 +164,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    		return;
 				}
 		    	
-		    	UserPrincipal userPrincipal = new UserPrincipal(user.getName(), user.getRoles());
+				UserPrincipal userPrincipal = new UserPrincipal(user);
 		    	
 		    	UserSecurityContext userSecurityContext = new UserSecurityContext(requestContext.getSecurityContext(), userPrincipal);
 		        requestContext.setSecurityContext(userSecurityContext);

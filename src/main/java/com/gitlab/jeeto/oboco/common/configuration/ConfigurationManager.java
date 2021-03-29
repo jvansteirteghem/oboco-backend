@@ -37,14 +37,7 @@ public class ConfigurationManager {
 				applicationProperties.load(new FileInputStream("./application.properties"));
 				
 				for(Entry<Object, Object> entry: applicationProperties.entrySet()) {
-					configuration.set("application." + entry.getKey().toString(), entry.getValue().toString());
-				}
-				
-				Properties userProperties = new Properties();
-				userProperties.load(new FileInputStream("./user.properties"));
-				
-				for(Entry<Object, Object> entry: userProperties.entrySet()) {
-					configuration.set("user." + entry.getKey().toString(), entry.getValue().toString());
+					configuration.set(entry.getKey().toString(), entry.getValue().toString());
 				}
 				
 				Map<String, String> env = System.getenv();
@@ -52,7 +45,8 @@ public class ConfigurationManager {
 					String key = entry.getKey();
 					String value = entry.getValue();
 					
-					if(key.startsWith("APPLICATION_") || key.startsWith("USER_")) {
+					if(key.startsWith("APPLICATION_")) {
+						key = key.replace("APPLICATION_", "");
 						key = key.replace("_", ".");
 						key = key.toLowerCase();
 						
