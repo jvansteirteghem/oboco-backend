@@ -17,8 +17,8 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -30,6 +30,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkByBookResource;
+import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.GraphDto;
 import com.gitlab.jeeto.oboco.common.GraphDtoHelper;
 import com.gitlab.jeeto.oboco.common.PageableList;
@@ -41,6 +42,7 @@ import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
 import com.gitlab.jeeto.oboco.common.security.Authentication;
 import com.gitlab.jeeto.oboco.common.security.Authorization;
+import com.gitlab.jeeto.oboco.common.security.UserPrincipal;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")
@@ -83,17 +85,23 @@ public class BookResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
+		
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
 		
 		PageableList<Book> bookPageableList = null;
 		
 		if(uriInfo.getQueryParameters().containsKey("name")) {
-			bookPageableList = bookService.getBooks(name, page, pageSize);
+			bookPageableList = bookService.getBooksByBookCollectionIdAndName(rootBookCollectionId, name, page, pageSize);
 		} else {
-			bookPageableList = bookService.getBooks(page, pageSize);
+			bookPageableList = bookService.getBooksByBookCollectionId(rootBookCollectionId, page, pageSize);
 		}
 		
-		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(userName, bookPageableList, graphDto);
+		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(user, bookPageableList, graphDto);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookPageableListDto);
@@ -122,15 +130,21 @@ public class BookResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
-		Book book = bookService.getBookById(bookId);
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		Book book = bookService.getBookByBookCollectionIdAndId(rootBookCollectionId, bookId);
 		
 		if(book == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_NOT_FOUND", "The book is not found."));
 		}
 		
-		BookDto bookDto = bookDtoMapper.getBookDto(userName, book, graphDto);
+		BookDto bookDto = bookDtoMapper.getBookDto(user, book, graphDto);
 	        
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookDto);
@@ -153,7 +167,15 @@ public class BookResource {
 	public Response getBookAs(
 			@Parameter(name = "bookId", description = "The id of the book.", required = true) @PathParam("bookId") Long bookId, 
 			@Context Request request) throws ProblemException {
-		Book book = bookService.getBookById(bookId);
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
+		
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		Book book = bookService.getBookByBookCollectionIdAndId(rootBookCollectionId, bookId);
 		
         if(book == null) {
         	throw new ProblemException(new Problem(404, "PROBLEM_BOOK_NOT_FOUND", "The book is not found."));
@@ -208,7 +230,15 @@ public class BookResource {
 			@Parameter(name = "scaleWidth", description = "The scaleWidth.", required = false) @QueryParam("scaleWidth") Integer scaleWidth, 
 			@Parameter(name = "scaleHeight", description = "The scaleHeight.", required = false) @QueryParam("scaleHeight") Integer scaleHeight, 
 			@Context Request request) throws ProblemException {
-		Book book = bookService.getBookById(bookId);
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
+		
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		Book book = bookService.getBookByBookCollectionIdAndId(rootBookCollectionId, bookId);
 		
         if(book == null) {
         	throw new ProblemException(new Problem(404, "PROBLEM_BOOK_NOT_FOUND", "The book is not found."));

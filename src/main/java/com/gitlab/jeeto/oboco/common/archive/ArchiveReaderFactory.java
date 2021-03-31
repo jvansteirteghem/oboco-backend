@@ -56,9 +56,9 @@ public class ArchiveReaderFactory {
 	}
 
 	public void start() {    
-		Integer size = getConfiguration().getAsInteger("application.plugin.archive.archiveReaderPool.size", "25");
-		Long interval = getConfiguration().getAsLong("application.plugin.archive.archiveReaderPool.interval", "60") * 1000L;
-		Long age = getConfiguration().getAsLong("application.plugin.archive.archiveReaderPool.age", "600") * 1000L;
+		Integer size = getConfiguration().getAsInteger("plugin.archive.archiveReaderPool.size", "25");
+		Long interval = getConfiguration().getAsLong("plugin.archive.archiveReaderPool.interval", "60") * 1000L;
+		Long age = getConfiguration().getAsLong("plugin.archive.archiveReaderPool.age", "600") * 1000L;
 		
 		archiveReaderPool = new ArchiveReaderPool(size, interval, age);
 		archiveReaderPool.start();

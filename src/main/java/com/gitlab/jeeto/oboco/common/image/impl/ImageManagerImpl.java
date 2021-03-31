@@ -200,7 +200,7 @@ public class ImageManagerImpl implements ImageManager {
 	}
 	
 	public FileWrapper<File> createImage(FileWrapper<File> inputFileWrapper, FileType outputFileType, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-FileWrapper<File> outputFileWrapper = null;
+		FileWrapper<File> outputFileWrapper = null;
 		
 		BufferedImage inputBufferedImage = read(inputFileWrapper);
 		

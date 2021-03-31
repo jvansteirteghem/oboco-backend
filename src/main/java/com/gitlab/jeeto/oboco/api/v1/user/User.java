@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -15,10 +16,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
+
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
+import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 
 @Entity
 @Table(
@@ -35,6 +42,9 @@ public class User implements Serializable {
 	private String passwordHash;
 	private List<String> roles;
 	private Date updateDate;
+	private BookCollection rootBookCollection;
+	private List<BookMarkReference> bookMarkReferences;
+	private List<BookMark> bookMarks;
 	public User() {
 		super();
 		roles = new ArrayList<String>();
@@ -85,5 +95,27 @@ public class User implements Serializable {
 	}
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
+	}
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "rootBookCollectionId", referencedColumnName = "id", nullable = true)
+	public BookCollection getRootBookCollection() {
+		return rootBookCollection;
+	}
+	public void setRootBookCollection(BookCollection rootBookCollection) {
+		this.rootBookCollection = rootBookCollection;
+	}
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	public List<BookMarkReference> getBookMarkReferences() {
+		return bookMarkReferences;
+	}
+	public void setBookMarkReferences(List<BookMarkReference> bookMarkReferences) {
+		this.bookMarkReferences = bookMarkReferences;
+	}
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	public List<BookMark> getBookMarks() {
+		return bookMarks;
+	}
+	public void setBookMarks(List<BookMark> bookMarks) {
+		this.bookMarks = bookMarks;
 	}
 }

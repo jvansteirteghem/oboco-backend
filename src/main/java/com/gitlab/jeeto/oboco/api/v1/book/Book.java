@@ -38,6 +38,7 @@ public class Book {
 	private String name;
 	private String normalizedName;
 	private Integer numberOfPages;
+	private BookCollection rootBookCollection;
 	private BookCollection bookCollection;
 	private List<BookMarkReference> bookMarkReferences;
 	private Integer number;
@@ -97,7 +98,15 @@ public class Book {
 		this.numberOfPages = numberOfPages;
 	}
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "bookCollectionId", referencedColumnName = "id")
+	@JoinColumn(name = "rootBookCollectionId", referencedColumnName = "id", nullable = false)
+	public BookCollection getRootBookCollection() {
+		return rootBookCollection;
+	}
+	public void setRootBookCollection(BookCollection rootBookCollection) {
+		this.rootBookCollection = rootBookCollection;
+	}
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "bookCollectionId", referencedColumnName = "id", nullable = false)
 	public BookCollection getBookCollection() {
 		return bookCollection;
 	}

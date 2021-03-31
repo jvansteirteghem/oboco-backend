@@ -1,21 +1,21 @@
 package com.gitlab.jeeto.oboco.common.security;
 
 import java.security.Principal;
-import java.util.List;
+
+import com.gitlab.jeeto.oboco.api.v1.user.User;
 
 public class UserPrincipal implements Principal {
-	private String name;
-	private List<String> roles;
-	public UserPrincipal(String name, List<String> roles) {
+	private User user;
+	public UserPrincipal(User user) {
 		super();
-		this.name = name;
-		this.roles = roles;
+		this.user = user;
 	}
 	@Override
 	public String getName() {
-		return name;
+		return user.getName();
 	}
-	public List<String> getRoles() {
-		return roles;
+	
+	public User getUser() {
+		return user;
 	}
 }

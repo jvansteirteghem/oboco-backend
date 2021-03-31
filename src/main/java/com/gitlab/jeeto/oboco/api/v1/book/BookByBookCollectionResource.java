@@ -29,6 +29,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkStatus;
+import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.GraphDto;
 import com.gitlab.jeeto.oboco.common.GraphDtoHelper;
 import com.gitlab.jeeto.oboco.common.PageableList;
@@ -40,6 +41,7 @@ import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
 import com.gitlab.jeeto.oboco.common.security.Authentication;
 import com.gitlab.jeeto.oboco.common.security.Authorization;
+import com.gitlab.jeeto.oboco.common.security.UserPrincipal;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")
@@ -90,17 +92,23 @@ public class BookByBookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
+		
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
 		
 		PageableList<Book> bookPageableList = null;
 		
 		if(uriInfo.getQueryParameters().containsKey("bookMarkStatus")) {
-			bookPageableList = bookService.getBooksByBookCollectionId(bookCollectionId, userName, bookMarkStatus, page, pageSize);
+			bookPageableList = bookService.getBooksByBookCollectionIdAndUserIdAndBookMarkStatus(rootBookCollectionId, bookCollectionId, user.getId(), bookMarkStatus, page, pageSize);
 		} else {
-			bookPageableList = bookService.getBooksByBookCollectionId(bookCollectionId, page, pageSize);
+			bookPageableList = bookService.getBooksByBookCollectionId(rootBookCollectionId, bookCollectionId, page, pageSize);
 		}
 		
-		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(userName, bookPageableList, graphDto);;
+		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(user, bookPageableList, graphDto);;
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookPageableListDto);
@@ -128,10 +136,16 @@ public class BookByBookCollectionResource {
 		
 		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
 		
-		String userName = securityContext.getUserPrincipal().getName();
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
-		PageableList<Book> bookPageableList = bookService.getBooksByBookCollectionIdAndId(bookCollectionId, bookId);
-		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(userName, bookPageableList, graphDto);
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
+		PageableList<Book> bookPageableList = bookService.getBooksByBookCollectionIdAndId(rootBookCollectionId, bookCollectionId, bookId);
+		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(user, bookPageableList, graphDto);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookPageableListDto);
@@ -158,9 +172,17 @@ public class BookByBookCollectionResource {
 			@Parameter(name = "scaleWidth", description = "The scaleWidth.", required = false) @QueryParam("scaleWidth") Integer scaleWidth, 
 			@Parameter(name = "scaleHeight", description = "The scaleHeight.", required = false) @QueryParam("scaleHeight") Integer scaleHeight, 
 			@Context Request request) throws ProblemException {
+		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
+		
+		if(user.getRootBookCollection() == null) {
+			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+		}
+		
+		Long rootBookCollectionId = user.getRootBookCollection().getId();
+		
 		Book book = null;
 		
-		PageableList<Book> bookPageableList = bookService.getBooksByBookCollectionId(bookCollectionId, 1, 1);
+		PageableList<Book> bookPageableList = bookService.getBooksByBookCollectionId(rootBookCollectionId, bookCollectionId, 1, 1);
 		
 		if(bookPageableList.getElements() != null && bookPageableList.getElements().size() == 1) {
 			book = bookPageableList.getElements().get(0);

@@ -11,22 +11,25 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.gitlab.jeeto.oboco.api.v1.user.User;
+
 @Entity
 @Table(
 	name = "bookMarks",
 	indexes = {
-		@Index(name = "bookMarkUserName", columnList = "userName", unique = false),
 		@Index(name = "bookMarkFileId", columnList = "fileId", unique = false)
 	}
 )
 public class BookMark {
 	private Long id;
-	private String userName;
+	private User user;
 	private String fileId;
 	private Date updateDate;
 	private Integer page;
@@ -43,12 +46,13 @@ public class BookMark {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	@Column(name = "userName", length = 255, nullable = false)
-	public String getUserName() {
-		return userName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "userId", referencedColumnName = "id", nullable = false)
+	public User getUser() {
+		return user;
 	}
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUser(User user) {
+		this.user = user;
 	}
 	@Column(name = "fileId", length = 64, nullable = false)
 	public String getFileId() {

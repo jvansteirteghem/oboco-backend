@@ -31,6 +31,6 @@ public class UserSecurityContext implements SecurityContext  {
 
 	@Override
 	public boolean isUserInRole(String role) {
-		return userPrincipal.getRoles().contains(role);
+		return userPrincipal.getUser().getRoles().contains(role);
 	}
 }
