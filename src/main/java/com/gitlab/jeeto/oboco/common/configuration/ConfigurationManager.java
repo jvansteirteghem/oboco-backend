@@ -45,8 +45,8 @@ public class ConfigurationManager {
 					String key = entry.getKey();
 					String value = entry.getValue();
 					
-					if(key.startsWith("APPLICATION_")) {
-						key = key.replace("APPLICATION_", "");
+					if(key.startsWith("OBOCO_")) {
+						key = key.replace("OBOCO_", "");
 						key = key.replace("_", ".");
 						key = key.toLowerCase();
 						
