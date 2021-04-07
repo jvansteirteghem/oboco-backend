@@ -22,6 +22,8 @@ import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
 import com.mortennobel.imagescaling.experimental.ResampleOpSingleThread;
+import com.twelvemonkeys.imageio.plugins.jpeg.TurboMonkeysJPEGImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.jpeg.TurboMonkeysJPEGImageWriterSpi;
 
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageReaderSpi;
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriterSpi;
@@ -41,6 +43,14 @@ public class ImageManagerImpl implements ImageManager {
 			logger.debug("register turboJpegImageWriterSpi");
 			TurboJpegImageWriterSpi turboJpegImageWriterSpi = new TurboJpegImageWriterSpi();
 			registry.registerServiceProvider(turboJpegImageWriterSpi);
+			
+			logger.debug("register turboMonkeysJPEGImageReaderSpi");
+			TurboMonkeysJPEGImageReaderSpi turboMonkeysJPEGImageReaderSpi = new TurboMonkeysJPEGImageReaderSpi(turboJpegImageReaderSpi);
+			registry.registerServiceProvider(turboMonkeysJPEGImageReaderSpi);
+			
+			logger.debug("register turboMonkeysJPEGImageWriterSpi");
+			TurboMonkeysJPEGImageWriterSpi turboMonkeysJPEGImageWriterSpi = new TurboMonkeysJPEGImageWriterSpi(turboJpegImageWriterSpi);
+			registry.registerServiceProvider(turboMonkeysJPEGImageWriterSpi);
 		} catch(Exception e) {
 			logger.error("Error", e);
 		}
