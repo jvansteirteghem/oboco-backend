@@ -1,6 +1,7 @@
 package com.gitlab.jeeto.oboco.common.image.impl;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
 import java.io.File;
 
 import javax.imageio.IIOImage;
@@ -21,7 +22,9 @@ import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
-import com.mortennobel.imagescaling.experimental.ResampleOpSingleThread;
+import com.twelvemonkeys.image.ResampleOp;
+import com.twelvemonkeys.imageio.plugins.jpeg.TwelveMonkeysJpegImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.jpeg.TwelveMonkeysJpegImageWriterSpi;
 
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageReaderSpi;
 import it.geosolutions.imageio.plugins.turbojpeg.TurboJpegImageWriterSpi;
@@ -41,6 +44,14 @@ public class ImageManagerImpl implements ImageManager {
 			logger.debug("register turboJpegImageWriterSpi");
 			TurboJpegImageWriterSpi turboJpegImageWriterSpi = new TurboJpegImageWriterSpi();
 			registry.registerServiceProvider(turboJpegImageWriterSpi);
+			
+			logger.debug("register turboMonkeysJPEGImageReaderSpi");
+			TwelveMonkeysJpegImageReaderSpi twelveMonkeysJpegImageReaderSpi = new TwelveMonkeysJpegImageReaderSpi(turboJpegImageReaderSpi);
+			registry.registerServiceProvider(twelveMonkeysJpegImageReaderSpi);
+			
+			logger.debug("register turboMonkeysJPEGImageWriterSpi");
+			TwelveMonkeysJpegImageWriterSpi twelveMonkeysJPEGImageWriterSpi = new TwelveMonkeysJpegImageWriterSpi(turboJpegImageWriterSpi);
+			registry.registerServiceProvider(twelveMonkeysJPEGImageWriterSpi);
 		} catch(Exception e) {
 			logger.error("Error", e);
 		}
@@ -180,8 +191,8 @@ public class ImageManagerImpl implements ImageManager {
 		    
 		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
 		    
-		    ResampleOpSingleThread resampleOp = new ResampleOpSingleThread(regionWidth, regionHeight);
-			outputImage = resampleOp.filter(inputImage, null);
+		    BufferedImageOp resampler = new ResampleOp(regionWidth, regionHeight, ResampleOp.FILTER_LANCZOS);
+			outputImage = resampler.filter(inputImage, null);
 	    } else {
 		    double scaleFactor = Math.min(inputImage.getWidth() / outputScaleWidth, inputImage.getHeight() / outputScaleHeight);
 		    
@@ -192,8 +203,8 @@ public class ImageManagerImpl implements ImageManager {
 		    
 		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
 			
-		    ResampleOpSingleThread resampleOp = new ResampleOpSingleThread(outputScaleWidth, outputScaleHeight);
-			outputImage = resampleOp.filter(inputImage, null);
+		    BufferedImageOp resampler = new ResampleOp(outputScaleWidth, outputScaleHeight, ResampleOp.FILTER_LANCZOS);
+			outputImage = resampler.filter(inputImage, null);
 	    }
 		
 		return outputImage;
