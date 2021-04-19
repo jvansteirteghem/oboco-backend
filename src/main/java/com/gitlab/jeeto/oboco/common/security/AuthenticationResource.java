@@ -23,6 +23,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.spi.HttpRequest;
 
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.api.v1.user.UserService;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
@@ -38,6 +40,8 @@ public class AuthenticationResource {
 	UserService userService;
 	@Inject
 	UserTokenService userTokenService;
+	@Inject
+	BookCollectionService bookCollectionService;
 	
 	@Operation(
 		description = "Create a userId by userNamePassword."
@@ -81,6 +85,10 @@ public class AuthenticationResource {
 				
 				user.setRoles(roles);
 				user.setUpdateDate(new Date());
+				
+				BookCollection rootBookCollection = bookCollectionService.getRootBookCollectionByName("DEFAULT");
+				
+				user.setRootBookCollection(rootBookCollection);
 				
 				user = userService.createUser(user);
 			}
