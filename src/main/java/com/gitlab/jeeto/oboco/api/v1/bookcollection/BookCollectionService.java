@@ -53,7 +53,7 @@ public class BookCollectionService {
 	}
 	
 	public List<BookCollection> getRootBookCollections() throws ProblemException {
-		List<BookCollection> rootBookCollectionList = entityManager.createQuery("select bc from BookCollection bc where bc.parentBookCollection.id is null", BookCollection.class)
+		List<BookCollection> rootBookCollectionList = entityManager.createQuery("select bc from BookCollection bc where bc.parentBookCollection.id is null order by bc.number asc", BookCollection.class)
 				.getResultList();
 		
         return rootBookCollectionList;
@@ -108,7 +108,7 @@ public class BookCollectionService {
 				.setParameter("rootBookCollectionId", rootBookCollectionId)
 				.getSingleResult();
 	
-		List<BookCollection> bookCollectionList = entityManager.createQuery("select bc from BookCollection bc where (bc.id = :rootBookCollectionId or bc.rootBookCollection.id = :rootBookCollectionId)", BookCollection.class)
+		List<BookCollection> bookCollectionList = entityManager.createQuery("select bc from BookCollection bc where (bc.id = :rootBookCollectionId or bc.rootBookCollection.id = :rootBookCollectionId) order by bc.number asc", BookCollection.class)
 				.setParameter("rootBookCollectionId", rootBookCollectionId)
 				.setFirstResult((page - 1) * pageSize)
 				.setMaxResults(pageSize)
@@ -139,7 +139,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString, BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString + " order by bc.number asc", BookCollection.class);
 		bookCollectionListQuery.setParameter("rootBookCollectionId", rootBookCollectionId);
 		
 		if("".equals(normalizedName) == false) {
@@ -176,7 +176,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString, BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString + " order by bc.number asc", BookCollection.class);
 		bookCollectionListQuery.setParameter("rootBookCollectionId", rootBookCollectionId);
 		
 		if(parentBookCollectionId != null) {
@@ -221,7 +221,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString, BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc" + bookCollectionListQueryString + " order by bc.number asc", BookCollection.class);
 		bookCollectionListQuery.setParameter("rootBookCollectionId", rootBookCollectionId);
 		
 		if(parentBookCollectionId != null) {
