@@ -98,7 +98,7 @@ public class BookService {
 				.setParameter("rootBookCollectionId", rootBookCollectionId)
 				.getSingleResult();
 	
-		List<Book> bookList = entityManager.createQuery("select b from Book b where b.rootBookCollection.id = :rootBookCollectionId order by b.bookCollection.number asc, b.number asc", Book.class)
+		List<Book> bookList = entityManager.createQuery("select b from Book b where b.rootBookCollection.id = :rootBookCollectionId order by b.number asc", Book.class)
 				.setParameter("rootBookCollectionId", rootBookCollectionId)
 				.setFirstResult((page - 1) * pageSize)
 				.setMaxResults(pageSize)
@@ -129,7 +129,7 @@ public class BookService {
 		
 		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
 		
-		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.bookCollection.number asc, b.number asc", Book.class);
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number asc", Book.class);
 		bookListQuery.setParameter("rootBookCollectionId", rootBookCollectionId);
 		
 		if("".equals(normalizedName) == false) {
