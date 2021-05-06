@@ -24,7 +24,8 @@ import com.gitlab.jeeto.oboco.api.v1.user.User;
 @Table(
 	name = "bookMarks",
 	indexes = {
-		@Index(name = "bookMarkFileId", columnList = "fileId", unique = false)
+		@Index(name = "bookMarkFileId", columnList = "fileId", unique = false),
+		@Index(name = "bookMarkUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
 public class BookMark {

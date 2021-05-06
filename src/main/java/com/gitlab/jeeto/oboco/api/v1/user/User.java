@@ -31,7 +31,8 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 @Table(
 	name = "users",
 	indexes = {
-		@Index(name = "userName", columnList = "name", unique = true)
+		@Index(name = "userName", columnList = "name", unique = true),
+		@Index(name = "userUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
 public class User implements Serializable {
