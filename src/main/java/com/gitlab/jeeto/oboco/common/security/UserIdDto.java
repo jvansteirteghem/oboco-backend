@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public class UserIdDto {
 	private String name;
 	private List<String> roles;
-	private String idToken;
+	private String accessToken;
 	private String refreshToken;
 	public UserIdDto() {
 		super();
@@ -36,13 +36,13 @@ public class UserIdDto {
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
 	}
-	@Schema(name = "idToken")
-	@XmlElement(name = "idToken")
-	public String getIdToken() {
-		return idToken;
+	@Schema(name = "accessToken")
+	@XmlElement(name = "accessToken")
+	public String getAccessToken() {
+		return accessToken;
 	}
-	public void setIdToken(String idToken) {
-		this.idToken = idToken;
+	public void setAccessToken(String accessToken) {
+		this.accessToken = accessToken;
 	}
 	@Schema(name = "refreshToken")
 	@XmlElement(name = "refreshToken")

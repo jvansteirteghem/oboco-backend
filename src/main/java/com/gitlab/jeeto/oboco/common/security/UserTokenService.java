@@ -21,31 +21,31 @@ public class UserTokenService {
 		return configuration;
 	}
 	
-	public String getIdTokenValue(String name) throws ProblemException {
+	public String getAccessTokenValue(String name) throws ProblemException {
 		String secret = getConfiguration().getAsString("security.authentication.secret", "secret");
-		Long age = getConfiguration().getAsLong("security.authentication.idToken.age", "3600") * 1000L;
+		Long age = getConfiguration().getAsLong("security.authentication.accessToken.age", "3600") * 1000L;
 		
-		UserToken idToken = new UserToken();
-		idToken.setStartDate(new Date());
-		idToken.setStopDate(new Date(idToken.getStartDate().getTime() + age));
-		idToken.setName(name);
+		UserToken accessToken = new UserToken();
+		accessToken.setStartDate(new Date());
+		accessToken.setStopDate(new Date(accessToken.getStartDate().getTime() + age));
+		accessToken.setName(name);
 		
-		String idTokenValue = UserTokenHelper.encodeToken(secret, idToken);
+		String accessTokenValue = UserTokenHelper.encodeToken(secret, accessToken);
 		
-		return idTokenValue;
+		return accessTokenValue;
 	}
 	
-	public UserToken getIdToken(String idTokenValue) throws ProblemException {
+	public UserToken getAccessToken(String accessTokenValue) throws ProblemException {
 		String secret = getConfiguration().getAsString("security.authentication.secret", "secret");
-		Long age = getConfiguration().getAsLong("security.authentication.idToken.age", "3600") * 1000L;
+		Long age = getConfiguration().getAsLong("security.authentication.accessToken.age", "3600") * 1000L;
 		
-		UserToken idToken = UserTokenHelper.decodeToken(secret, idTokenValue);
+		UserToken accessToken = UserTokenHelper.decodeToken(secret, accessTokenValue);
 		
-		if(idToken.getStopDate().getTime() - idToken.getStartDate().getTime() != age) {
+		if(accessToken.getStopDate().getTime() - accessToken.getStartDate().getTime() != age) {
     		throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid: age."));
     	}
 		
-		return idToken;
+		return accessToken;
 	}
 	
 	public String getRefreshTokenValue(String name) throws ProblemException {

@@ -122,10 +122,10 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
     	String header = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
         if(header != null) {
         	if(header.startsWith("Bearer")) {
-		    	String idTokenValue = header.substring("Bearer".length()).trim();
-		    	UserToken idToken;
+		    	String accessTokenValue = header.substring("Bearer".length()).trim();
+		    	UserToken accessToken;
 		    	try {
-		    		idToken = tokenService.getIdToken(idTokenValue);
+		    		accessToken = tokenService.getAccessToken(accessTokenValue);
 				} catch (Exception e) {
 					logger.info("The user is not authenticated: invalid userToken: " + e.getMessage());
 					
@@ -138,7 +138,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 					return;
 				}
 		    	
-		    	User user = userService.getUserByName(idToken.getName());
+		    	User user = userService.getUserByName(accessToken.getName());
 				
 				if(user == null) {
 					logger.info("The user is not authenticated: invalid userToken: name.");
@@ -152,7 +152,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    		return;
 				}
 				
-				if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(idToken.getStartDate()) >= 0) {
+				if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(accessToken.getStartDate()) >= 0) {
 					logger.info("The user is not authenticated: invalid userToken: startDate.");
 					
 					ResponseBuilder responseBuilder = Response.status(401);
