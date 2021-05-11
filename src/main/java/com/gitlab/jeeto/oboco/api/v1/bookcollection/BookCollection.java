@@ -26,8 +26,10 @@ import com.gitlab.jeeto.oboco.api.v1.book.Book;
 @Table(
 	name = "bookCollections",
 	indexes = {
-		@Index(name = "bookCollectionDirectoryPath", columnList = "directoryPath", unique = true),
-		@Index(name = "bookCollectionNormalizedName", columnList = "normalizedName", unique = false)
+		@Index(name = "bookCollectionDirectoryPath", columnList = "directoryPath", unique = false),
+		@Index(name = "bookCollectionNormalizedName", columnList = "normalizedName", unique = false),
+		@Index(name = "bookCollectionNumber", columnList = "number", unique = false),
+		@Index(name = "bookCollectionUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
 public class BookCollection {

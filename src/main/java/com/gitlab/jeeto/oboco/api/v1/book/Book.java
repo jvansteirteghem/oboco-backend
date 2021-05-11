@@ -26,8 +26,10 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 	name = "books",
 	indexes = {
 		@Index(name = "bookFileId", columnList = "fileId", unique = false),
-		@Index(name = "bookFilePath", columnList = "filePath", unique = true),
-		@Index(name = "bookNormalizedName", columnList = "normalizedName", unique = false)
+		@Index(name = "bookFilePath", columnList = "filePath", unique = false),
+		@Index(name = "bookNormalizedName", columnList = "normalizedName", unique = false),
+		@Index(name = "bookNumber", columnList = "number", unique = false),
+		@Index(name = "bookUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
 public class Book {

@@ -100,14 +100,14 @@ public class AuthenticationResource {
 			}
 		}
 		
-		String idTokenValue = userTokenService.getIdTokenValue(user.getName());
+		String accessTokenValue = userTokenService.getAccessTokenValue(user.getName());
 		
 		String refreshTokenValue = userTokenService.getRefreshTokenValue(user.getName());
         
 		UserIdDto userIdDto = new UserIdDto();
 		userIdDto.setName(user.getName());
 		userIdDto.setRoles(user.getRoles());
-		userIdDto.setIdToken(idTokenValue);
+		userIdDto.setAccessToken(accessTokenValue);
 		userIdDto.setRefreshToken(refreshTokenValue);
         
         ResponseBuilder responseBuilder = Response.status(200);
@@ -143,12 +143,12 @@ public class AuthenticationResource {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid."));
 		}
 		
-        String idTokenValue = userTokenService.getIdTokenValue(user.getName());
+        String accessTokenValue = userTokenService.getAccessTokenValue(user.getName());
         
         UserIdDto userIdDto = new UserIdDto();
 		userIdDto.setName(user.getName());
 		userIdDto.setRoles(user.getRoles());
-		userIdDto.setIdToken(idTokenValue);
+		userIdDto.setAccessToken(accessTokenValue);
 		userIdDto.setRefreshToken(refreshTokenValue);
         
         ResponseBuilder responseBuilder = Response.status(200);

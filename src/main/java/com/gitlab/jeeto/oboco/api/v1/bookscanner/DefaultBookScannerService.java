@@ -173,6 +173,7 @@ public class DefaultBookScannerService implements BookScannerService {
 	    	Properties dataProperties = new Properties();
 	    	dataProperties.load(new FileInputStream("./data.properties"));
 			
+	    	Integer number = 1;
 			for(Entry<Object, Object> entry: dataProperties.entrySet()) {
 				String name = entry.getKey().toString();
 				String pathListString = entry.getValue().toString();
@@ -215,7 +216,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setNumberOfBookCollections(0);
 					bookCollection.setNumberOfBooks(0);
 					bookCollection.setChildBookCollections(new ArrayList<BookCollection>());
-					bookCollection.setNumber(1);
+					bookCollection.setNumber(number);
 			        
 			        bookCollection = bookCollectionService.createBookCollection(bookCollection);
 				} else {
@@ -231,7 +232,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setNumberOfBookCollections(0);
 					bookCollection.setNumberOfBooks(0);
 					bookCollection.setChildBookCollections(new ArrayList<BookCollection>());
-					bookCollection.setNumber(1);
+					bookCollection.setNumber(number);
 					
 					bookCollection = bookCollectionService.updateBookCollection(bookCollection);
 				}
@@ -239,7 +240,7 @@ public class DefaultBookScannerService implements BookScannerService {
 				for(String path: pathList) {
 					File file = new File(path);
 					
-				    add(bookCollection, bookCollection, file);
+					number = add(number, bookCollection, bookCollection, file);
 				}
 				
 				if(status.equals(BookScannerServiceStatus.STOPPING)) {
@@ -280,7 +281,7 @@ public class DefaultBookScannerService implements BookScannerService {
 		status = BookScannerServiceStatus.STOPPING;
 	}
     
-	private List<BookCollection> add(BookCollection rootBookCollection, BookCollection parentBookCollection, File parentFile) throws Exception {
+	private Integer add(Integer number, BookCollection rootBookCollection, BookCollection parentBookCollection, File parentFile) throws Exception {
 		Integer numberOfBookCollections = parentBookCollection.getNumberOfBookCollections();
 		Integer numberOfBooks = parentBookCollection.getNumberOfBooks();
 		List<BookCollection> childBookCollections = parentBookCollection.getChildBookCollections();
@@ -327,8 +328,9 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setNumberOfBooks(0);
 					
 					numberOfBookCollections = numberOfBookCollections + 1;
+					number = number + 1;
 					
-					bookCollection.setNumber(numberOfBookCollections);
+					bookCollection.setNumber(number);
 			        
 			        bookCollection = bookCollectionService.createBookCollection(bookCollection);
 				} else {
@@ -348,17 +350,18 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setNumberOfBooks(0);
 					
 					numberOfBookCollections = numberOfBookCollections + 1;
+					number = number + 1;
 					
-					bookCollection.setNumber(numberOfBookCollections);
+					bookCollection.setNumber(number);
 					
 					bookCollection = bookCollectionService.updateBookCollection(bookCollection);
 				}
 				
 				childBookCollections.add(bookCollection);
 				
-				List<BookCollection> bookCollections = add(rootBookCollection, bookCollection, file);
+				number = add(number, rootBookCollection, bookCollection, file);
 				
-				childBookCollections.addAll(bookCollections);
+				childBookCollections.addAll(bookCollection.getChildBookCollections());
 			} else {
 				FileType fileType = FileType.getFileType(file);
 				
@@ -407,8 +410,9 @@ public class DefaultBookScannerService implements BookScannerService {
 				    	book.setUpdateDate(updateDate);
 						
 						numberOfBooks = numberOfBooks + 1;
+						number = number + 1;
 						
-						book.setNumber(numberOfBooks);
+						book.setNumber(number);
 						
 						book = bookService.createBook(book);
 						
@@ -460,8 +464,9 @@ public class DefaultBookScannerService implements BookScannerService {
 						book.setUpdateDate(updateDate);
 						
 						numberOfBooks = numberOfBooks + 1;
+						number = number + 1;
 						
-						book.setNumber(numberOfBooks);
+						book.setNumber(number);
 						
 						book = bookService.updateBook(book);
 						
@@ -487,7 +492,7 @@ public class DefaultBookScannerService implements BookScannerService {
 		
 		parentBookCollection = bookCollectionService.updateBookCollection(parentBookCollection);
 		
-		return childBookCollections;
+		return number;
     }
     
     private Book createBookPages(FileWrapper<File> bookInputFileWrapper, Book book) throws Exception {

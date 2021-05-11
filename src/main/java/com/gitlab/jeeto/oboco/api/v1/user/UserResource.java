@@ -78,7 +78,7 @@ public class UserResource {
 	@Path("ME")
 	@GET
 	public Response getAuthenticatedUser(
-			@Parameter(name = "graph", description = "A graph. A full graph is ().", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+			@Parameter(name = "graph", description = "A graph. A full graph is (rootBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
 		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 		
@@ -321,7 +321,7 @@ public class UserResource {
 	public Response getUsers(
 			@Parameter(name = "page", description = "A page. A page is >= 1.", required = false) @DefaultValue("1") @QueryParam("page") Integer page, 
 			@Parameter(name = "pageSize", description = "A pageSize. A pageSize is >= 1 and <= 100.", required = false) @DefaultValue("25") @QueryParam("pageSize") Integer pageSize, 
-			@Parameter(name = "graph", description = "A graph. A full graph is ().", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+			@Parameter(name = "graph", description = "A graph. A full graph is (rootBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		PageableListDtoHelper.validatePageableList(page, pageSize);
 		
 		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
@@ -353,7 +353,7 @@ public class UserResource {
 	@GET
 	public Response getUser(
 			@Parameter(name = "id", description = "An id.", required = true) @PathParam("id") Long id, 
-			@Parameter(name = "graph", description = "A graph. A full graph is ().", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+			@Parameter(name = "graph", description = "A graph. A full graph is (rootBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
 		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(rootBookCollection)");
 		
