@@ -20,6 +20,8 @@ public abstract class GetAsStreamingOutput implements StreamingOutput {
 		    while ((bufferSize = inputStream.read(buffer)) != -1) {
 		    	outputStream.write(buffer, 0, bufferSize);
 		    }
+		    
+		    outputStream.flush();
 		} finally {
 			if(inputStream != null) {
 				try {
