@@ -316,11 +316,11 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setChildBookCollections(new ArrayList<BookCollection>());
 					bookCollection.setDirectoryPath(path);
 
-					String name = NameHelper.getName(file.getName());
+					String name = NameHelper.getName(file);
 					
 					bookCollection.setName(name);
 					
-					String normalizedName = NameHelper.getNormalizedName(file.getName());
+					String normalizedName = NameHelper.getNormalizedName(name);
 					
 					bookCollection.setNormalizedName(normalizedName);
 					bookCollection.setUpdateDate(updateDate);
@@ -338,11 +338,11 @@ public class DefaultBookScannerService implements BookScannerService {
 					
 					bookCollection.setChildBookCollections(new ArrayList<BookCollection>());
 					
-					String name = NameHelper.getName(file.getName());
+					String name = NameHelper.getName(file);
 					
 					bookCollection.setName(name);
 					
-					String normalizedName = NameHelper.getNormalizedName(file.getName());
+					String normalizedName = NameHelper.getNormalizedName(name);
 					
 					bookCollection.setNormalizedName(normalizedName);
 					bookCollection.setUpdateDate(updateDate);
@@ -384,11 +384,11 @@ public class DefaultBookScannerService implements BookScannerService {
 					    	book.setFileId(fileId);
 					    	book.setFilePath(file.getPath());
 					    	
-					    	String name = NameHelper.getName(file.getName());
+					    	String name = NameHelper.getName(file);
 							
 							book.setName(name);
 							
-							String normalizedName = NameHelper.getNormalizedName(file.getName());
+							String normalizedName = NameHelper.getNormalizedName(name);
 							
 							book.setNormalizedName(normalizedName);
 							
@@ -434,11 +434,11 @@ public class DefaultBookScannerService implements BookScannerService {
 						logger.info("update book " + path);
 						
 						if(bookUpdate == null) {
-							String name = NameHelper.getName(file.getName());
+							String name = NameHelper.getName(file);
 							
 							book.setName(name);
 							
-							String normalizedName = NameHelper.getNormalizedName(file.getName());
+							String normalizedName = NameHelper.getNormalizedName(name);
 							
 							book.setNormalizedName(normalizedName);
 							

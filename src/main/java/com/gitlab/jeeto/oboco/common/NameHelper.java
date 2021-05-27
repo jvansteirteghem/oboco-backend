@@ -1,9 +1,20 @@
 package com.gitlab.jeeto.oboco.common;
 
+import java.io.File;
+
 import com.ibm.icu.text.Transliterator;
 
 public class NameHelper {
-	public static String getName(String name) {
+	public static String getName(File file) {
+		String name = file.getName();
+		
+		if(file.isFile()) {
+			int index = name.lastIndexOf('.');
+			if(index != -1) {
+				name = name.substring(0, index);
+			}
+		}
+		
 		return name;
 	}
 	
