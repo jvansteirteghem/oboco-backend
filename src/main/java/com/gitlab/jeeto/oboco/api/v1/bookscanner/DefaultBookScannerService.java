@@ -10,7 +10,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
@@ -156,46 +158,80 @@ public class DefaultBookScannerService implements BookScannerService {
 		return status;
 	}
 	
+	private File getDirectory() throws ProblemException {
+		String directoryPath = getConfiguration().getAsString("data.path", "./data");
+    	
+    	File directory = new File(directoryPath);
+    	
+    	if(directory.isDirectory() == false) {
+    		throw new ProblemException(new Problem(500, "PROBLEM", "The directory is invalid: " + directory.getAbsolutePath()));
+    	}
+    	
+    	return directory;
+	}
+	
+	private Map<String, List<File>> getDirectoryMap() throws ProblemException {
+		try {
+			Map<String, List<File>> directoryMap = new LinkedHashMap<String, List<File>>();
+			
+			Properties dataProperties = new Properties();
+	    	dataProperties.load(new FileInputStream("./data.properties"));
+			
+			for(Entry<Object, Object> entry: dataProperties.entrySet()) {
+				String name = entry.getKey().toString();
+				String directoryPathsString = entry.getValue().toString();
+				
+				if(directoryPathsString == null) {
+					directoryPathsString = "";
+				}
+				
+				String[] directoryPaths = directoryPathsString.split(",");
+				
+				List<File> directoryList = new ArrayList<File>();
+				
+				for(String directoryPath: directoryPaths) {
+					directoryPath = directoryPath.trim();
+					
+					File directory = new File(directoryPath);
+					
+					if(directory.isDirectory() == false) {
+			    		throw new ProblemException(new Problem(500, "PROBLEM", "The directory is invalid: " + directory.getAbsolutePath()));
+			    	}
+			        
+					directoryList.add(directory);
+				}
+				
+				directoryMap.put(name, directoryList);
+			}
+			
+			return directoryMap;
+		} catch(ProblemException e) {
+			logger.error("Error.", e);
+			
+			throw e;
+		} catch(Exception e) {
+			logger.error("Error.", e);
+			
+			throw new ProblemException(new Problem(500, "PROBLEM", "Problem."), e);
+		}
+	}
+	
 	public void start() throws ProblemException {
 		status = BookScannerServiceStatus.STARTING;
 		updateDate = new Date();
 		status = BookScannerServiceStatus.STARTED;
 		try {
 			defaultBookPageList = createBookPageList();
-			
-			String directoryPath = getConfiguration().getAsString("data.path", "./data");
 	    	
-	    	File directory = new File(directoryPath);
-	    	if(directory.isDirectory() == false) {
-	    		throw new ProblemException(new Problem(500, "PROBLEM_APPLICATION_DATA_PATH_INVALID", "The application.data.path is invalid."));
-	    	}
+			// validate directory
+	    	getDirectory();
 	    	
-	    	Properties dataProperties = new Properties();
-	    	dataProperties.load(new FileInputStream("./data.properties"));
+	    	Map<String, List<File>> directoryMap = getDirectoryMap();
 			
 	    	Integer number = 1;
-			for(Entry<Object, Object> entry: dataProperties.entrySet()) {
-				String name = entry.getKey().toString();
-				String pathListString = entry.getValue().toString();
-				
-				if(pathListString == null) {
-					pathListString = "";
-				}
-				
-				String[] paths = pathListString.split(",");
-				
-				List<String> pathList = new ArrayList<String>();
-				
-				for(String path: paths) {
-					path = path.trim();
-					
-					File file = new File(path);
-					if(file.isDirectory()) {
-				        path = file.getAbsolutePath();
-				        
-				        pathList.add(path);
-					}
-				}
+			for(Entry<String, List<File>> entry: directoryMap.entrySet()) {
+				String name = entry.getKey();
+				List<File> directoryList = entry.getValue();
 				
 				BookCollection bookCollection = bookCollectionService.getRootBookCollectionByName(name);
 				
@@ -237,10 +273,8 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection = bookCollectionService.updateBookCollection(bookCollection);
 				}
 				
-				for(String path: pathList) {
-					File file = new File(path);
-					
-					number = add(number, bookCollection, bookCollection, file);
+				for(File directory: directoryList) {
+				    number = add(number, bookCollection, bookCollection, directory);
 				}
 				
 				if(status.equals(BookScannerServiceStatus.STOPPING)) {
@@ -739,7 +773,7 @@ public class DefaultBookScannerService implements BookScannerService {
     }
     
     private FileWrapper<File> createBookPageFileWrapper(Book book, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
-    	String dataDirectoryPath = getConfiguration().getAsString("data.path", "./data");
+    	File directory = getDirectory();
     	
     	String bookPageFilePath = book.getFileId().substring(0, 2) + "/" + book.getFileId().substring(2) + "/" + page;
         if(scaleType != null) {
@@ -753,7 +787,7 @@ public class DefaultBookScannerService implements BookScannerService {
         }
         bookPageFilePath = bookPageFilePath + ".jpg";
         
-		File bookPageFile = new File(dataDirectoryPath, bookPageFilePath);
+		File bookPageFile = new File(directory, bookPageFilePath);
 		FileType bookPageFileType = FileType.JPG;
 		
 		FileWrapper<File> bookPageFileWrapper = new FileWrapper<File>(bookPageFile, bookPageFileType);
@@ -828,9 +862,8 @@ public class DefaultBookScannerService implements BookScannerService {
     }
     
     private void deleteBookPageByUpdateDate() throws Exception {
-    	String directoryPath = getConfiguration().getAsString("data.path", "./data");
+    	File directory = getDirectory();
     	
-    	File directory = new File(directoryPath);
     	if(directory.isDirectory()) {
     		File[] bookPageDirectoryList = directory.listFiles();
     		
