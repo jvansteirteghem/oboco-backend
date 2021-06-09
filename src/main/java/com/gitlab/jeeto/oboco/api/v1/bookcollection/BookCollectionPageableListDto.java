@@ -7,9 +7,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gitlab.jeeto.oboco.common.PageableListDto;
 
-@Schema(name = "BookCollections", description = "A pageable list of bookCollections.")
-@XmlRootElement(name = "BookCollections")
+@Schema(name = "BookCollectionPageableList", description = "A pageable list of bookCollections.")
+@XmlRootElement(name = "BookCollectionPageableList")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BookCollectionsDto extends PageableListDto<BookCollectionDto> {
+public class BookCollectionPageableListDto extends PageableListDto<BookCollectionDto> {
 
 }

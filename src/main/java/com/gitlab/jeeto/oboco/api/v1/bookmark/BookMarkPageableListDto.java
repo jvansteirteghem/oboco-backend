@@ -1,4 +1,4 @@
-package com.gitlab.jeeto.oboco.api.v1.user;
+package com.gitlab.jeeto.oboco.api.v1.bookmark;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -7,9 +7,9 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gitlab.jeeto.oboco.common.PageableListDto;
 
-@Schema(name = "Users", description = "A pageable list of users.")
-@XmlRootElement(name = "Users")
+@Schema(name = "BookMarkPageableList", description = "A pageable list of bookMarks.")
+@XmlRootElement(name = "BookMarkPageableList")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UsersDto extends PageableListDto<UserDto> {
+public class BookMarkPageableListDto extends PageableListDto<BookMarkDto> {
 
 }
