@@ -1,6 +1,5 @@
 package com.gitlab.jeeto.oboco.api.v1.book;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,6 +12,7 @@ import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkStatus;
+import com.gitlab.jeeto.oboco.common.Linkable;
 import com.gitlab.jeeto.oboco.common.NameHelper;
 import com.gitlab.jeeto.oboco.common.PageableList;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
@@ -146,14 +146,14 @@ public class BookService {
         return bookPageableList;
 	}
 	
-	public PageableList<Book> getBooksByBookCollectionIdAndId(Long rootBookCollectionId, Long bookCollectionId, Long id) throws ProblemException {
+	public Linkable<Book> getBooksByBookCollectionIdAndId(Long rootBookCollectionId, Long bookCollectionId, Long id) throws ProblemException {
 		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId order by b.number asc", Book.class);
 		bookListQuery.setParameter("rootBookCollectionId", rootBookCollectionId);
 		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
 		
 		List<Book> bookList = bookListQuery.getResultList();
 		
-		List<Book> bookListById = new ArrayList<Book>();
+		Linkable<Book> bookLinkable = new Linkable<Book>();
 		
 		Integer index = 0;
 		while(index < bookList.size()) {
@@ -161,11 +161,17 @@ public class BookService {
 			
 			if(book.getId().equals(id)) {
 				if(index - 1 >= 0) {
-					bookListById.add(bookList.get(index - 1));
+					Book previousBook = bookList.get(index - 1);
+					
+					bookLinkable.setPreviousElement(previousBook);
 				}
-				bookListById.add(book);
+				
+				bookLinkable.setElement(book);
+				
 				if(index + 1 < bookList.size()) {
-					bookListById.add(bookList.get(index + 1));
+					Book nextBook = bookList.get(index + 1);
+					
+					bookLinkable.setNextElement(nextBook);
 				}
 				break;
 			}
@@ -173,9 +179,7 @@ public class BookService {
 			index = index + 1;
 		}
 		
-		PageableList<Book> bookPageableList = new PageableList<Book>(bookListById);
-		
-		return bookPageableList;
+		return bookLinkable;
 	}
 	
 	public PageableList<Book> getBooksByBookCollectionId(Long rootBookCollectionId, Long bookCollectionId, Integer page, Integer pageSize) throws ProblemException {

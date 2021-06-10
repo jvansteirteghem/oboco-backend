@@ -16,6 +16,8 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.GraphDto;
+import com.gitlab.jeeto.oboco.common.Linkable;
+import com.gitlab.jeeto.oboco.common.LinkableDto;
 import com.gitlab.jeeto.oboco.common.PageableList;
 import com.gitlab.jeeto.oboco.common.PageableListDto;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
@@ -104,6 +106,30 @@ public class BookDtoMapper {
 		}
 		
 		return bookListDto;
+	}
+	
+	public LinkableDto<BookDto> getBooksDto(User user, Linkable<Book> bookLinkable, GraphDto graphDto) throws ProblemException {
+		LinkableDto<BookDto> bookLinkableDto = null;
+		if(bookLinkable != null) {
+			bookLinkableDto = new LinkableDto<BookDto>();
+			
+			Book book = bookLinkable.getElement();
+			BookDto bookDto = getBookDto(user, book, graphDto);
+			
+			bookLinkableDto.setElement(bookDto);
+			
+			Book previousBook = bookLinkable.getPreviousElement();
+			BookDto previousBookDto = getBookDto(user, previousBook, graphDto);
+			
+			bookLinkableDto.setPreviousElement(previousBookDto);
+			
+			Book nextBook = bookLinkable.getNextElement();
+			BookDto nextBookDto = getBookDto(user, nextBook, graphDto);
+			
+			bookLinkableDto.setNextElement(nextBookDto);
+		}
+		
+		return bookLinkableDto;
 	}
 	
 	public PageableListDto<BookDto> getBooksDto(User user, PageableList<Book> bookPageableList, GraphDto graphDto) throws ProblemException {

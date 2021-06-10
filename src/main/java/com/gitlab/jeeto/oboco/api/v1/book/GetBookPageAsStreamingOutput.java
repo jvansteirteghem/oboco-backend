@@ -114,6 +114,8 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 					}
 				}
 			}
+			
+			outputStream.flush();
 		} catch (Exception e) {
 			logger.error("Error.", e);
 			

@@ -11,7 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gitlab.jeeto.oboco.api.v1.book.BookDto;
-import com.gitlab.jeeto.oboco.api.v1.book.BooksDto;
+import com.gitlab.jeeto.oboco.api.v1.book.BookPageableListDto;
 
 @Schema(name = "BookCollection", description = "A bookCollection.")
 @XmlRootElement(name = "BookCollection")
@@ -62,7 +62,7 @@ public class BookCollectionDto {
 	public void setParentBookCollection(BookCollectionDto parentBookCollection) {
 		this.parentBookCollection = parentBookCollection;
 	}
-	@Schema(name = "bookCollections", implementation = BookCollectionsDto.class)
+	@Schema(name = "bookCollections", implementation = BookCollectionPageableListDto.class)
 	@XmlElement(name = "bookCollections")
 	public List<BookCollectionDto> getBookCollections() {
 		return bookCollections;
@@ -78,7 +78,7 @@ public class BookCollectionDto {
 	public void setNumberOfBookCollections(Integer numberOfBookCollections) {
 		this.numberOfBookCollections = numberOfBookCollections;
 	}
-	@Schema(name = "books", implementation = BooksDto.class)
+	@Schema(name = "books", implementation = BookPageableListDto.class)
 	@XmlElement(name = "books")
 	public List<BookDto> getBooks() {
 		return books;
