@@ -1,8 +1,6 @@
 package com.gitlab.jeeto.oboco.common.archive;
 
-import java.io.File;
-
-import com.gitlab.jeeto.oboco.common.FileWrapper;
+import com.gitlab.jeeto.oboco.common.TypeableFile;
 
 public class ArchiveReaderPoolDelegator implements ArchiveReader {
 	private ArchiveReaderPool archiveReaderPool;
@@ -15,14 +13,14 @@ public class ArchiveReaderPoolDelegator implements ArchiveReader {
 	}
 
 	@Override
-	public void openArchive(FileWrapper<File> inputFileWrapper) throws Exception {
-		archivePath = inputFileWrapper.getFile().getPath();
+	public void openArchive(TypeableFile inputFile) throws Exception {
+		archivePath = inputFile.getPath();
 		
 		ArchiveReader archiveReader = archiveReaderPool.removeArchiveReader(archivePath);
 		if(archiveReader != null) {
 			this.archiveReader = archiveReader;
 		} else {
-			this.archiveReader.openArchive(inputFileWrapper);
+			this.archiveReader.openArchive(inputFile);
 		}
 	}
 
@@ -32,7 +30,7 @@ public class ArchiveReaderPoolDelegator implements ArchiveReader {
 	}
 
 	@Override
-	public FileWrapper<File> readFile(Integer index) throws Exception {
+	public TypeableFile readFile(Integer index) throws Exception {
 		return archiveReader.readFile(index);
 	}
 

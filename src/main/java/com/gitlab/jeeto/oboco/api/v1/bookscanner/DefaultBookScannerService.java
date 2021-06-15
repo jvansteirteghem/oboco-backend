@@ -1,7 +1,6 @@
 package com.gitlab.jeeto.oboco.api.v1.bookscanner;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -13,8 +12,8 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -31,9 +30,9 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
 import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.NameHelper;
 import com.gitlab.jeeto.oboco.common.NaturalOrderComparator;
+import com.gitlab.jeeto.oboco.common.TypeableFile;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
@@ -158,10 +157,10 @@ public class DefaultBookScannerService implements BookScannerService {
 		return status;
 	}
 	
-	private File getDirectory() throws ProblemException {
+	private TypeableFile getDirectory() throws ProblemException {
 		String directoryPath = getConfiguration().getAsString("data.path", "./data");
     	
-    	File directory = new File(directoryPath);
+		TypeableFile directory = new TypeableFile(directoryPath);
     	
     	if(directory.isDirectory() == false) {
     		throw new ProblemException(new Problem(500, "PROBLEM", "The directory is invalid: " + directory.getAbsolutePath()));
@@ -170,9 +169,9 @@ public class DefaultBookScannerService implements BookScannerService {
     	return directory;
 	}
 	
-	private Map<String, List<File>> getDirectoryMap() throws ProblemException {
+	private Map<String, List<TypeableFile>> getDirectoryMap() throws ProblemException {
 		try {
-			Map<String, List<File>> directoryMap = new LinkedHashMap<String, List<File>>();
+			Map<String, List<TypeableFile>> directoryMap = new LinkedHashMap<String, List<TypeableFile>>();
 			
 			Properties dataProperties = new Properties();
 	    	dataProperties.load(new FileInputStream("./data.properties"));
@@ -187,12 +186,12 @@ public class DefaultBookScannerService implements BookScannerService {
 				
 				String[] directoryPaths = directoryPathsString.split(",");
 				
-				List<File> directoryList = new ArrayList<File>();
+				List<TypeableFile> directoryList = new ArrayList<TypeableFile>();
 				
 				for(String directoryPath: directoryPaths) {
 					directoryPath = directoryPath.trim();
 					
-					File directory = new File(directoryPath);
+					TypeableFile directory = new TypeableFile(directoryPath);
 					
 					if(directory.isDirectory() == false) {
 			    		throw new ProblemException(new Problem(500, "PROBLEM", "The directory is invalid: " + directory.getAbsolutePath()));
@@ -226,12 +225,12 @@ public class DefaultBookScannerService implements BookScannerService {
 			// validate directory
 	    	getDirectory();
 	    	
-	    	Map<String, List<File>> directoryMap = getDirectoryMap();
+	    	Map<String, List<TypeableFile>> directoryMap = getDirectoryMap();
 			
 	    	Integer number = 1;
-			for(Entry<String, List<File>> entry: directoryMap.entrySet()) {
+			for(Entry<String, List<TypeableFile>> entry: directoryMap.entrySet()) {
 				String name = entry.getKey();
-				List<File> directoryList = entry.getValue();
+				List<TypeableFile> directoryList = entry.getValue();
 				
 				BookCollection bookCollection = bookCollectionService.getRootBookCollectionByName(name);
 				
@@ -273,7 +272,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection = bookCollectionService.updateBookCollection(bookCollection);
 				}
 				
-				for(File directory: directoryList) {
+				for(TypeableFile directory: directoryList) {
 				    number = add(number, bookCollection, bookCollection, directory);
 				}
 				
@@ -315,22 +314,22 @@ public class DefaultBookScannerService implements BookScannerService {
 		status = BookScannerServiceStatus.STOPPING;
 	}
     
-	private Integer add(Integer number, BookCollection rootBookCollection, BookCollection parentBookCollection, File parentFile) throws Exception {
+	private Integer add(Integer number, BookCollection rootBookCollection, BookCollection parentBookCollection, TypeableFile parentFile) throws Exception {
 		Integer numberOfBookCollections = parentBookCollection.getNumberOfBookCollections();
 		Integer numberOfBooks = parentBookCollection.getNumberOfBooks();
 		List<BookCollection> childBookCollections = parentBookCollection.getChildBookCollections();
 		
-    	File[] files = parentFile.listFiles();
+		TypeableFile[] files = parentFile.listTypeableFiles();
     	
-    	List<File> fileList = Arrays.asList(files);
-    	fileList.sort(new NaturalOrderComparator<File>() {
+    	List<TypeableFile> fileList = Arrays.asList(files);
+    	fileList.sort(new NaturalOrderComparator<TypeableFile>() {
     		@Override
-    		public String toString(File o) {
+    		public String toString(TypeableFile o) {
 				return o.getName();
 		   }
     	});
     	
-		for(File file: fileList) {
+		for(TypeableFile file: fileList) {
 			if(status.equals(BookScannerServiceStatus.STOPPING)) {
 	    		logger.info("stopping!");
 	    		break;
@@ -397,9 +396,7 @@ public class DefaultBookScannerService implements BookScannerService {
 				
 				childBookCollections.addAll(bookCollection.getChildBookCollections());
 			} else {
-				FileType fileType = FileType.getFileType(file);
-				
-				FileWrapper<File> fileWrapper = new FileWrapper<File>(file, fileType);
+				FileType fileType = file.getFileType();
 				
 				if(FileType.ZIP.equals(fileType) || FileType.RAR.equals(fileType) || FileType.RAR5.equals(fileType)) {
 					Book book = bookService.getBookByBookCollectionIdAndFilePath(rootBookCollection.getId(), path);
@@ -413,7 +410,7 @@ public class DefaultBookScannerService implements BookScannerService {
 				    	book.setBookCollection(parentBookCollection);
 						
 						if(bookUpdate == null) {
-							String fileId = createFileId(fileWrapper);
+							String fileId = createFileId(file);
 					    	
 					    	book.setFileId(fileId);
 					    	book.setFilePath(file.getPath());
@@ -427,7 +424,7 @@ public class DefaultBookScannerService implements BookScannerService {
 							book.setNormalizedName(normalizedName);
 							
 							try {
-								book = createBookPages(fileWrapper, book);
+								book = createBookPages(file, book);
 							} catch(Exception e) {
 								logger.error("error create book " + path, e);
 								
@@ -480,9 +477,9 @@ public class DefaultBookScannerService implements BookScannerService {
 							
 							try {
 								if(book.getUpdateDate().compareTo(fileUpdateDate) < 0) {
-									book = createBookPages(fileWrapper, book);
+									book = createBookPages(file, book);
 								} else {
-									book = updateBookPages(fileWrapper, book);
+									book = updateBookPages(file, book);
 								}
 							} catch(Exception e) {
 								logger.error("error update book " + path, e);
@@ -529,7 +526,7 @@ public class DefaultBookScannerService implements BookScannerService {
 		return number;
     }
     
-    private Book createBookPages(FileWrapper<File> bookInputFileWrapper, Book book) throws Exception {
+    private Book createBookPages(TypeableFile bookInputFile, Book book) throws Exception {
 		List<BookPage> bookPageList = new ArrayList<BookPage>();
     	for(BookPage defaultBookPage: defaultBookPageList) {
     		Integer defaultPage;
@@ -559,24 +556,24 @@ public class DefaultBookScannerService implements BookScannerService {
 	    		defaultPage = defaultPage + 1;
     		}
     	}
-		
+    	
 		ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
     	ArchiveReader archiveReader = null;
 		try {
-			archiveReader = archiveReaderFactory.getArchiveReader(bookInputFileWrapper.getFileType());
-			archiveReader.openArchive(bookInputFileWrapper);
+			archiveReader = archiveReaderFactory.getArchiveReader(bookInputFile.getFileType());
+			archiveReader.openArchive(bookInputFile);
 			
 			Integer numberOfPages = archiveReader.readSize();
 			
 			book.setNumberOfPages(numberOfPages);
 			
 			for(BookPage bookPage: bookPageList) {
-				FileWrapper<File> bookPageInputFileWrapper = null;
+				TypeableFile bookPageInputFile = null;
 				try {
-					bookPageInputFileWrapper = archiveReader.readFile(bookPage.getPage() - 1);
+					bookPageInputFile = archiveReader.readFile(bookPage.getPage() - 1);
 					
 					for(BookPageConfiguration bookPageConfiguration: bookPage.getBookPageConfigurationList()) {
-						FileWrapper<File> bookPageOutputFileWrapper = createBookPageFileWrapper(
+						TypeableFile bookPageOutputFile = createBookPageFile(
 			    				book, 
 			    				bookPage.getPage(), 
 			    				bookPageConfiguration.getScaleType(), 
@@ -584,27 +581,26 @@ public class DefaultBookScannerService implements BookScannerService {
 			    				bookPageConfiguration.getScaleHeight()
 			    		);
 						
-						if(FileType.JPG.equals(bookPageInputFileWrapper.getFileType()) 
+						if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
 								&& bookPageConfiguration.getScaleType() == null 
 								&& bookPageConfiguration.getScaleWidth() == null 
 								&& bookPageConfiguration.getScaleHeight() == null) {
-							createBookPage(bookPageInputFileWrapper, bookPageOutputFileWrapper);
+							createBookPage(bookPageInputFile, bookPageOutputFile);
 						} else {
-							FileWrapper<File> bookPageInputFileWrapper2 = null;
+							TypeableFile bookPageInputFile2 = null;
 							try {
-								bookPageInputFileWrapper2 = createBookPage(
-										bookPageInputFileWrapper, 
+								bookPageInputFile2 = createBookPage(
+										bookPageInputFile, 
 										bookPage.getPage(), 
 										bookPageConfiguration.getScaleType(), 
 										bookPageConfiguration.getScaleWidth(), 
 										bookPageConfiguration.getScaleHeight()
 								);
 								
-								createBookPage(bookPageInputFileWrapper2, bookPageOutputFileWrapper);
+								createBookPage(bookPageInputFile2, bookPageOutputFile);
 							} finally {
 								try {
-									if(bookPageInputFileWrapper2 != null) {
-										File bookPageInputFile2 = bookPageInputFileWrapper2.getFile();
+									if(bookPageInputFile2 != null) {
 										if(bookPageInputFile2.isFile()) {
 											bookPageInputFile2.delete();
 										}
@@ -617,8 +613,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					}
 				} finally {
 					try {
-						if(bookPageInputFileWrapper != null) {
-							File bookPageInputFile = bookPageInputFileWrapper.getFile();
+						if(bookPageInputFile != null) {
 							if(bookPageInputFile.isFile()) {
 								bookPageInputFile.delete();
 							}
@@ -641,13 +636,13 @@ public class DefaultBookScannerService implements BookScannerService {
 		return book;
     }
     
-    private Book updateBookPages(FileWrapper<File> bookInputFileWrapper, Book book) throws Exception {
+    private Book updateBookPages(TypeableFile bookInputFile, Book book) throws Exception {
     	List<BookPage> bookPageList = new ArrayList<BookPage>();
     	for(BookPage defaultBookPage: defaultBookPageList) {
     		Integer defaultPage;
     		Integer defaultLastPage;
     		
-    		if(defaultBookPage.getPage() != null) {
+    		if(defaultBookPage.getPage()  != null) {
     			defaultPage = defaultBookPage.getPage();
         		defaultLastPage = defaultPage;
     		} else {
@@ -657,7 +652,7 @@ public class DefaultBookScannerService implements BookScannerService {
     		
     		while(defaultPage <= defaultLastPage) {
 	    		for(BookPageConfiguration defaultBookPageConfiguration: defaultBookPage.getBookPageConfigurationList()) {
-		    		FileWrapper<File> bookPageOutputFileWrapper = createBookPageFileWrapper(
+	    			TypeableFile bookPageOutputFile = createBookPageFile(
 		    				book, 
 		    				defaultPage, 
 		    				defaultBookPageConfiguration.getScaleType(), 
@@ -665,8 +660,8 @@ public class DefaultBookScannerService implements BookScannerService {
 		    				defaultBookPageConfiguration.getScaleHeight()
 		    		);
 			    	
-			    	if(bookPageOutputFileWrapper.getFile().isFile()) {
-			    		updateBookPage(bookPageOutputFileWrapper);
+			    	if(bookPageOutputFile.isFile()) {
+			    		updateBookPage(bookPageOutputFile);
 			    	} else {
 			    		BookPage bookPage = getBookPage(bookPageList, defaultPage);
 			    		if(bookPage == null) {
@@ -685,19 +680,19 @@ public class DefaultBookScannerService implements BookScannerService {
     	}
     	
     	if(bookPageList.size() > 0) {
-			ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
+    		ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
 	    	ArchiveReader archiveReader = null;
 			try {
-				archiveReader = archiveReaderFactory.getArchiveReader(bookInputFileWrapper.getFileType());
-				archiveReader.openArchive(bookInputFileWrapper);
+				archiveReader = archiveReaderFactory.getArchiveReader(bookInputFile.getFileType());
+				archiveReader.openArchive(bookInputFile);
 				
 				for(BookPage bookPage: bookPageList) {
-					FileWrapper<File> bookPageInputFileWrapper = null;
+					TypeableFile bookPageInputFile = null;
 					try {
-						bookPageInputFileWrapper = archiveReader.readFile(bookPage.getPage() - 1);
+						bookPageInputFile = archiveReader.readFile(bookPage.getPage() - 1);
 						
 						for(BookPageConfiguration bookPageConfiguration: bookPage.getBookPageConfigurationList()) {
-							FileWrapper<File> bookPageOutputFileWrapper = createBookPageFileWrapper(
+							TypeableFile bookPageOutputFile = createBookPageFile(
 				    				book, 
 				    				bookPage.getPage(), 
 				    				bookPageConfiguration.getScaleType(), 
@@ -705,27 +700,26 @@ public class DefaultBookScannerService implements BookScannerService {
 				    				bookPageConfiguration.getScaleHeight()
 				    		);
 							
-							if(FileType.JPG.equals(bookPageInputFileWrapper.getFileType()) 
+							if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
 									&& bookPageConfiguration.getScaleType() == null 
 									&& bookPageConfiguration.getScaleWidth() == null 
 									&& bookPageConfiguration.getScaleHeight() == null) {
-								createBookPage(bookPageInputFileWrapper, bookPageOutputFileWrapper);
+								createBookPage(bookPageInputFile, bookPageOutputFile);
 							} else {
-								FileWrapper<File> bookPageInputFileWrapper2 = null;
+								TypeableFile bookPageInputFile2 = null;
 								try {
-									bookPageInputFileWrapper2 = createBookPage(
-											bookPageInputFileWrapper, 
+									bookPageInputFile2 = createBookPage(
+											bookPageInputFile, 
 											bookPage.getPage(), 
 											bookPageConfiguration.getScaleType(), 
 											bookPageConfiguration.getScaleWidth(), 
 											bookPageConfiguration.getScaleHeight()
 									);
 									
-									createBookPage(bookPageInputFileWrapper2, bookPageOutputFileWrapper);
+									createBookPage(bookPageInputFile2, bookPageOutputFile);
 								} finally {
 									try {
-										if(bookPageInputFileWrapper2 != null) {
-											File bookPageInputFile2 = bookPageInputFileWrapper2.getFile();
+										if(bookPageInputFile2 != null) {
 											if(bookPageInputFile2.isFile()) {
 												bookPageInputFile2.delete();
 											}
@@ -738,8 +732,7 @@ public class DefaultBookScannerService implements BookScannerService {
 						}
 					} finally {
 						try {
-							if(bookPageInputFileWrapper != null) {
-								File bookPageInputFile = bookPageInputFileWrapper.getFile();
+							if(bookPageInputFile != null) {
 								if(bookPageInputFile.isFile()) {
 									bookPageInputFile.delete();
 								}
@@ -763,17 +756,17 @@ public class DefaultBookScannerService implements BookScannerService {
     	return book;
     }
     
-    private String createFileId(FileWrapper<File> bookInputFileWrapper) throws Exception {
+    private String createFileId(TypeableFile bookInputFile) throws Exception {
     	HashManagerFactory hashManagerFactory = HashManagerFactory.getInstance();
     	HashManager hashManager = hashManagerFactory.getHashManager(HashType.SHA256);
     	
-    	String fileId = hashManager.createHash(bookInputFileWrapper, HashType.SHA256);
+    	String fileId = hashManager.createHash(bookInputFile, HashType.SHA256);
     	
     	return fileId;
     }
     
-    private FileWrapper<File> createBookPageFileWrapper(Book book, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
-    	File directory = getDirectory();
+    private TypeableFile createBookPageFile(Book book, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
+    	TypeableFile directory = getDirectory();
     	
     	String bookPageFilePath = book.getFileId().substring(0, 2) + "/" + book.getFileId().substring(2) + "/" + page;
         if(scaleType != null) {
@@ -787,27 +780,23 @@ public class DefaultBookScannerService implements BookScannerService {
         }
         bookPageFilePath = bookPageFilePath + ".jpg";
         
-		File bookPageFile = new File(directory, bookPageFilePath);
-		FileType bookPageFileType = FileType.JPG;
+        TypeableFile bookPageFile = new TypeableFile(directory, bookPageFilePath);
 		
-		FileWrapper<File> bookPageFileWrapper = new FileWrapper<File>(bookPageFile, bookPageFileType);
-		
-		return bookPageFileWrapper;
+		return bookPageFile;
     }
     
-    private FileWrapper<File> createBookPage(FileWrapper<File> bookPageInputFileWrapper, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
+    private TypeableFile createBookPage(TypeableFile bookPageInputFile, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
 		ImageManagerFactory imageManagerFactory = ImageManagerFactory.getInstance();
-    	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFileWrapper.getFileType(), FileType.JPG);
+    	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFile.getFileType(), FileType.JPG);
 		
-    	FileWrapper<File> bookPageOutputFileWrapper = imageManager.createImage(bookPageInputFileWrapper, FileType.JPG, scaleType, scaleWidth, scaleHeight);
+    	TypeableFile bookPageOutputFile = imageManager.createImage(bookPageInputFile, FileType.JPG, scaleType, scaleWidth, scaleHeight);
 		
-		return bookPageOutputFileWrapper;
+		return bookPageOutputFile;
 	}
     
-    private void createBookPage(FileWrapper<File> bookPageInputFileWrapper, FileWrapper<File> bookPageOutputFileWrapper) throws Exception {
-		File bookPageOutputFile = bookPageOutputFileWrapper.getFile();
-		File bookPageOutputDirectory = bookPageOutputFile.getParentFile();
-		File bookPageOutputDirectory2 = bookPageOutputDirectory.getParentFile();
+    private void createBookPage(TypeableFile bookPageInputFile, TypeableFile bookPageOutputFile) throws Exception {
+    	TypeableFile bookPageOutputDirectory = bookPageOutputFile.getParentTypeableFile();
+    	TypeableFile bookPageOutputDirectory2 = bookPageOutputDirectory.getParentTypeableFile();
 		
 		if(bookPageOutputDirectory2.isDirectory() == false) {
 			bookPageOutputDirectory2.mkdir();
@@ -820,7 +809,7 @@ public class DefaultBookScannerService implements BookScannerService {
 		InputStream bookPageInputStream = null;
 		OutputStream bookPageOutputStream = null;
 		try {
-			bookPageInputStream = new FileInputStream(bookPageInputFileWrapper.getFile());
+			bookPageInputStream = new FileInputStream(bookPageInputFile);
 			bookPageOutputStream = new FileOutputStream(bookPageOutputFile);
 			
 			byte[] buffer = new byte[8 * 1024];
@@ -851,10 +840,9 @@ public class DefaultBookScannerService implements BookScannerService {
 		bookPageOutputDirectory2.setLastModified(updateDate.getTime());
 	}
     
-    private void updateBookPage(FileWrapper<File> bookPageOutputFileWrapper) throws Exception {
-    	File bookPageOutputFile = bookPageOutputFileWrapper.getFile();
-		File bookPageOutputDirectory = bookPageOutputFile.getParentFile();
-		File bookPageOutputDirectory2 = bookPageOutputDirectory.getParentFile();
+    private void updateBookPage(TypeableFile bookPageOutputFile) throws Exception {
+    	TypeableFile bookPageOutputDirectory = bookPageOutputFile.getParentTypeableFile();
+    	TypeableFile bookPageOutputDirectory2 = bookPageOutputDirectory.getParentTypeableFile();
 		
 		bookPageOutputFile.setLastModified(updateDate.getTime());
 		bookPageOutputDirectory.setLastModified(updateDate.getTime());
@@ -862,12 +850,12 @@ public class DefaultBookScannerService implements BookScannerService {
     }
     
     private void deleteBookPageByUpdateDate() throws Exception {
-    	File directory = getDirectory();
+    	TypeableFile directory = getDirectory();
     	
     	if(directory.isDirectory()) {
-    		File[] bookPageDirectoryList = directory.listFiles();
+    		TypeableFile[] bookPageDirectoryList = directory.listTypeableFiles();
     		
-			for(File bookPageDirectory: bookPageDirectoryList) {
+			for(TypeableFile bookPageDirectory: bookPageDirectoryList) {
 				if(status.equals(BookScannerServiceStatus.STOPPING)) {
 		    		logger.info("stopping!");
 		    		break;
@@ -876,9 +864,9 @@ public class DefaultBookScannerService implements BookScannerService {
 				if(bookPageDirectory.isDirectory()) {
 					Date bookPageDirectoryUpdateDate = new Date(bookPageDirectory.lastModified());
 					
-					File[] bookPageDirectoryList2 = bookPageDirectory.listFiles();
+					TypeableFile[] bookPageDirectoryList2 = bookPageDirectory.listTypeableFiles();
 					
-					for(File bookPageDirectory2: bookPageDirectoryList2) {
+					for(TypeableFile bookPageDirectory2: bookPageDirectoryList2) {
 						if(status.equals(BookScannerServiceStatus.STOPPING)) {
 				    		logger.info("stopping!");
 				    		break;
@@ -887,9 +875,9 @@ public class DefaultBookScannerService implements BookScannerService {
 						if(bookPageDirectory2.isDirectory()) {
 							Date bookPageDirectoryUpdateDate2 = new Date(bookPageDirectory2.lastModified());
 							
-							File[] bookPageFileList = bookPageDirectory2.listFiles();
+							TypeableFile[] bookPageFileList = bookPageDirectory2.listTypeableFiles();
 							
-							for(File bookPageFile: bookPageFileList) {
+							for(TypeableFile bookPageFile: bookPageFileList) {
 								if(bookPageFile.isFile()) {
 									Date bookPageUpdateDate = new Date(bookPageFile.lastModified());
 									
