@@ -65,9 +65,9 @@ public class ArchiveReaderImpl implements ArchiveReader {
 	
 	@Override
 	public void openArchive(TypeableFile inputFile) throws Exception {
-		List<FileType> listOutputFileType = new ArrayList<FileType>();
-		listOutputFileType.add(FileType.JPG);
-		listOutputFileType.add(FileType.PNG);
+		List<FileType> outputFileTypeList = new ArrayList<FileType>();
+		outputFileTypeList.add(FileType.JPG);
+		outputFileTypeList.add(FileType.PNG);
 		
 		randomAccessFileIn = new RandomAccessFile(inputFile, "r");
 		
@@ -83,7 +83,7 @@ public class ArchiveReaderImpl implements ArchiveReader {
         for (ISimpleInArchiveItem simpleInArchiveItem : simpleInArchive.getArchiveItems()) {
             if (!simpleInArchiveItem.isFolder()) {
             	FileType outputFileType = FileType.getFileType(simpleInArchiveItem.getPath());
-        		if(listOutputFileType.contains(outputFileType)) {
+        		if(outputFileTypeList.contains(outputFileType)) {
         			simpleInArchiveItemList.add(simpleInArchiveItem);
         		}
             }
