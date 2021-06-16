@@ -43,73 +43,142 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 		this.scaleHeight = scaleHeight;
 	}
 	
-	@Override
-	public void write(OutputStream outputStream) throws IOException, WebApplicationException {
-		try {
-			TypeableFile bookPageInputFile = createBookPageFile();
+	private boolean writeBookPage(OutputStream outputStream) throws Exception {
+		boolean isWritten = false;
+		
+		TypeableFile bookPageInputFile = getBookPage(scaleType, scaleWidth, scaleHeight);
+		
+		if(bookPageInputFile.isFile()) {
+			write(outputStream, bookPageInputFile);
 			
-			if(bookPageInputFile.isFile()) {
+			isWritten = true;
+		}
+		
+		return isWritten;
+	}
+	
+	private boolean writeBookPage2(OutputStream outputStream) throws Exception {
+		boolean isWritten = false;
+		
+		TypeableFile bookPageInputFile = getBookPage(null, null, null);
+		
+		if(bookPageInputFile.isFile()) {
+			if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
+					&& scaleType == null 
+					&& scaleWidth == null 
+					&& scaleHeight == null) {
 				write(outputStream, bookPageInputFile);
-			} else {
-				TypeableFile bookInputFile = new TypeableFile(book.getFilePath());
 				
-				ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
-		    	ArchiveReader archiveReader = null;
+				isWritten = true;
+			} else {
+				TypeableFile bookPageInputFile2 = null;
 				try {
-					archiveReader = archiveReaderFactory.getArchiveReader(bookInputFile.getFileType());
-					archiveReader.openArchive(bookInputFile);
+					bookPageInputFile2 = createBookPage(bookPageInputFile);
 					
-					TypeableFile bookPageInputFile2 = null;
-					try {
-						bookPageInputFile2 = archiveReader.readFile(page - 1);
-						
-						if(FileType.JPG.equals(bookPageInputFile2.getFileType()) 
-								&& scaleType == null 
-								&& scaleWidth == null 
-								&& scaleHeight == null) {
-							write(outputStream, bookPageInputFile2);
-						} else {
-							TypeableFile bookPageInputFile3 = null;
-							try {
-								bookPageInputFile3 = createBookPage(bookPageInputFile2);
-								
-								write(outputStream, bookPageInputFile3);
-							} finally {
-								try {
-									if(bookPageInputFile3 != null) {
-										if(bookPageInputFile3.isFile()) {
-											bookPageInputFile3.delete();
-										}
-									}
-								} catch(Exception e) {
-									// pass
-								}
-							}
-						}
-					} finally {
-						try {
-							if(bookPageInputFile2 != null) {
-								if(bookPageInputFile2.isFile()) {
-									bookPageInputFile2.delete();
-								}
-							}
-						} catch(Exception e) {
-							// pass
-						}
-					}
+					write(outputStream, bookPageInputFile2);
+					
+					isWritten = true;
 				} finally {
 					try {
-						if(archiveReader != null) {
-							archiveReader.closeArchive();
+						if(bookPageInputFile2 != null) {
+							if(bookPageInputFile2.isFile()) {
+								bookPageInputFile2.delete();
+							}
 						}
 					} catch(Exception e) {
 						// pass
 					}
 				}
 			}
+		}
+		
+		return isWritten;
+	}
+	
+	private boolean writeBookPage3(OutputStream outputStream, ArchiveReader archiveReader) throws Exception {
+		boolean isWritten = false;
+		
+		TypeableFile bookPageInputFile = null;
+		try {
+			bookPageInputFile = archiveReader.readFile(page - 1);
+			
+			if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
+					&& scaleType == null 
+					&& scaleWidth == null 
+					&& scaleHeight == null) {
+				write(outputStream, bookPageInputFile);
+				
+				isWritten = true;
+			} else {
+				TypeableFile bookPageInputFile2 = null;
+				try {
+					bookPageInputFile2 = createBookPage(bookPageInputFile);
+					
+					write(outputStream, bookPageInputFile2);
+					
+					isWritten = true;
+				} finally {
+					try {
+						if(bookPageInputFile2 != null) {
+							if(bookPageInputFile2.isFile()) {
+								bookPageInputFile2.delete();
+							}
+						}
+					} catch(Exception e) {
+						// pass
+					}
+				}
+			}
+		} finally {
+			try {
+				if(bookPageInputFile != null) {
+					if(bookPageInputFile.isFile()) {
+						bookPageInputFile.delete();
+					}
+				}
+			} catch(Exception e) {
+				// pass
+			}
+		}
+		
+		return isWritten;
+	}
+	
+	@Override
+	public void write(OutputStream outputStream) throws IOException, WebApplicationException {
+		try {
+			ArchiveReader archiveReader = null;
+			try {
+				boolean isWritten = writeBookPage(outputStream);
+				
+				if(isWritten == false) {
+					isWritten = writeBookPage2(outputStream);
+					
+					if(isWritten == false) {
+						if(archiveReader == null) {
+							TypeableFile bookInputFile = new TypeableFile(book.getFilePath());
+							
+							ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
+							
+							archiveReader = archiveReaderFactory.getArchiveReader(bookInputFile.getFileType());
+							archiveReader.openArchive(bookInputFile);
+						}
+						
+						writeBookPage3(outputStream, archiveReader);
+					}
+				}
+			} finally {
+				try {
+					if(archiveReader != null) {
+						archiveReader.closeArchive();
+					}
+				} catch(Exception e) {
+					// pass
+				}
+			}
 			
 			outputStream.flush();
-		} catch (Exception e) {
+		} catch(Exception e) {
 			logger.error("Error.", e);
 			
     		throw new WebApplicationException(e, 500);
@@ -124,7 +193,7 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 		}
 	}
 	
-	private TypeableFile createBookPageFile() throws Exception {
+	private TypeableFile getBookPage(ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
     	String directoryPath = getConfiguration().getAsString("data.path", "./data");
     	
     	String bookPageFilePath = book.getFileId().substring(0, 2) + "/" + book.getFileId().substring(2) + "/" + page;

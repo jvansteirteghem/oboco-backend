@@ -573,7 +573,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookPageInputFile = archiveReader.readFile(bookPage.getPage() - 1);
 					
 					for(BookPageConfiguration bookPageConfiguration: bookPage.getBookPageConfigurationList()) {
-						TypeableFile bookPageOutputFile = createBookPageFile(
+						TypeableFile bookPageOutputFile = getBookPage(
 			    				book, 
 			    				bookPage.getPage(), 
 			    				bookPageConfiguration.getScaleType(), 
@@ -652,7 +652,7 @@ public class DefaultBookScannerService implements BookScannerService {
     		
     		while(defaultPage <= defaultLastPage) {
 	    		for(BookPageConfiguration defaultBookPageConfiguration: defaultBookPage.getBookPageConfigurationList()) {
-	    			TypeableFile bookPageOutputFile = createBookPageFile(
+	    			TypeableFile bookPageOutputFile = getBookPage(
 		    				book, 
 		    				defaultPage, 
 		    				defaultBookPageConfiguration.getScaleType(), 
@@ -692,7 +692,7 @@ public class DefaultBookScannerService implements BookScannerService {
 						bookPageInputFile = archiveReader.readFile(bookPage.getPage() - 1);
 						
 						for(BookPageConfiguration bookPageConfiguration: bookPage.getBookPageConfigurationList()) {
-							TypeableFile bookPageOutputFile = createBookPageFile(
+							TypeableFile bookPageOutputFile = getBookPage(
 				    				book, 
 				    				bookPage.getPage(), 
 				    				bookPageConfiguration.getScaleType(), 
@@ -765,7 +765,7 @@ public class DefaultBookScannerService implements BookScannerService {
     	return fileId;
     }
     
-    private TypeableFile createBookPageFile(Book book, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
+    private TypeableFile getBookPage(Book book, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
     	TypeableFile directory = getDirectory();
     	
     	String bookPageFilePath = book.getFileId().substring(0, 2) + "/" + book.getFileId().substring(2) + "/" + page;
