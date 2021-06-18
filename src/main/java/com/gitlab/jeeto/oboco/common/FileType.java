@@ -17,6 +17,12 @@ public enum FileType {
 	JPG(new String[] {".jpg", ".jpeg"}, new int[] {0xFF, 0xD8}),
 	PNG(new String[] {".png"}, new int[] {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A});
 	
+	public enum Type {
+		ALL,
+		ARCHIVE,
+		IMAGE;
+	}
+	
 	private String[] extensions;
 	private int[] magic;
 	
@@ -33,14 +39,18 @@ public enum FileType {
 		return extensions;
 	}
 
-	public static List<FileType> getFileTypeList() {
+	public static List<FileType> getFileTypeList(Type type) {
 		List<FileType> fileTypeList = new ArrayList<FileType>();
-		fileTypeList.add(FileType.ZIP);
-		fileTypeList.add(FileType.RAR);
-		fileTypeList.add(FileType.RAR5);
-		fileTypeList.add(FileType.SEVENZIP);
-		fileTypeList.add(FileType.JPG);
-		fileTypeList.add(FileType.PNG);
+		if(Type.ALL.equals(type) || Type.ARCHIVE.equals(type)) {
+			fileTypeList.add(FileType.ZIP);
+			fileTypeList.add(FileType.RAR);
+			fileTypeList.add(FileType.RAR5);
+			fileTypeList.add(FileType.SEVENZIP);
+		}
+		if(Type.ALL.equals(type) || Type.IMAGE.equals(type)) {
+			fileTypeList.add(FileType.JPG);
+			fileTypeList.add(FileType.PNG);
+		}
 		return fileTypeList;
 	}
 	
@@ -58,7 +68,7 @@ public enum FileType {
 	public static FileType getFileType(String fileName) {
 		String fileExtension = getFileExtension(fileName);
 		
-		List<FileType> fileTypeList = getFileTypeList();
+		List<FileType> fileTypeList = getFileTypeList(Type.ALL);
 		for(FileType fileType: fileTypeList) {
 			String[] fileTypeExtensions = fileType.getExtensions();
 			for(String fileTypeExtension: fileTypeExtensions) {
@@ -81,7 +91,7 @@ public enum FileType {
 	}
 	
 	public static FileType getFileType(InputStream inputStream) {
-		List<FileType> fileTypeList = getFileTypeList();
+		List<FileType> fileTypeList = getFileTypeList(Type.ALL);
 		
 		return getFileType(inputStream, fileTypeList);
 	}

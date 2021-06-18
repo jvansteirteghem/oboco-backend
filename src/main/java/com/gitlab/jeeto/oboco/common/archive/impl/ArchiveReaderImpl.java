@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.common.FileType;
+import com.gitlab.jeeto.oboco.common.FileType.Type;
 import com.gitlab.jeeto.oboco.common.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.common.TypeableFile;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
@@ -65,9 +66,7 @@ public class ArchiveReaderImpl implements ArchiveReader {
 	
 	@Override
 	public void openArchive(TypeableFile inputFile) throws Exception {
-		List<FileType> outputFileTypeList = new ArrayList<FileType>();
-		outputFileTypeList.add(FileType.JPG);
-		outputFileTypeList.add(FileType.PNG);
+		List<FileType> outputFileTypeList = FileType.getFileTypeList(Type.IMAGE);
 		
 		randomAccessFileIn = new RandomAccessFile(inputFile, "r");
 		
@@ -81,7 +80,7 @@ public class ArchiveReaderImpl implements ArchiveReader {
 		
 		simpleInArchiveItemList = new ArrayList<ISimpleInArchiveItem>();
         for (ISimpleInArchiveItem simpleInArchiveItem : simpleInArchive.getArchiveItems()) {
-            if (!simpleInArchiveItem.isFolder()) {
+            if (simpleInArchiveItem.isFolder() == false) {
             	FileType outputFileType = FileType.getFileType(simpleInArchiveItem.getPath());
         		if(outputFileTypeList.contains(outputFileType)) {
         			simpleInArchiveItemList.add(simpleInArchiveItem);

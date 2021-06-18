@@ -30,6 +30,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
 import com.gitlab.jeeto.oboco.common.FileType;
+import com.gitlab.jeeto.oboco.common.FileType.Type;
 import com.gitlab.jeeto.oboco.common.NameHelper;
 import com.gitlab.jeeto.oboco.common.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.common.TypeableFile;
@@ -315,6 +316,8 @@ public class DefaultBookScannerService implements BookScannerService {
 	}
     
 	private Integer add(Integer number, BookCollection rootBookCollection, BookCollection parentBookCollection, TypeableFile parentFile) throws Exception {
+		List<FileType> fileTypeList = FileType.getFileTypeList(Type.ARCHIVE);
+		
 		Integer numberOfBookCollections = parentBookCollection.getNumberOfBookCollections();
 		Integer numberOfBooks = parentBookCollection.getNumberOfBooks();
 		List<BookCollection> childBookCollections = parentBookCollection.getChildBookCollections();
@@ -396,9 +399,9 @@ public class DefaultBookScannerService implements BookScannerService {
 				
 				childBookCollections.addAll(bookCollection.getChildBookCollections());
 			} else {
-				FileType fileType = file.getFileType();
+				FileType fileType = FileType.getFileType(file.getName());
 				
-				if(FileType.ZIP.equals(fileType) || FileType.RAR.equals(fileType) || FileType.RAR5.equals(fileType)) {
+				if(fileTypeList.contains(fileType)) {
 					Book book = bookService.getBookByBookCollectionIdAndFilePath(rootBookCollection.getId(), path);
 					Book bookUpdate = bookService.getBookByUpdateDateAndFilePath(updateDate, path);
 					
