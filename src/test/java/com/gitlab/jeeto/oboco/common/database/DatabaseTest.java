@@ -44,6 +44,7 @@ public class DatabaseTest extends TestCase {
 		entityTransaction.begin();
 		try {
 			User user = new User();
+			user.setCreateDate(updateDate);
 			user.setUpdateDate(updateDate);
 			user.setName("name");
 			user.setPasswordHash("passwordHash");
@@ -59,6 +60,7 @@ public class DatabaseTest extends TestCase {
 			
 			BookCollection bookCollection = new BookCollection();
 			bookCollection.setDirectoryPath("/bookCollection");
+			bookCollection.setCreateDate(updateDate);
 			bookCollection.setUpdateDate(updateDate);
 			bookCollection.setName("root");
 			bookCollection.setNormalizedName("root");
@@ -76,6 +78,7 @@ public class DatabaseTest extends TestCase {
 			Book book = new Book();
 			book.setFileId("0000000000");
 			book.setFilePath("/bookCollection/0000000000.cbz");
+			book.setCreateDate(updateDate);
 			book.setUpdateDate(updateDate);
 			book.setName("0000000000");
 			book.setNormalizedName("0000000000");
@@ -91,6 +94,7 @@ public class DatabaseTest extends TestCase {
 			BookMark bookMark = new BookMark();
 			bookMark.setUser(user);
 			bookMark.setFileId("0000000000");
+			bookMark.setCreateDate(updateDate);
 			bookMark.setUpdateDate(updateDate);
 			bookMark.setPage(1);
 			
@@ -100,10 +104,11 @@ public class DatabaseTest extends TestCase {
 			
 			BookMarkReference bookMarkReference = new BookMarkReference();
 			bookMarkReference.setUser(user);
-			bookMarkReference.setFileId("0000000000");
+			bookMarkReference.setCreateDate(updateDate);
 			bookMarkReference.setUpdateDate(updateDate);
 			bookMarkReference.setBook(book);
 			bookMarkReference.setBookMark(bookMark);
+			bookMarkReference.setBookCollection(bookCollection);
 			bookMarkReference.setRootBookCollection(bookCollection);
 			
 			entityManager.persist(bookMarkReference);

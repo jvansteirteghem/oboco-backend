@@ -13,14 +13,11 @@ import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDtoMapper;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkDto;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkDtoMapper;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
-import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
-import com.gitlab.jeeto.oboco.api.v1.user.User;
-import com.gitlab.jeeto.oboco.common.GraphDto;
+import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.Linkable;
 import com.gitlab.jeeto.oboco.common.LinkableDto;
 import com.gitlab.jeeto.oboco.common.PageableList;
 import com.gitlab.jeeto.oboco.common.PageableListDto;
-import com.gitlab.jeeto.oboco.common.exception.Problem;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 
 @RequestScoped
@@ -36,13 +33,6 @@ public class BookDtoMapper {
 		return bookCollectionDtoMapper;
 	}
 	
-	@Inject
-	BookMarkService bookMarkService;
-	
-	private BookMarkService getBookMarkService() {
-		return bookMarkService;
-	}
-	
 	private BookMarkDtoMapper bookMarkDtoMapper;
 	@Inject
 	Provider<BookMarkDtoMapper> bookMarkDtoMapperProvider;
@@ -54,36 +44,37 @@ public class BookDtoMapper {
 		return bookMarkDtoMapper;
 	}
 	
-	public BookDto getBookDto(User user, Book book, GraphDto graphDto) throws ProblemException {
+	public BookDto getBookDto(Book book, Graph graph) throws ProblemException {
 		BookDto bookDto = null;
 		if(book != null) {
 			bookDto = new BookDto();
 			bookDto.setId(book.getId());
+			bookDto.setCreateDate(book.getCreateDate());
 			bookDto.setUpdateDate(book.getUpdateDate());
 			bookDto.setName(book.getName());
 			bookDto.setNumberOfPages(book.getNumberOfPages());
 			
-			if(graphDto != null) {
-				if(graphDto.containsKey("bookCollection")) {
-					GraphDto nestedGraphDto = graphDto.get("bookCollection");
+			if(graph != null) {
+				if(graph.containsKey("bookCollection")) {
+					Graph bookCollectionGraph = graph.get("bookCollection");
 					
 					BookCollection bookCollection = book.getBookCollection();
-					BookCollectionDto bookCollectionDto = getBookCollectionDtoMapper().getBookCollectionDto(user, bookCollection, nestedGraphDto);
+					BookCollectionDto bookCollectionDto = getBookCollectionDtoMapper().getBookCollectionDto(bookCollection, bookCollectionGraph);
 					
 					bookDto.setBookCollection(bookCollectionDto);
 				}
 				
-				if(graphDto.containsKey("bookMark")) {
-					GraphDto nestedGraphDto = graphDto.get("bookMark");
+				if(graph.containsKey("bookMark")) {
+					Graph bookMarkGraph = graph.get("bookMark");
 					
-					if(user.getRootBookCollection() == null) {
-						throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
+					BookMarkReference bookMarkReference = null;
+					
+					List<BookMarkReference> bookMarkReferenceList = book.getBookMarkReferences();
+					if(bookMarkReferenceList != null && bookMarkReferenceList.size() == 1) {
+						bookMarkReference = bookMarkReferenceList.get(0);
 					}
 					
-					Long rootBookCollectionId = user.getRootBookCollection().getId();
-					
-					BookMarkReference bookMarkReference = getBookMarkService().getBookMarkReferenceByBookCollectionIdAndUserIdAndBookId(rootBookCollectionId, user.getId(), book.getId());
-					BookMarkDto bookMarkDto = getBookMarkDtoMapper().getBookMarkDto(user, bookMarkReference, nestedGraphDto);
+					BookMarkDto bookMarkDto = getBookMarkDtoMapper().getBookMarkDto(bookMarkReference, bookMarkGraph);
 					
 					bookDto.setBookMark(bookMarkDto);
 				}
@@ -93,13 +84,13 @@ public class BookDtoMapper {
 		return bookDto;
 	}
 	
-	public List<BookDto> getBooksDto(User user, List<Book> bookList, GraphDto graphDto) throws ProblemException {
+	public List<BookDto> getBooksDto(List<Book> bookList, Graph graph) throws ProblemException {
 		List<BookDto> bookListDto = null;
 		if(bookList != null) {
 			bookListDto = new ArrayList<BookDto>();
 			
 			for(Book book: bookList) {
-				BookDto bookDto = getBookDto(user, book, graphDto);
+				BookDto bookDto = getBookDto(book, graph);
 				
 				bookListDto.add(bookDto);
 			}
@@ -108,23 +99,23 @@ public class BookDtoMapper {
 		return bookListDto;
 	}
 	
-	public LinkableDto<BookDto> getBooksDto(User user, Linkable<Book> bookLinkable, GraphDto graphDto) throws ProblemException {
+	public LinkableDto<BookDto> getBooksDto(Linkable<Book> bookLinkable, Graph graph) throws ProblemException {
 		LinkableDto<BookDto> bookLinkableDto = null;
 		if(bookLinkable != null) {
 			bookLinkableDto = new LinkableDto<BookDto>();
 			
 			Book book = bookLinkable.getElement();
-			BookDto bookDto = getBookDto(user, book, graphDto);
+			BookDto bookDto = getBookDto(book, graph);
 			
 			bookLinkableDto.setElement(bookDto);
 			
 			Book previousBook = bookLinkable.getPreviousElement();
-			BookDto previousBookDto = getBookDto(user, previousBook, graphDto);
+			BookDto previousBookDto = getBookDto(previousBook, graph);
 			
 			bookLinkableDto.setPreviousElement(previousBookDto);
 			
 			Book nextBook = bookLinkable.getNextElement();
-			BookDto nextBookDto = getBookDto(user, nextBook, graphDto);
+			BookDto nextBookDto = getBookDto(nextBook, graph);
 			
 			bookLinkableDto.setNextElement(nextBookDto);
 		}
@@ -132,14 +123,14 @@ public class BookDtoMapper {
 		return bookLinkableDto;
 	}
 	
-	public PageableListDto<BookDto> getBooksDto(User user, PageableList<Book> bookPageableList, GraphDto graphDto) throws ProblemException {
+	public PageableListDto<BookDto> getBooksDto(PageableList<Book> bookPageableList, Graph graph) throws ProblemException {
 		PageableListDto<BookDto> bookPageableListDto = null;
 		if(bookPageableList != null) {
 			bookPageableListDto = new PageableListDto<BookDto>();
 			
 			List<BookDto> bookListDto = new ArrayList<BookDto>();
 			for(Book book: bookPageableList.getElements()) {
-				BookDto bookDto = getBookDto(user, book, graphDto);
+				BookDto bookDto = getBookDto(book, graph);
 				
 				bookListDto.add(bookDto);
 			}

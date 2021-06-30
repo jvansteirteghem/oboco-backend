@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.api.v1.user.UserService;
+import com.gitlab.jeeto.oboco.common.Graph;
+import com.gitlab.jeeto.oboco.common.GraphHelper;
 import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
 
 @Authentication
@@ -110,7 +112,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    		return;
 				}
 				
-				UserPrincipal userPrincipal = new UserPrincipal(user);
+		    	UserPrincipal userPrincipal = new UserPrincipal(user);
 		    	
 		    	UserSecurityContext userSecurityContext = new UserSecurityContext(requestContext.getSecurityContext(), userPrincipal);
 		        requestContext.setSecurityContext(userSecurityContext);
@@ -127,8 +129,6 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    	try {
 		    		accessToken = tokenService.getAccessToken(accessTokenValue);
 				} catch (Exception e) {
-					logger.info("The user is not authenticated: invalid userToken: " + e.getMessage());
-					
 					ResponseBuilder responseBuilder = Response.status(401);
 					responseBuilder.header("WWW-Authenticate", "Bearer realm=\"oboco\"");
 					responseBuilder.entity(new ProblemDto(401, "PROBLEM_USER_NOT_AUTHENTICATED", "The user is not authenticated."));
@@ -138,11 +138,11 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 					return;
 				}
 		    	
-		    	User user = userService.getUserByName(accessToken.getName());
+		    	Graph graph = GraphHelper.createGraph("(rootBookCollection)");
+		    	
+		    	User user = userService.getUserByName(accessToken.getName(), graph);
 				
 				if(user == null) {
-					logger.info("The user is not authenticated: invalid userToken: name.");
-					
 					ResponseBuilder responseBuilder = Response.status(401);
 					responseBuilder.header("WWW-Authenticate", "Bearer realm=\"oboco\"");
 					responseBuilder.entity(new ProblemDto(401, "PROBLEM_USER_NOT_AUTHENTICATED", "The user is not authenticated."));
@@ -153,8 +153,6 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 				}
 				
 				if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(accessToken.getStartDate()) >= 0) {
-					logger.info("The user is not authenticated: invalid userToken: startDate.");
-					
 					ResponseBuilder responseBuilder = Response.status(401);
 					responseBuilder.header("WWW-Authenticate", "Bearer realm=\"oboco\"");
 					responseBuilder.entity(new ProblemDto(401, "PROBLEM_USER_NOT_AUTHENTICATED", "The user is not authenticated."));
@@ -164,7 +162,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    		return;
 				}
 		    	
-				UserPrincipal userPrincipal = new UserPrincipal(user);
+		    	UserPrincipal userPrincipal = new UserPrincipal(user);
 		    	
 		    	UserSecurityContext userSecurityContext = new UserSecurityContext(requestContext.getSecurityContext(), userPrincipal);
 		        requestContext.setSecurityContext(userSecurityContext);

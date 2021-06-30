@@ -18,6 +18,7 @@ import com.gitlab.jeeto.oboco.api.v1.book.BookPageableListDto;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookCollectionDto {
 	private Long id;
+	private Date createDate;
 	private Date updateDate;
 	private String name;
 	private BookCollectionDto parentBookCollection;
@@ -35,6 +36,16 @@ public class BookCollectionDto {
 	}
 	public void setId(Long id) {
 		this.id = id;
+	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
+	@Schema(name = "createDate")
+	@XmlElement(name = "createDate")
+	public Date getCreateDate() {
+		return createDate;
+	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
 	@Schema(name = "updateDate")

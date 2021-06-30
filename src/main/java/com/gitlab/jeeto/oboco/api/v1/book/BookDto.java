@@ -17,6 +17,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkDto;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookDto {
 	private Long id;
+	private Date createDate;
 	private Date updateDate;
 	private String name;
 	private Integer numberOfPages;
@@ -32,6 +33,16 @@ public class BookDto {
 	}
 	public void setId(Long id) {
 		this.id = id;
+	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
+	@Schema(name = "createDate")
+	@XmlElement(name = "createDate")
+	public Date getCreateDate() {
+		return createDate;
+	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
 	@Schema(name = "updateDate")

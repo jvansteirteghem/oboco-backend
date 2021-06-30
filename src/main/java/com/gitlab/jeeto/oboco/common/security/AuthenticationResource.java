@@ -38,7 +38,7 @@ public class AuthenticationResource {
 		@APIResponse(responseCode = "200", description = "A userId.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserIdDto.class))),
 		@APIResponse(responseCode = "400", description = "A problem: PROBLEM_USER_NAME_PASSWORD_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "A problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+    })
 	@Path("")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -73,7 +73,7 @@ public class AuthenticationResource {
 		@APIResponse(responseCode = "200", description = "A userId.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserIdDto.class))),
 		@APIResponse(responseCode = "400", description = "A problem: PROBLEM_USER_TOKEN_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "A problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+    })
 	@POST
     @Path("refresh")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -83,7 +83,7 @@ public class AuthenticationResource {
 		
 		UserToken refreshToken = userTokenService.getRefreshToken(refreshTokenValue);
 		
-		User user = userService.getUserByName(refreshToken.getName());
+		User user = userService.getUserByName(refreshToken.getName(), null);
 		
 		if(user == null) {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid."));

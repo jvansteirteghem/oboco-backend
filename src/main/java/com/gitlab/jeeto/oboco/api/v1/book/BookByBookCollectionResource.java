@@ -30,8 +30,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkStatus;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
-import com.gitlab.jeeto.oboco.common.GraphDto;
-import com.gitlab.jeeto.oboco.common.GraphDtoHelper;
+import com.gitlab.jeeto.oboco.common.Graph;
+import com.gitlab.jeeto.oboco.common.GraphHelper;
 import com.gitlab.jeeto.oboco.common.Linkable;
 import com.gitlab.jeeto.oboco.common.LinkableDto;
 import com.gitlab.jeeto.oboco.common.PageableList;
@@ -78,8 +78,10 @@ public class BookByBookCollectionResource {
 		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_PAGE_INVALID, PROBLEM_PAGE_SIZE_INVALID, PROBLEM_GRAPH_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
+    })
 	@Path("")
 	@GET
 	public Response getBooksByBookCollection(
@@ -89,10 +91,10 @@ public class BookByBookCollectionResource {
 			@Parameter(name = "graph", description = "The graph. The full graph is (bookCollection,bookMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		PageableListDtoHelper.validatePageableList(page, pageSize);
 		
-		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(bookCollection,bookMark)");
+		Graph graph = GraphHelper.createGraph(graphValue);
+		Graph fullGraph = GraphHelper.createGraph("(bookCollection,bookMark)");
 		
-		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
+		GraphHelper.validateGraph(graph, fullGraph);
 		
 		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
@@ -100,17 +102,15 @@ public class BookByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		Long rootBookCollectionId = user.getRootBookCollection().getId();
-		
 		PageableList<Book> bookPageableList = null;
 		
 		if(uriInfo.getQueryParameters().containsKey("bookMarkStatus")) {
-			bookPageableList = bookService.getBooksByBookCollectionIdAndUserIdAndBookMarkStatus(rootBookCollectionId, bookCollectionId, user.getId(), bookMarkStatus, page, pageSize);
+			bookPageableList = bookService.getBooksByUserAndBookCollectionIdAndBookMarkStatus(user, bookCollectionId, bookMarkStatus, page, pageSize, graph);
 		} else {
-			bookPageableList = bookService.getBooksByBookCollectionId(rootBookCollectionId, bookCollectionId, page, pageSize);
+			bookPageableList = bookService.getBooksByUserAndBookCollectionId(user, bookCollectionId, page, pageSize, graph);
 		}
 		
-		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(user, bookPageableList, graphDto);;
+		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(bookPageableList, graph);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookPageableListDto);
@@ -119,24 +119,26 @@ public class BookByBookCollectionResource {
 	}
 	
 	@Operation(
-		description = "Get the books in the neighbourhood of the book of the bookCollection."
+		description = "Get the previous and next books of the book of the bookCollection."
 	)
 	@APIResponses({
-		@APIResponse(responseCode = "200", description = "The books.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookLinkableDto.class))),
+		@APIResponse(responseCode = "200", description = "The previous and next books.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookLinkableDto.class))),
 		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_GRAPH_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
-	@Path("{bookId}/NEIGHBOURHOOD")
+		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
+    })
+	@Path("{bookId}/books")
 	@GET
 	public Response getBooksByBookCollectionAndBook(
 			@Parameter(name = "bookId", description = "The id of the book.", required = false) @PathParam("bookId") Long bookId, 
 			@Parameter(name = "graph", description = "The graph. The full graph is (bookCollection,bookMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
-		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("(bookCollection,bookMark)");
+		Graph graph = GraphHelper.createGraph(graphValue);
+		Graph fullGraph = GraphHelper.createGraph("(bookCollection,bookMark)");
 		
-		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
+		GraphHelper.validateGraph(graph, fullGraph);
 		
 		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
@@ -144,10 +146,8 @@ public class BookByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		Long rootBookCollectionId = user.getRootBookCollection().getId();
-		
-		Linkable<Book> bookLinkable = bookService.getBooksByBookCollectionIdAndId(rootBookCollectionId, bookCollectionId, bookId);
-		LinkableDto<BookDto> bookLinkableDto = bookDtoMapper.getBooksDto(user, bookLinkable, graphDto);
+		Linkable<Book> bookLinkable = bookService.getBooksByUserAndBookCollectionIdAndId(user, bookCollectionId, bookId, graph);
+		LinkableDto<BookDto> bookLinkableDto = bookDtoMapper.getBooksDto(bookLinkable, graph);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookLinkableDto);
@@ -163,9 +163,10 @@ public class BookByBookCollectionResource {
 		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_BOOK_COLLECTION_ID_INVALID, PROBLEM_BOOK_ID_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_PAGE_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND, PROBLEM_PAGE_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
+    })
 	@Path("FIRST/pages/1.jpg")
 	@GET
 	@Produces({"image/jpeg"})
@@ -180,11 +181,9 @@ public class BookByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		Long rootBookCollectionId = user.getRootBookCollection().getId();
-		
 		Book book = null;
 		
-		PageableList<Book> bookPageableList = bookService.getBooksByBookCollectionId(rootBookCollectionId, bookCollectionId, 1, 1);
+		PageableList<Book> bookPageableList = bookService.getBooksByUserAndBookCollectionId(user, bookCollectionId, 1, 1, null);
 		
 		if(bookPageableList.getElements() != null && bookPageableList.getElements().size() == 1) {
 			book = bookPageableList.getElements().get(0);

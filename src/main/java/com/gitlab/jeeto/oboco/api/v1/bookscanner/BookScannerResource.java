@@ -29,8 +29,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gitlab.jeeto.oboco.common.GraphDto;
-import com.gitlab.jeeto.oboco.common.GraphDtoHelper;
+import com.gitlab.jeeto.oboco.common.Graph;
+import com.gitlab.jeeto.oboco.common.GraphHelper;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
 import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
@@ -58,15 +58,15 @@ public class BookScannerResource {
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+    })
 	@Path("")
 	@GET
 	public Response getBookScanners(
 			@Parameter(name = "graph", description = "The graph. The full graph is ().", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
-		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		Graph graph = GraphHelper.createGraph(graphValue);
+		Graph fullGraph = GraphHelper.createGraph("()");
 		
-		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
+		GraphHelper.validateGraph(graph, fullGraph);
 		
 		List<BookScannerDto> bookScannerListDto = new ArrayList<BookScannerDto>();
 		
@@ -94,16 +94,16 @@ public class BookScannerResource {
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_SCANNER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+    })
 	@Path("{bookScannerId}")
 	@GET
 	public Response getBookScanner(
 			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId,
 			@Parameter(name = "graph", description = "The graph. The full graph is ().", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
-		GraphDto graphDto = GraphDtoHelper.createGraphDto(graphValue);
-		GraphDto fullGraphDto = GraphDtoHelper.createGraphDto("()");
+		Graph graph = GraphHelper.createGraph(graphValue);
+		Graph fullGraph = GraphHelper.createGraph("()");
 		
-		GraphDtoHelper.validateGraphDto(graphDto, fullGraphDto);
+		GraphHelper.validateGraph(graph, fullGraph);
 		
 		BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerId)).get();
 		
@@ -131,35 +131,37 @@ public class BookScannerResource {
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_SCANNER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+    })
 	@Path("{bookScannerId}/start")
 	@POST
 	public Response startBookScanner(
 			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId) throws ProblemException {
+		for(BookScannerService bookScannerService: bookScannerServiceProvider) {
+			if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STOPPED) == false) {
+				throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScannerService.getStatus() + "."));
+			}
+		}
+		
 		BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerId)).get();
 		
 		if(bookScannerService == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
 		}
 		
-		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STOPPED)) {
-			bookScannerServiceExecuter.submit(new Runnable() {
-				@Override
-				public void run() {
-					try {
-	        			bookScannerService.start();
-	        		} catch(Exception e) {
-	        			logger.error("error", e);
-	        		}
-				}
-    		});
-			
-			ResponseBuilder responseBuilder = Response.status(200);
-			
-			return responseBuilder.build();
-		} else {
-			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid."));
-		}
+		bookScannerServiceExecuter.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+        			bookScannerService.start();
+        		} catch(Exception e) {
+        			logger.error("error", e);
+        		}
+			}
+		});
+		
+		ResponseBuilder responseBuilder = Response.status(200);
+		
+		return responseBuilder.build();
 	}
 	
 	@Operation(
@@ -172,7 +174,7 @@ public class BookScannerResource {
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_SCANNER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+    })
 	@Path("{bookScannerId}/stop")
 	@POST
 	public Response stopBookScanner(
@@ -183,14 +185,14 @@ public class BookScannerResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
 		}
 		
-		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTING) || bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTED)) {
+		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTED)) {
 			bookScannerService.stop();
 			
 			ResponseBuilder responseBuilder = Response.status(200);
 			
 			return responseBuilder.build();
 		} else {
-			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid."));
+			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScannerService.getStatus() + "."));
 		}
 	}
 }

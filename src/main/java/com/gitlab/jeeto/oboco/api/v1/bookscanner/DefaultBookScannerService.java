@@ -26,8 +26,6 @@ import com.gitlab.jeeto.oboco.api.v1.book.Book;
 import com.gitlab.jeeto.oboco.api.v1.book.BookService;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
-import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
-import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileType.Type;
@@ -242,6 +240,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					bookCollection.setDirectoryPath("");
 					bookCollection.setRootBookCollection(null);
 					bookCollection.setParentBookCollection(null);
+					bookCollection.setCreateDate(updateDate);
 					bookCollection.setUpdateDate(updateDate);
 					
 					bookCollection.setName(name);
@@ -285,7 +284,7 @@ public class DefaultBookScannerService implements BookScannerService {
 			
 			logger.info("delete bookMarkReferences");
 	        
-	        bookMarkService.deleteBookMarkReferenceByUpdateDate(updateDate);
+	        bookMarkService.deleteBookMarkReferencesByUpdateDate(updateDate);
 	        
 	        logger.info("delete books");
 	        
@@ -359,6 +358,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					String normalizedName = NameHelper.getNormalizedName(name);
 					
 					bookCollection.setNormalizedName(normalizedName);
+					bookCollection.setCreateDate(updateDate);
 					bookCollection.setUpdateDate(updateDate);
 					bookCollection.setNumberOfBookCollections(0);
 					bookCollection.setNumberOfBooks(0);
@@ -441,6 +441,7 @@ public class DefaultBookScannerService implements BookScannerService {
 					    	book.setNumberOfPages(bookUpdate.getNumberOfPages());
 						}
 				    	
+						book.setCreateDate(updateDate);
 				    	book.setUpdateDate(updateDate);
 						
 						numberOfBooks = numberOfBooks + 1;
@@ -450,20 +451,7 @@ public class DefaultBookScannerService implements BookScannerService {
 						
 						book = bookService.createBook(book);
 						
-						List<BookMark> bookMarkList = bookMarkService.getBookMarksByFileId(book.getFileId());
-						for(BookMark bookMark: bookMarkList) {
-							logger.info("create bookMarkReference");
-							
-							BookMarkReference bookMarkReference = new BookMarkReference();
-							bookMarkReference.setUser(bookMark.getUser());
-							bookMarkReference.setFileId(bookMark.getFileId());
-							bookMarkReference.setUpdateDate(updateDate);
-							bookMarkReference.setBook(book);
-							bookMarkReference.setBookMark(bookMark);
-							bookMarkReference.setRootBookCollection(rootBookCollection);
-							
-							bookMarkReference = bookMarkService.createBookMarkReference(bookMarkReference);
-						}
+						bookMarkService.createBookMarkReferencesByBook(book);
 					} else {
 						logger.info("update book " + path);
 						
@@ -504,14 +492,7 @@ public class DefaultBookScannerService implements BookScannerService {
 						
 						book = bookService.updateBook(book);
 						
-						List<BookMarkReference> bookMarkReferenceList = bookMarkService.getBookMarkReferencesByFileId(book.getFileId());
-						for(BookMarkReference bookMarkReference: bookMarkReferenceList) {
-							logger.info("update bookMarkReference");
-							
-							bookMarkReference.setUpdateDate(updateDate);
-							
-							bookMarkReference = bookMarkService.updateBookMarkReference(bookMarkReference);
-						}
+						bookMarkService.updateBookMarkReferencesByBook(book);
 					}
 				}
 			}
@@ -559,8 +540,8 @@ public class DefaultBookScannerService implements BookScannerService {
 	    		defaultPage = defaultPage + 1;
     		}
     	}
-    	
-		ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
+		
+    	ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
     	ArchiveReader archiveReader = null;
 		try {
 			archiveReader = archiveReaderFactory.getArchiveReader(bookInputFile.getFileType());
@@ -789,7 +770,7 @@ public class DefaultBookScannerService implements BookScannerService {
     }
     
     private TypeableFile createBookPage(TypeableFile bookPageInputFile, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
-		ImageManagerFactory imageManagerFactory = ImageManagerFactory.getInstance();
+    	ImageManagerFactory imageManagerFactory = ImageManagerFactory.getInstance();
     	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFile.getFileType(), FileType.JPG);
 		
     	TypeableFile bookPageOutputFile = imageManager.createImage(bookPageInputFile, FileType.JPG, scaleType, scaleWidth, scaleHeight);
