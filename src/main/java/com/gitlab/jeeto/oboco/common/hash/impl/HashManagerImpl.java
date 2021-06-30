@@ -1,16 +1,16 @@
 package com.gitlab.jeeto.oboco.common.hash.impl;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
 
+import com.gitlab.jeeto.oboco.common.TypeableFile;
 import com.gitlab.jeeto.oboco.common.hash.HashManager;
-import com.gitlab.jeeto.oboco.common.FileWrapper;
 import com.gitlab.jeeto.oboco.common.hash.HashType;
 
 public class HashManagerImpl implements HashManager {
-	public String createHash(FileWrapper<File> inputFileWrapper, HashType outputHashType) throws Exception {
+	@Override
+	public String createHash(TypeableFile inputFile, HashType outputHashType) throws Exception {
 		MessageDigest md = null;
 		
 		if(HashType.SHA256.equals(outputHashType)) {
@@ -23,7 +23,7 @@ public class HashManagerImpl implements HashManager {
 		
         InputStream inputStream = null;
 		try {
-			inputStream = new FileInputStream(inputFileWrapper.getFile());
+			inputStream = new FileInputStream(inputFile);
 			
 			byte[] buffer = new byte[8 * 1024];
 		    int bufferSize;

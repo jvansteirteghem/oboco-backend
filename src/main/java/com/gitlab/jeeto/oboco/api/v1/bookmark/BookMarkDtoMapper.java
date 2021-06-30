@@ -10,8 +10,7 @@ import javax.inject.Provider;
 import com.gitlab.jeeto.oboco.api.v1.book.Book;
 import com.gitlab.jeeto.oboco.api.v1.book.BookDto;
 import com.gitlab.jeeto.oboco.api.v1.book.BookDtoMapper;
-import com.gitlab.jeeto.oboco.api.v1.user.User;
-import com.gitlab.jeeto.oboco.common.GraphDto;
+import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.PageableList;
 import com.gitlab.jeeto.oboco.common.PageableListDto;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
@@ -29,7 +28,7 @@ public class BookMarkDtoMapper {
 		return bookDtoMapper;
 	}
 	
-	public BookMarkDto getBookMarkDto(User user, BookMarkReference bookMarkReference, GraphDto graphDto) throws ProblemException {
+	public BookMarkDto getBookMarkDto(BookMarkReference bookMarkReference, Graph graph) throws ProblemException {
 		BookMarkDto bookMarkDto = null;
 		if(bookMarkReference != null) {
 			bookMarkDto = new BookMarkDto();
@@ -37,16 +36,17 @@ public class BookMarkDtoMapper {
 			
 			BookMark bookMark = bookMarkReference.getBookMark();
 			if(bookMark != null) {
+				bookMarkDto.setCreateDate(bookMark.getCreateDate());
 				bookMarkDto.setUpdateDate(bookMark.getUpdateDate());
 				bookMarkDto.setPage(bookMark.getPage());
 			}
 			
-			if(graphDto != null) {
-				if(graphDto.containsKey("book")) {
-					GraphDto nestedGraphDto = graphDto.get("book");
+			if(graph != null) {
+				if(graph.containsKey("book")) {
+					Graph bookGraph = graph.get("book");
 					
 					Book book = bookMarkReference.getBook();
-					BookDto bookDto = getBookDtoMapper().getBookDto(user, book, nestedGraphDto);
+					BookDto bookDto = getBookDtoMapper().getBookDto(book, bookGraph);
 					
 					bookMarkDto.setBook(bookDto);
 				}
@@ -56,14 +56,14 @@ public class BookMarkDtoMapper {
 		return bookMarkDto;
 	}
 	
-	public PageableListDto<BookMarkDto> getBookMarksDto(User user, PageableList<BookMarkReference> bookMarkReferencePageableList, GraphDto graphDto) throws ProblemException {
+	public PageableListDto<BookMarkDto> getBookMarksDto(PageableList<BookMarkReference> bookMarkReferencePageableList, Graph graph) throws ProblemException {
 		PageableListDto<BookMarkDto> bookMarkPageableListDto = null;
 		if(bookMarkReferencePageableList != null) {
 			bookMarkPageableListDto = new PageableListDto<BookMarkDto>();
 			
 			List<BookMarkDto> bookMarkListDto = new ArrayList<BookMarkDto>();
 			for(BookMarkReference bookMarkReference: bookMarkReferencePageableList.getElements()) {
-				BookMarkDto bookMarkDto = getBookMarkDto(user, bookMarkReference, graphDto);
+				BookMarkDto bookMarkDto = getBookMarkDto(bookMarkReference, graph);
 				
 				bookMarkListDto.add(bookMarkDto);
 			}

@@ -20,6 +20,7 @@ public class UserDto {
 	private String name;
 	private String password;
 	private List<String> roles;
+	private Date createDate;
 	private Date updateDate;
 	private BookCollectionDto rootBookCollection;
 	public UserDto() {
@@ -56,6 +57,16 @@ public class UserDto {
 	}
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
+	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
+	@Schema(name = "createDate")
+	@XmlElement(name = "createDate")
+	public Date getCreateDate() {
+		return createDate;
+	}
+	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 	@JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
 	@Schema(name = "updateDate")

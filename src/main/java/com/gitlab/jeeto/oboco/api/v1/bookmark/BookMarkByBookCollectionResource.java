@@ -1,9 +1,5 @@
 package com.gitlab.jeeto.oboco.api.v1.bookmark;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -24,7 +20,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
-import com.gitlab.jeeto.oboco.api.v1.book.Book;
 import com.gitlab.jeeto.oboco.api.v1.book.BookService;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
@@ -66,12 +61,12 @@ public class BookMarkByBookCollectionResource {
 	)
 	@APIResponses({
 		@APIResponse(responseCode = "200"),
-		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_BOOK_COLLECTION_ID_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_MARK_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND, PROBLEM_BOOK_COLLECTION_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
+    })
 	@Path("")
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -82,55 +77,13 @@ public class BookMarkByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		Long rootBookCollectionId = user.getRootBookCollection().getId();
-		
-		BookCollection bookCollection = bookCollectionService.getBookCollectionByBookCollectionIdAndId(rootBookCollectionId, bookCollectionId);
+		BookCollection bookCollection = bookCollectionService.getBookCollectionByUserAndId(user, bookCollectionId, null);
 		
 		if(bookCollection == null) {
-			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_COLLECTION_ID_INVALID", "The bookCollection.id is invalid."));
+			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));
 		}
 		
-		Date updateDate = new Date();
-		
-		List<Book> bookList = bookCollection.getBooks();
-		
-		for(Book book: bookList) {
-			BookMarkReference bookMarkReference = bookMarkService.getBookMarkReferenceByBookCollectionIdAndUserIdAndBookId(rootBookCollectionId, user.getId(), book.getId());
-			
-			if(bookMarkReference == null) {
-				BookMark bookMark = new BookMark();
-				bookMark.setUser(user);
-				bookMark.setFileId(book.getFileId());
-				bookMark.setUpdateDate(updateDate);
-				bookMark.setPage(book.getNumberOfPages());
-				
-				List<BookMarkReference> bookMarkReferenceList = new ArrayList<BookMarkReference>();
-				
-				List<Book> referencedBookList = bookService.getBooksByFileId(book.getFileId());
-				
-				for(Book referencedBook: referencedBookList) {
-					bookMarkReference = new BookMarkReference();
-					bookMarkReference.setUser(user);
-					bookMarkReference.setFileId(referencedBook.getFileId());
-					bookMarkReference.setUpdateDate(updateDate);
-					bookMarkReference.setBook(referencedBook);
-					bookMarkReference.setBookMark(bookMark);
-					bookMarkReference.setRootBookCollection(referencedBook.getRootBookCollection());
-					
-					bookMarkReferenceList.add(bookMarkReference);
-				}
-				
-				bookMark.setBookMarkReferences(bookMarkReferenceList);
-				
-				bookMarkService.createBookMark(bookMark);
-			} else {
-				BookMark bookMark = bookMarkReference.getBookMark();
-				bookMark.setUpdateDate(updateDate);
-				bookMark.setPage(book.getNumberOfPages());
-				
-				bookMark = bookMarkService.updateBookMark(bookMark);
-			}
-		}
+		bookMarkService.createOrUpdateBookMarksByUserAndBookCollection(user, bookCollection);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		
@@ -142,12 +95,12 @@ public class BookMarkByBookCollectionResource {
 	)
 	@APIResponses({
 		@APIResponse(responseCode = "200"),
-		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_BOOK_COLLECTION_ID_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_MARK_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
-	})
+		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND, PROBLEM_BOOK_COLLECTION_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
+    })
 	@Path("")
 	@DELETE
 	public Response deleteBookMarksByBookCollection() throws ProblemException {
@@ -157,25 +110,13 @@ public class BookMarkByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		Long rootBookCollectionId = user.getRootBookCollection().getId();
-		
-		BookCollection bookCollection = bookCollectionService.getBookCollectionByBookCollectionIdAndId(rootBookCollectionId, bookCollectionId);
+		BookCollection bookCollection = bookCollectionService.getBookCollectionByUserAndId(user, bookCollectionId, null);
 		
 		if(bookCollection == null) {
-			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_COLLECTION_ID_INVALID", "The bookCollection.id is invalid."));
+			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));
 		}
 		
-		List<Book> bookList = bookCollection.getBooks();
-		
-		for(Book book: bookList) {
-			BookMarkReference bookMarkReference = bookMarkService.getBookMarkReferenceByBookCollectionIdAndUserIdAndBookId(rootBookCollectionId, user.getId(), book.getId());
-			
-			if(bookMarkReference != null) {
-				BookMark bookMark = bookMarkReference.getBookMark();
-				
-				bookMarkService.deleteBookMark(bookMark);
-			}
-		}
+		bookMarkService.deleteBookMarksByUserAndBookCollection(user, bookCollection);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		

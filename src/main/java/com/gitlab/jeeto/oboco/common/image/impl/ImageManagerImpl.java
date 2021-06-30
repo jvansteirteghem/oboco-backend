@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.FileWrapper;
+import com.gitlab.jeeto.oboco.common.TypeableFile;
 import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
 import com.twelvemonkeys.image.ResampleOp;
@@ -73,13 +73,12 @@ public class ImageManagerImpl implements ImageManager {
 		return imageWriter;
 	}
 	
-	public FileWrapper<File> createImage(FileWrapper<File> inputFileWrapper, FileType outputFileType) throws Exception {
-		return createImage(inputFileWrapper, outputFileType, null, null, null);
+	public TypeableFile createImage(TypeableFile inputFile, FileType outputFileType) throws Exception {
+		return createImage(inputFile, outputFileType, null, null, null);
 	}
 	
-	private BufferedImage read(FileWrapper<File> inputFileWrapper) throws Exception {
-		FileType inputFileType = inputFileWrapper.getFileType();
-		File inputFile = inputFileWrapper.getFile();
+	private BufferedImage read(TypeableFile inputFile) throws Exception {
+		FileType inputFileType = inputFile.getFileType();
 		
 		ImageReader imageReader = null;
 		ImageReadParam imageReadParam = null;
@@ -122,9 +121,8 @@ public class ImageManagerImpl implements ImageManager {
 		return bufferedImage;
 	}
 	
-	private void write(FileWrapper<File> outputFileWrapper, BufferedImage outputImage) throws Exception {
-		FileType outputFileType = outputFileWrapper.getFileType();
-		File outputFile = outputFileWrapper.getFile();
+	private void write(TypeableFile outputFile, BufferedImage outputImage) throws Exception {
+		FileType outputFileType = outputFile.getFileType();
 		
 		ImageWriter imageWriter = null;
 		ImageWriteParam imageWriteParam = null;
@@ -210,23 +208,19 @@ public class ImageManagerImpl implements ImageManager {
 		return outputImage;
 	}
 	
-	public FileWrapper<File> createImage(FileWrapper<File> inputFileWrapper, FileType outputFileType, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-		FileWrapper<File> outputFileWrapper = null;
-		
-		BufferedImage inputBufferedImage = read(inputFileWrapper);
+	public TypeableFile createImage(TypeableFile inputFile, FileType outputFileType, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
+		BufferedImage inputBufferedImage = read(inputFile);
 		
 		BufferedImage outputBufferedImage = scale(inputBufferedImage, outputScaleType, outputScaleWidth, outputScaleHeight);
 		
 		inputBufferedImage.flush();
 		
-		File outputFile = File.createTempFile("oboco-plugin-image-jdk-", ".tmp");
+		TypeableFile outputFile = new TypeableFile(File.createTempFile("oboco-plugin-image-jdk-", ".tmp"), outputFileType);
 		
-		outputFileWrapper = new FileWrapper<File>(outputFile, outputFileType);
-		
-		write(outputFileWrapper, outputBufferedImage);
+		write(outputFile, outputBufferedImage);
 		
 		outputBufferedImage.flush();
 		
-		return outputFileWrapper;
+		return outputFile;
 	}
 }

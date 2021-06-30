@@ -5,11 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public final class GraphDto {
-	private Map<String, GraphDto> nestedGraphMap;
+public final class Graph {
+	private Map<String, Graph> nestedGraphMap;
 	
-	public GraphDto() {
-		nestedGraphMap = new LinkedHashMap<String, GraphDto>();
+	public Graph() {
+		nestedGraphMap = new LinkedHashMap<String, Graph>();
 	}
 	
 	public List<String> getKeys() {
@@ -20,17 +20,17 @@ public final class GraphDto {
 		return nestedGraphMap.containsKey(nestedGraphKey);
 	}
 	
-	public GraphDto get(String nestedGraphKey) {
+	public Graph get(String nestedGraphKey) {
 		return nestedGraphMap.get(nestedGraphKey);
 	}
 	
-	public GraphDto add(String nestedGraphKey, GraphDto nestedGraph) {
+	public Graph add(String nestedGraphKey, Graph nestedGraph) {
 		nestedGraphMap.put(nestedGraphKey, nestedGraph);
 		
 		return this;
 	}
 	
-	public GraphDto remove(String nestedGraphKey) {
+	public Graph remove(String nestedGraphKey) {
 		nestedGraphMap.remove(nestedGraphKey);
 		
 		return this;

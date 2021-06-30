@@ -11,8 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.FileWrapper;
+import com.gitlab.jeeto.oboco.common.FileType.Type;
 import com.gitlab.jeeto.oboco.common.NaturalOrderComparator;
+import com.gitlab.jeeto.oboco.common.TypeableFile;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
 
 import net.sf.sevenzipjbinding.ExtractOperationResult;
@@ -61,15 +62,11 @@ public class ArchiveReaderImpl implements ArchiveReader {
 	}
 	
 	private RandomAccessFile randomAccessFileIn = null;
-	private List<FileWrapper<ISimpleInArchiveItem>> listSimpleInArchiveItemWrapper = new ArrayList<FileWrapper<ISimpleInArchiveItem>>();
+	private List<ISimpleInArchiveItem> simpleInArchiveItemList = new ArrayList<ISimpleInArchiveItem>();
 	
 	@Override
-	public void openArchive(FileWrapper<File> inputFileWrapper) throws Exception {
-		List<FileType> listOutputFileType = new ArrayList<FileType>();
-		listOutputFileType.add(FileType.JPG);
-		listOutputFileType.add(FileType.PNG);
-		
-		File inputFile = inputFileWrapper.getFile();
+	public void openArchive(TypeableFile inputFile) throws Exception {
+		List<FileType> outputFileTypeList = FileType.getFileTypeList(Type.IMAGE);
 		
 		randomAccessFileIn = new RandomAccessFile(inputFile, "r");
 		
@@ -81,20 +78,12 @@ public class ArchiveReaderImpl implements ArchiveReader {
 		// start readListFile
 		Instant durationStart = Instant.now();
 		
-		listSimpleInArchiveItemWrapper = new ArrayList<FileWrapper<ISimpleInArchiveItem>>();
+		simpleInArchiveItemList = new ArrayList<ISimpleInArchiveItem>();
         for (ISimpleInArchiveItem simpleInArchiveItem : simpleInArchive.getArchiveItems()) {
-            if (!simpleInArchiveItem.isFolder()) {
-            	FileTypeOutStream fileTypeOutStream = new FileTypeOutStream();
-            	try {
-            		simpleInArchiveItem.extractSlow(fileTypeOutStream);
-            	} catch(Exception e) {
-            		// pass
-            	}
-        		FileType outputFileType = fileTypeOutStream.getFileType();
-        		if(listOutputFileType.contains(outputFileType)) {
-        			FileWrapper<ISimpleInArchiveItem> simpleInArchiveItemWrapper = new FileWrapper<ISimpleInArchiveItem>(simpleInArchiveItem, outputFileType);
-        			
-        			listSimpleInArchiveItemWrapper.add(simpleInArchiveItemWrapper);
+            if (simpleInArchiveItem.isFolder() == false) {
+            	FileType outputFileType = FileType.getFileType(simpleInArchiveItem.getPath());
+        		if(outputFileTypeList.contains(outputFileType)) {
+        			simpleInArchiveItemList.add(simpleInArchiveItem);
         		}
             }
         }
@@ -106,11 +95,11 @@ public class ArchiveReaderImpl implements ArchiveReader {
         logger.debug("readListFile: " + duration + " ms");
         // stop readListFile
         
-        listSimpleInArchiveItemWrapper.sort(new NaturalOrderComparator<FileWrapper<ISimpleInArchiveItem>>() {
+        simpleInArchiveItemList.sort(new NaturalOrderComparator<ISimpleInArchiveItem>() {
         	@Override
-    		public String toString(FileWrapper<ISimpleInArchiveItem> o) {
+    		public String toString(ISimpleInArchiveItem o) {
         		try {
-					return o.getFile().getPath();
+					return o.getPath();
 				} catch (SevenZipException e) {
 					return "";
 				}
@@ -126,18 +115,15 @@ public class ArchiveReaderImpl implements ArchiveReader {
 	}
 
 	@Override
-	public FileWrapper<File> readFile(Integer index) throws Exception {
+	public TypeableFile readFile(Integer index) throws Exception {
 		RandomAccessFile randomAccessFileOut = null;
 		try {
-			FileWrapper<ISimpleInArchiveItem> simpleInArchiveItemFileTypeWrapper = listSimpleInArchiveItemWrapper.get(index);
+			ISimpleInArchiveItem simpleInArchiveItem = simpleInArchiveItemList.get(index);
 			
-			FileType outputFileType = simpleInArchiveItemFileTypeWrapper.getFileType();
-			File outputFile = File.createTempFile("oboco-plugin-archive-sevenzipjbinding-", ".tmp");
+			TypeableFile outputFile = new TypeableFile(File.createTempFile("oboco-plugin-archive-sevenzipjbinding-", ".tmp"));
 			randomAccessFileOut = new RandomAccessFile(outputFile, "rw");
 			
 			RandomAccessFileOutStream randomAccessFileOutStream = new RandomAccessFileOutStream(randomAccessFileOut);
-			
-			ISimpleInArchiveItem simpleInArchiveItem = simpleInArchiveItemFileTypeWrapper.getFile();
 			
 			// start readFile
 			Instant durationStart = Instant.now();
@@ -154,10 +140,8 @@ public class ArchiveReaderImpl implements ArchiveReader {
             if (extractOperationResult != ExtractOperationResult.OK) {
                 throw new Exception("extractOperationResult != ExtractOperationResult.OK");
             }
-            
-            FileWrapper<File> outputFileWrapper = new FileWrapper<File>(outputFile, outputFileType);
 		    
-		    return outputFileWrapper;
+		    return outputFile;
 		} catch(Exception e) {
 			throw e;
 		} finally {
@@ -173,6 +157,6 @@ public class ArchiveReaderImpl implements ArchiveReader {
 
 	@Override
 	public Integer readSize() throws Exception {
-		return listSimpleInArchiveItemWrapper.size();
+		return simpleInArchiveItemList.size();
 	}
 }

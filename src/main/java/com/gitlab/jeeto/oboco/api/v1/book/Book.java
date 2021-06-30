@@ -29,6 +29,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 		@Index(name = "bookFilePath", columnList = "filePath", unique = false),
 		@Index(name = "bookNormalizedName", columnList = "normalizedName", unique = false),
 		@Index(name = "bookNumber", columnList = "number", unique = false),
+		@Index(name = "bookCreateDate", columnList = "createDate", unique = false),
 		@Index(name = "bookUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
@@ -36,6 +37,7 @@ public class Book {
 	private Long id;
 	private String fileId;
 	private String filePath;
+	private Date createDate;
 	private Date updateDate;
 	private String name;
 	private String normalizedName;
@@ -69,6 +71,14 @@ public class Book {
 	}
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
+	}
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "createDate", nullable = false)
+	public Date getCreateDate() {
+		return createDate;
+	}
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "updateDate", nullable = false)

@@ -32,6 +32,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 	name = "users",
 	indexes = {
 		@Index(name = "userName", columnList = "name", unique = true),
+		@Index(name = "userCreateDate", columnList = "createDate", unique = false),
 		@Index(name = "userUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
@@ -42,6 +43,7 @@ public class User implements Serializable {
 	private String password;
 	private String passwordHash;
 	private List<String> roles;
+	private Date createDate;
 	private Date updateDate;
 	private BookCollection rootBookCollection;
 	private List<BookMarkReference> bookMarkReferences;
@@ -80,7 +82,7 @@ public class User implements Serializable {
 	public void setPasswordHash(String passwordHash) {
 		this.passwordHash = passwordHash;
 	}
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "userRoles", joinColumns = @JoinColumn(name = "userId", referencedColumnName = "id"))
 	@Column(name = "role", length = 255, nullable = false)
 	public List<String> getRoles() {
@@ -90,6 +92,14 @@ public class User implements Serializable {
 		this.roles = roles;
 	}
 	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "createDate", nullable = false)
+	public Date getCreateDate() {
+		return createDate;
+	}
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "updateDate", nullable = false)
 	public Date getUpdateDate() {
 		return updateDate;
@@ -97,7 +107,7 @@ public class User implements Serializable {
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
 	}
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "rootBookCollectionId", referencedColumnName = "id", nullable = true)
 	public BookCollection getRootBookCollection() {
 		return rootBookCollection;
@@ -105,14 +115,14 @@ public class User implements Serializable {
 	public void setRootBookCollection(BookCollection rootBookCollection) {
 		this.rootBookCollection = rootBookCollection;
 	}
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	public List<BookMarkReference> getBookMarkReferences() {
 		return bookMarkReferences;
 	}
 	public void setBookMarkReferences(List<BookMarkReference> bookMarkReferences) {
 		this.bookMarkReferences = bookMarkReferences;
 	}
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	public List<BookMark> getBookMarks() {
 		return bookMarks;
 	}

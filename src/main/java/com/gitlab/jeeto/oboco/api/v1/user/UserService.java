@@ -4,10 +4,13 @@ import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.transaction.Transactional;
 
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.PageableList;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 
@@ -40,7 +43,7 @@ public class UserService {
 	}
 	
 	@Transactional
-	public User createUser(User user) throws ProblemException {
+	public User createUser(User user, Graph graph) throws ProblemException {
 		if(user.getPassword() != null) {
 			String passwordHash = getPasswordHash(user.getPassword());
 			
@@ -48,12 +51,14 @@ public class UserService {
 		}
 		
 		entityManager.persist(user);
+		
+		user = getUserById(user.getId(), graph);
         
         return user;
 	}
 	
 	@Transactional
-	public User updateUser(User user) throws ProblemException {
+	public User updateUser(User user, Graph graph) throws ProblemException {
 		if(user.getPassword() != null) {
 			String passwordHash = getPasswordHash(user.getPassword());
 			
@@ -62,15 +67,27 @@ public class UserService {
 		
 		user = entityManager.merge(user);
 		
+		user = getUserById(user.getId(), graph);
+		
 		return user;
 	}
 	
-	public User getUserById(Long id) throws ProblemException {
+	public User getUserById(Long id, Graph graph) throws ProblemException {
 		User user = null;
 		
 		try {
+			EntityGraph<User> entityGraph = entityManager.createEntityGraph(User.class);
+			entityGraph.addAttributeNodes("roles");
+			
+			if(graph != null) {
+				if(graph.containsKey("rootBookCollection")) {
+					entityGraph.addSubgraph("rootBookCollection", BookCollection.class);
+				}
+			}
+			
 			user = entityManager.createQuery("select u from User u where u.id = :id", User.class)
 					.setParameter("id", id)
+					.setHint("javax.persistence.loadgraph", entityGraph)
 					.getSingleResult();
 		} catch(NoResultException e) {
 			
@@ -79,12 +96,22 @@ public class UserService {
         return user;
 	}
 	
-	public User getUserByName(String name) throws ProblemException {
+	public User getUserByName(String name, Graph graph) throws ProblemException {
 		User user = null;
 		
 		try {
+			EntityGraph<User> entityGraph = entityManager.createEntityGraph(User.class);
+			entityGraph.addAttributeNodes("roles");
+			
+			if(graph != null) {
+				if(graph.containsKey("rootBookCollection")) {
+					entityGraph.addSubgraph("rootBookCollection", BookCollection.class);
+				}
+			}
+			
 			user = entityManager.createQuery("select u from User u where u.name = :name", User.class)
 					.setParameter("name", name)
+					.setHint("javax.persistence.loadgraph", entityGraph)
 					.getSingleResult();
 		} catch(NoResultException e) {
 			
@@ -97,8 +124,12 @@ public class UserService {
 		User user = null;
 		
 		try {
+			EntityGraph<User> entityGraph = entityManager.createEntityGraph(User.class);
+			entityGraph.addAttributeNodes("roles");
+			
 			user = entityManager.createQuery("select u from User u where u.name = :name", User.class)
 					.setParameter("name", name)
+					.setHint("javax.persistence.loadgraph", entityGraph)
 					.getSingleResult();
 		} catch(NoResultException e) {
 			
@@ -119,11 +150,21 @@ public class UserService {
         return user;
 	}
 	
-	public PageableList<User> getUsers(Integer page, Integer pageSize) throws ProblemException {
+	public PageableList<User> getUsers(Integer page, Integer pageSize, Graph graph) throws ProblemException {
+		EntityGraph<User> entityGraph = entityManager.createEntityGraph(User.class);
+		entityGraph.addAttributeNodes("roles");
+		
+		if(graph != null) {
+			if(graph.containsKey("rootBookCollection")) {
+				entityGraph.addSubgraph("rootBookCollection", BookCollection.class);
+			}
+		}
+		
 		Long userListSize = (Long) entityManager.createQuery("select count(u.id) from User u")
 				.getSingleResult();
 		
 		List<User> userList = entityManager.createQuery("select u from User u", User.class)
+				.setHint("javax.persistence.loadgraph", entityGraph)
 				.setFirstResult((page - 1) * pageSize)
 				.setMaxResults(pageSize)
 				.getResultList();

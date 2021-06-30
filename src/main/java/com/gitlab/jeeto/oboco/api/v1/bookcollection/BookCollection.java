@@ -21,6 +21,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.gitlab.jeeto.oboco.api.v1.book.Book;
+import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 
 @Entity
 @Table(
@@ -29,12 +30,14 @@ import com.gitlab.jeeto.oboco.api.v1.book.Book;
 		@Index(name = "bookCollectionDirectoryPath", columnList = "directoryPath", unique = false),
 		@Index(name = "bookCollectionNormalizedName", columnList = "normalizedName", unique = false),
 		@Index(name = "bookCollectionNumber", columnList = "number", unique = false),
+		@Index(name = "bookCollectionCreateDate", columnList = "createDate", unique = false),
 		@Index(name = "bookCollectionUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
 public class BookCollection {
 	private Long id;
 	private String directoryPath;
+	private Date createDate;
 	private Date updateDate;
 	private String name;
 	private String normalizedName;
@@ -46,6 +49,7 @@ public class BookCollection {
 	private List<Book> books;
 	private Integer numberOfBooks;
 	private Integer number;
+	private List<BookMarkReference> bookMarkReferences;
 	public BookCollection() {
 		super();
 	}
@@ -64,6 +68,14 @@ public class BookCollection {
 	}
 	public void setDirectoryPath(String directoryPath) {
 		this.directoryPath = directoryPath;
+	}
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "createDate", nullable = false)
+	public Date getCreateDate() {
+		return createDate;
+	}
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "updateDate", nullable = false)
@@ -145,5 +157,12 @@ public class BookCollection {
 	}
 	public void setNumber(Integer number) {
 		this.number = number;
+	}
+	@OneToMany(mappedBy = "bookCollection", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	public List<BookMarkReference> getBookMarkReferences() {
+		return bookMarkReferences;
+	}
+	public void setBookMarkReferences(List<BookMarkReference> bookMarkReferences) {
+		this.bookMarkReferences = bookMarkReferences;
 	}
 }

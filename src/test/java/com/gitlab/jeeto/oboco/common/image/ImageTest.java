@@ -1,17 +1,13 @@
 package com.gitlab.jeeto.oboco.common.image;
 
-import java.io.File;
-
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.FileWrapper;
-import com.gitlab.jeeto.oboco.common.image.ScaleType;
+import com.gitlab.jeeto.oboco.common.TypeableFile;
 
 import junit.framework.TestCase;
 
@@ -20,17 +16,14 @@ import junit.framework.TestCase;
 public class ImageTest extends TestCase {
 	@Test
 	public void testFileType() throws Exception {
-		//File inputFile = new File("src/test/resources/java-duke.png");
-		File inputFile = new File("src/test/resources/java-duke-large.jpg");
-		FileType inputFileType = FileType.getFileType(inputFile);
+		//TypeableFile inputFile = new TypeableFile("src/test/resources/java-duke.png");
+		TypeableFile inputFile = new TypeableFile("src/test/resources/java-duke-large.jpg");
 		FileType outputFileType = FileType.JPG;
 		
 		ImageManager imageManager = Mockito.spy(ImageManager.class);
 		
-		FileWrapper<File> inputFileWrapper = new FileWrapper<File>(inputFile, inputFileType);
+		TypeableFile outputFile = imageManager.createImage(inputFile, outputFileType, ScaleType.FILL, 250, 450);
 		
-		FileWrapper<File> outputFileWrapper = imageManager.createImage(inputFileWrapper, outputFileType, ScaleType.FILL, 250, 450);
-		
-		System.out.println(outputFileWrapper.getFile().getPath());
+		System.out.println(outputFile.getPath());
 	}
 }

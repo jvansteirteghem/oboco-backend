@@ -5,19 +5,19 @@ import java.util.StringTokenizer;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 
-public class GraphDtoHelper {
-	public static GraphDto createGraphDto() {
-		return new GraphDto();
+public class GraphHelper {
+	public static Graph createGraph() {
+		return new Graph();
 	}
 	
-	public static void validateGraphDto(GraphDto graph, GraphDto fullGraph) throws ProblemException {
+	public static void validateGraph(Graph graph, Graph fullGraph) throws ProblemException {
 		if(graph != null) {
 			for(String nestedGraphKey: graph.getKeys()) {
 				if(fullGraph != null && fullGraph.containsKey(nestedGraphKey)) {
-					GraphDto nestedFullGraph = fullGraph.get(nestedGraphKey);
-					GraphDto nestedGraph = graph.get(nestedGraphKey);
+					Graph nestedFullGraph = fullGraph.get(nestedGraphKey);
+					Graph nestedGraph = graph.get(nestedGraphKey);
 					
-					validateGraphDto(nestedGraph, nestedFullGraph);
+					validateGraph(nestedGraph, nestedFullGraph);
 				} else {
 					throw new ProblemException(new Problem(400, "PROBLEM_GRAPH_INVALID", "The graph is invalid: " + nestedGraphKey + "."));
 				}
@@ -26,7 +26,7 @@ public class GraphDtoHelper {
 	}
 	
 	// (person(name,birthDate),car)
-	public static GraphDto createGraphDto(String value) throws ProblemException {
+	public static Graph createGraph(String value) throws ProblemException {
 		if(value == null) {
 			return null;
 		}
@@ -60,7 +60,7 @@ public class GraphDtoHelper {
 			return null;
 		}
 		
-		GraphDto graph = createGraphDto();
+		Graph graph = createGraph();
 		
         StringTokenizer tokenizer = new StringTokenizer(tokenizerValue, "(),", true);
         
@@ -106,7 +106,7 @@ public class GraphDtoHelper {
             	}
             	
             	// person(name,birthDate),
-            	graph.add(nestedGraphKey, createGraphDto(nestedGraphValue));
+            	graph.add(nestedGraphKey, createGraph(nestedGraphValue));
             	
             	nestedGraphKey = null;
             	nestedGraphValue = null;
@@ -130,7 +130,7 @@ public class GraphDtoHelper {
     	}
     	
     	// person(name,birthDate)EOL
-    	graph.add(nestedGraphKey, createGraphDto(nestedGraphValue));
+    	graph.add(nestedGraphKey, createGraph(nestedGraphValue));
     	
     	nestedGraphKey = null;
     	nestedGraphValue = null;
@@ -138,12 +138,12 @@ public class GraphDtoHelper {
 		return graph;
 	}
 	
-	public static String createGraphValue(GraphDto graphDto) {
+	public static String createGraphValue(Graph graph) {
 		String value = "";
 		
-		if(graphDto != null) {
-			for(String nestedGraphKey: graphDto.getKeys()) {
-				GraphDto nestedGraph = graphDto.get(nestedGraphKey);
+		if(graph != null) {
+			for(String nestedGraphKey: graph.getKeys()) {
+				Graph nestedGraph = graph.get(nestedGraphKey);
 				
 				String nestedGraphValue = "";
 				if(nestedGraph != null) {

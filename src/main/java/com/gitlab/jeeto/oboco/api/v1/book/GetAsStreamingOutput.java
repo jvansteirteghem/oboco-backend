@@ -1,19 +1,18 @@
 package com.gitlab.jeeto.oboco.api.v1.book;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.ws.rs.core.StreamingOutput;
 
-import com.gitlab.jeeto.oboco.common.FileWrapper;
+import com.gitlab.jeeto.oboco.common.TypeableFile;
 
 public abstract class GetAsStreamingOutput implements StreamingOutput {
-	public void write(OutputStream outputStream, FileWrapper<File> inputFileWrapper) throws Exception {
+	public void write(OutputStream outputStream, TypeableFile inputFile) throws Exception {
 		InputStream inputStream = null;
 		try {
-			inputStream = new FileInputStream(inputFileWrapper.getFile());
+			inputStream = new FileInputStream(inputFile);
 			
 			byte[] buffer = new byte[8 * 1024];
 		    int bufferSize;
