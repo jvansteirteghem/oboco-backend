@@ -84,7 +84,11 @@ public class AuthenticationResource {
 				roles.add("USER");
 				
 				user.setRoles(roles);
-				user.setUpdateDate(new Date());
+				
+				Date updateDate = new Date();
+				
+				user.setCreateDate(updateDate);
+				user.setUpdateDate(updateDate);
 				
 				BookCollection rootBookCollection = bookCollectionService.getRootBookCollectionByName("DEFAULT");
 				
