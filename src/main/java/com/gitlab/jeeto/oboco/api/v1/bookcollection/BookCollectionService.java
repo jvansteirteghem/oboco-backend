@@ -352,7 +352,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		Query bookCollectionListQuery = entityManager.createQuery("select bmr.bookCollection, max(bmr.bookMark.updateDate) from BookMarkReference bmr" + bookCollectionListQueryString + " group by bmr.bookCollection order by max(bmr.bookMark.updateDate) desc");
+		Query bookCollectionListQuery = entityManager.createQuery("select bc, max(bmr.bookMark.updateDate) from BookMarkReference bmr inner join bmr.bookCollection bc" + bookCollectionListQueryString + " group by bc order by max(bmr.bookMark.updateDate) desc");
 		bookCollectionListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookCollectionListQuery.setParameter("userId", user.getId());
 		
