@@ -207,7 +207,7 @@ public class BookMarkService {
 	public void createOrUpdateBookMarksByUserAndBookCollection(User user, BookCollection bookCollection) throws ProblemException {
 		Date updateDate = new Date();
 		
-		List<Book> bookList = bookCollection.getBooks();
+		List<Book> bookList = getBookService().getBooksByUserAndBookCollectionId(user, bookCollection.getId());
 		
 		for(Book book: bookList) {
 			BookMark bookMark = getBookMarkByUserAndFileId(user, book.getFileId());
@@ -247,7 +247,7 @@ public class BookMarkService {
 	
 	@Transactional
 	public void deleteBookMarksByUserAndBookCollection(User user, BookCollection bookCollection) throws ProblemException {
-		List<Book> bookList = bookCollection.getBooks();
+		List<Book> bookList = getBookService().getBooksByUserAndBookCollectionId(user, bookCollection.getId());
 		
 		for(Book book: bookList) {
 			BookMark bookMark = getBookMarkByUserAndFileId(user, book.getFileId());

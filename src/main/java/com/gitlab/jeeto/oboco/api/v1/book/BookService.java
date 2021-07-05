@@ -269,6 +269,22 @@ public class BookService {
 		return bookLinkable;
 	}
 	
+	public List<Book> getBooksByUserAndBookCollectionId(User user, Long bookCollectionId) throws ProblemException {
+		String bookListQueryString = " where 1 = 1";
+		
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId";
+		
+		bookListQueryString = bookListQueryString + " and b.bookCollection.id = :bookCollectionId";
+		
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number asc", Book.class);
+		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
+		
+		List<Book> bookList = bookListQuery.getResultList();
+        
+        return bookList;
+	}
+	
 	public PageableList<Book> getBooksByUserAndBookCollectionId(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
 		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
 		if(graph != null) {
