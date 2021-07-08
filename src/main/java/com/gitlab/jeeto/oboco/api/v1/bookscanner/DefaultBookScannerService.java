@@ -216,7 +216,8 @@ public class DefaultBookScannerService implements BookScannerService {
 	
 	public void start() throws ProblemException {
 		status = BookScannerServiceStatus.STARTING;
-		updateDate = new Date();
+		// no milliseconds
+		updateDate = new Date((new Date().getTime() / 1000L) * 1000L);
 		status = BookScannerServiceStatus.STARTED;
 		try {
 			defaultBookPageList = createBookPageList();
