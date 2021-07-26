@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookScannerDto {
 	private String id;
+	private String mode;
 	private String status;
 	public BookScannerDto() {
 		super();
@@ -23,6 +24,14 @@ public class BookScannerDto {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	@Schema(name = "mode")
+	@XmlElement(name = "mode")
+	public String getMode() {
+		return mode;
+	}
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 	@Schema(name = "status")
 	@XmlElement(name = "status")

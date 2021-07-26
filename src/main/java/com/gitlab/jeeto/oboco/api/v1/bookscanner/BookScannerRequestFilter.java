@@ -18,16 +18,16 @@ import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
 @Priority(Priorities.USER)
 public class BookScannerRequestFilter implements ContainerRequestFilter {
 	@Inject
-	Instance<BookScannerService> bookScannerServiceProvider;
+	Instance<BookScanner> bookScannerProvider;
 	
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
     	String path = requestContext.getUriInfo().getPath();
     	if(path.startsWith("v1/books") || path.startsWith("v1/bookCollections") || path.startsWith("v1/bookMarks")) {
-    		for(BookScannerService bookScannerService: bookScannerServiceProvider) {
-    			if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STOPPED) == false) {
+    		for(BookScanner bookScanner: bookScannerProvider) {
+    			if(BookScannerStatus.STOPPED.equals(bookScanner.getStatus()) == false) {
     				ResponseBuilder responseBuilder = Response.status(503);
-					responseBuilder.entity(new ProblemDto(503, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScannerService.getStatus() + "."));
+					responseBuilder.entity(new ProblemDto(503, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScanner.getStatus() + "."));
 		    		
 					requestContext.abortWith(responseBuilder.build());
     			}

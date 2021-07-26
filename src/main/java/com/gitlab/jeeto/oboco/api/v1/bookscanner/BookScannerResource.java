@@ -45,9 +45,9 @@ import com.gitlab.jeeto.oboco.common.security.Authorization;
 public class BookScannerResource {
 	private static Logger logger = LoggerFactory.getLogger(BookScannerResource.class.getName());
 	@Inject
-	Instance<BookScannerService> bookScannerServiceProvider;
+	Instance<BookScanner> bookScannerProvider;
 	@Inject
-	ManagedExecutor bookScannerServiceExecuter;
+	ManagedExecutor bookScannerExecuter;
 	
 	@Operation(
 		description = "Get the bookScanners."
@@ -70,10 +70,15 @@ public class BookScannerResource {
 		
 		List<BookScannerDto> bookScannerListDto = new ArrayList<BookScannerDto>();
 		
-		for(BookScannerService bookScannerService: bookScannerServiceProvider) {
+		for(BookScanner bookScanner: bookScannerProvider) {
 			BookScannerDto bookScannerDto = new BookScannerDto();
-			bookScannerDto.setId(bookScannerService.getId());
-			bookScannerDto.setStatus(bookScannerService.getStatus().toString());
+			bookScannerDto.setId(bookScanner.getId());
+			if(bookScanner.getMode() != null) {
+				bookScannerDto.setMode(bookScanner.getMode().toString());
+			}
+			if(bookScanner.getStatus() != null) {
+				bookScannerDto.setStatus(bookScanner.getStatus().toString());
+			}
 			
 			bookScannerListDto.add(bookScannerDto);
         }
@@ -105,15 +110,20 @@ public class BookScannerResource {
 		
 		GraphHelper.validateGraph(graph, fullGraph);
 		
-		BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerId)).get();
+		BookScanner bookScanner = bookScannerProvider.select(NamedLiteral.of(bookScannerId)).get();
 		
-		if(bookScannerService == null) {
+		if(bookScanner == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
 		}
 				
 		BookScannerDto bookScannerDto = new BookScannerDto();
-		bookScannerDto.setId(bookScannerService.getId());
-		bookScannerDto.setStatus(bookScannerService.getStatus().toString());
+		bookScannerDto.setId(bookScanner.getId());
+		if(bookScanner.getMode() != null) {
+			bookScannerDto.setMode(bookScanner.getMode().toString());
+		}
+		if(bookScanner.getStatus() != null) {
+			bookScannerDto.setStatus(bookScanner.getStatus().toString());
+		}
 		
 		ResponseBuilder responseBuilder = Response.status(200);
 		responseBuilder.entity(bookScannerDto);
@@ -135,24 +145,25 @@ public class BookScannerResource {
 	@Path("{bookScannerId}/start")
 	@POST
 	public Response startBookScanner(
-			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId) throws ProblemException {
-		for(BookScannerService bookScannerService: bookScannerServiceProvider) {
-			if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STOPPED) == false) {
-				throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScannerService.getStatus() + "."));
+			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId, 
+			@Parameter(name = "mode", description = "The mode.", required = true) @QueryParam("mode") BookScannerMode mode) throws ProblemException {
+		for(BookScanner bookScanner: bookScannerProvider) {
+			if(BookScannerStatus.STOPPED.equals(bookScanner.getStatus()) == false) {
+				throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScanner.getStatus() + "."));
 			}
 		}
 		
-		BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerId)).get();
+		BookScanner bookScanner = bookScannerProvider.select(NamedLiteral.of(bookScannerId)).get();
 		
-		if(bookScannerService == null) {
+		if(bookScanner == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
 		}
 		
-		bookScannerServiceExecuter.submit(new Runnable() {
+		bookScannerExecuter.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
-        			bookScannerService.start();
+        			bookScanner.start(mode);
         		} catch(Exception e) {
         			logger.error("error", e);
         		}
@@ -179,20 +190,20 @@ public class BookScannerResource {
 	@POST
 	public Response stopBookScanner(
 			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId) throws ProblemException {
-		BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerId)).get();
+		BookScanner bookScanner = bookScannerProvider.select(NamedLiteral.of(bookScannerId)).get();
 		
-		if(bookScannerService == null) {
+		if(bookScanner == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_SCANNER_NOT_FOUND", "The bookScanner is not found."));
 		}
 		
-		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTED)) {
-			bookScannerService.stop();
+		if(BookScannerStatus.STARTED.equals(bookScanner.getStatus())) {
+			bookScanner.stop();
 			
 			ResponseBuilder responseBuilder = Response.status(200);
 			
 			return responseBuilder.build();
 		} else {
-			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScannerService.getStatus() + "."));
+			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_SCANNER_STATUS_INVALID", "The bookScanner.status is invalid: " + bookScanner.getStatus() + "."));
 		}
 	}
 }
