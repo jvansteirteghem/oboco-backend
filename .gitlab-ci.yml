@@ -2,7 +2,7 @@
 # https://forum.gitlab.com/t/getting-mvn-release-to-work-with-gitlab-ci/4904/2
 
 # latest: maven:latest
-image: maven:3.6.3-jdk-8
+image: maven:3.8.1-jdk-11
 
 # stages
 stages:

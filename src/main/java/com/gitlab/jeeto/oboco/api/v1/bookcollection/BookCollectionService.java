@@ -119,6 +119,21 @@ public class BookCollectionService {
         return bookCollection;
 	}
 	
+	public BookCollection getBookCollectionByUpdateDateAndDirectoryPath(Date updateDate, String directoryPath) throws ProblemException {
+		BookCollection bookCollection = null;
+		
+		try {
+			bookCollection = entityManager.createQuery("select bc from BookCollection bc where bc.updateDate = :updateDate and bc.directoryPath = :directoryPath", BookCollection.class)
+					.setParameter("updateDate", updateDate)
+					.setParameter("directoryPath", directoryPath)
+					.getSingleResult();
+		} catch(NoResultException e) {
+			
+		}
+		
+        return bookCollection;
+	}
+	
 	public BookCollection getBookCollectionByBookCollectionIdAndDirectoryPath(Long rootBookCollectionId, String directoryPath) throws ProblemException {
 		BookCollection bookCollection = null;
 		

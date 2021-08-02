@@ -17,8 +17,9 @@ import org.eclipse.microprofile.context.ManagedExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerService;
-import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerServiceStatus;
+import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScanner;
+import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerMode;
+import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerStatus;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
@@ -158,23 +159,23 @@ public class Main {
     public static class BookScannerServiceEventListener {
     	private static Logger logger = LoggerFactory.getLogger(BookScannerServiceEventListener.class.getName());
     	@Inject
-    	Instance<BookScannerService> bookScannerServiceProvider;
+    	Instance<BookScanner> bookScannerProvider;
     	@Inject
-    	ManagedExecutor bookScannerServiceExecuter;
+    	ManagedExecutor bookScannerExecuter;
     	
     	void onStart(@Observes @Priority(Interceptor.Priority.APPLICATION + 20) StartupEvent ev) {
     		logger.info("start");
         	
-        	String bookScannerServiceId = getConfiguration().getAsString("start", "");
+        	String bookScannerId = getConfiguration().getAsString("start", "");
         	
-        	if(bookScannerServiceId.equals("") == false) {
-	        	BookScannerService bookScannerService = bookScannerServiceProvider.select(NamedLiteral.of(bookScannerServiceId)).get();
-	        	if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STOPPED)) {
-	        		bookScannerServiceExecuter.submit(new Runnable() {
+        	if(bookScannerId.equals("") == false) {
+	        	BookScanner bookScanner = bookScannerProvider.select(NamedLiteral.of(bookScannerId)).get();
+	        	if(BookScannerStatus.STOPPED.equals(bookScanner.getStatus())) {
+	        		bookScannerExecuter.submit(new Runnable() {
 						@Override
 						public void run() {
 							try {
-			        			bookScannerService.start();
+			        			bookScanner.start(BookScannerMode.UPDATE);
 			        		} catch(Exception e) {
 			        			logger.error("error", e);
 			        		}
@@ -187,10 +188,10 @@ public class Main {
     	void onStop(@Observes @Priority(Interceptor.Priority.APPLICATION + 20) ShutdownEvent ev) {
     		logger.info("stop");
     		
-    		for(BookScannerService bookScannerService: bookScannerServiceProvider) {
-	    		if(bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTING) || bookScannerService.getStatus().equals(BookScannerServiceStatus.STARTED)) {
+    		for(BookScanner bookScanner: bookScannerProvider) {
+	    		if(BookScannerStatus.STARTING.equals(bookScanner.getStatus()) || BookScannerStatus.STARTED.equals(bookScanner.getStatus())) {
 	    			try {
-	        			bookScannerService.stop();
+	        			bookScanner.stop();
 	        		} catch(Exception e) {
 	        			logger.error("error", e);
 	        		}

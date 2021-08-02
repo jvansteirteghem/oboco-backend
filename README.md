@@ -6,7 +6,7 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 
 ### requirements
 
-- java 8 or 11
+- java 11
 - maven >= 3.6.2
 
 ### configuration
