@@ -15,7 +15,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,8 @@ import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ImageManagerFactory;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
 
+@ApplicationScoped
+@Named("DEFAULT")
 public class DefaultBookScanner implements BookScanner {
 	private static Logger logger = LoggerFactory.getLogger(DefaultBookScanner.class.getName());
 	@Inject
