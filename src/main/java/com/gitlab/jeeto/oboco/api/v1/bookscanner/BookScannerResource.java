@@ -100,7 +100,7 @@ public class BookScannerResource {
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_SCANNER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookScannerId}")
+	@Path("{bookScannerId: [a-zA-Z0-9\\_\\-]+}")
 	@GET
 	public Response getBookScanner(
 			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId,
@@ -142,7 +142,7 @@ public class BookScannerResource {
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_SCANNER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookScannerId}/start")
+	@Path("{bookScannerId: [a-zA-Z0-9\\_\\-]+}/start")
 	@POST
 	public Response startBookScanner(
 			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId, 
@@ -186,7 +186,7 @@ public class BookScannerResource {
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_BOOK_SCANNER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookScannerId}/stop")
+	@Path("{bookScannerId: [a-zA-Z0-9\\_\\-]+}/stop")
 	@POST
 	public Response stopBookScanner(
 			@Parameter(name = "bookScannerId", description = "The id of the bookScanner.", required = true) @PathParam("bookScannerId") String bookScannerId) throws ProblemException {

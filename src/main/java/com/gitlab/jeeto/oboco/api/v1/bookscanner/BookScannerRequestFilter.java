@@ -23,7 +23,8 @@ public class BookScannerRequestFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
     	String path = requestContext.getUriInfo().getPath();
-    	if(path.startsWith("v1/books") || path.startsWith("v1/bookCollections") || path.startsWith("v1/bookMarks")) {
+    	// starts with /api/
+    	if(path.startsWith("/api/v1/books") || path.startsWith("/api/v1/bookCollections") || path.startsWith("/api/v1/bookMarks")) {
     		for(BookScanner bookScanner: bookScannerProvider) {
     			if(BookScannerStatus.STOPPED.equals(bookScanner.getStatus()) == false) {
     				ResponseBuilder responseBuilder = Response.status(503);

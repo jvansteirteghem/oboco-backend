@@ -239,7 +239,7 @@ public class UserResource {
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{userId}")
+	@Path("{userId: [0-9]+}")
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateUser(
@@ -295,7 +295,7 @@ public class UserResource {
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{userId}")
+	@Path("{userId: [0-9]+}")
 	@DELETE
 	public Response deleteUser(
 			@Parameter(name = "userId", description = "The id of the user.", required = true) @PathParam("userId") Long userId) throws ProblemException {
@@ -355,7 +355,7 @@ public class UserResource {
 		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{userId}")
+	@Path("{userId: [0-9]+}")
 	@GET
 	public Response getUser(
 			@Parameter(name = "userId", description = "The id of the user.", required = true) @PathParam("userId") Long userId, 

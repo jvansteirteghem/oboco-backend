@@ -121,7 +121,7 @@ public class BookResource {
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookId}")
+	@Path("{bookId: [0-9]+}")
 	@GET
 	public Response getBook(
 			@Parameter(name = "bookId", description = "The id of the book.", required = true) @PathParam("bookId") Long bookId, 
@@ -162,7 +162,7 @@ public class BookResource {
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookId}.cbz")
+	@Path("{bookId: [0-9]+}.cbz")
 	@GET
 	@Produces({"application/zip"})
 	public Response getBookAs(
@@ -220,7 +220,7 @@ public class BookResource {
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookId}/pages/{page}.jpg")
+	@Path("{bookId: [0-9]+}/pages/{page: [0-9]+}.jpg")
 	@GET
 	@Produces({"image/jpeg"})
 	public Response getBookPageAs(
@@ -282,7 +282,7 @@ public class BookResource {
 		return responseBuilder.build();
 	}
 	
-	@Path("{bookId}/bookMark")
+	@Path("{bookId: [0-9]+}/bookMark")
 	public BookMarkByBookResource getBookMarkByBookResource(
 			@Parameter(name = "bookId", description = "The id of the book.", required = true) @PathParam("bookId") Long bookId) {
 		BookMarkByBookResource bookMarkByBookResource = resourceContext.getResource(BookMarkByBookResource.class);
