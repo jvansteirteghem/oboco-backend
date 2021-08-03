@@ -25,15 +25,17 @@ public class ParameterConverterProvider implements ParamConverterProvider {
 
         @Override
         public Integer fromString(String value) {
-            if (value == null)
+            if(value == null) {
                 return null;
+            }
             return Integer.valueOf(value);
         }
 
         @Override
         public String toString(Integer value) {
-            if (value == null)
+            if(value == null) {
                 return null;
+            }
             return value.toString();
         }
 
@@ -43,15 +45,17 @@ public class ParameterConverterProvider implements ParamConverterProvider {
 
         @Override
         public Long fromString(String value) {
-            if (value == null)
+            if(value == null) {
                 return null;
+            }
             return Long.valueOf(value);
         }
 
         @Override
         public String toString(Long value) {
-            if (value == null)
+            if(value == null) {
                 return null;
+            }
             return value.toString();
         }
 

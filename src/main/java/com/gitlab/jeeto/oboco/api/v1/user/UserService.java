@@ -163,10 +163,14 @@ public class UserService {
 		Long userListSize = (Long) entityManager.createQuery("select count(u.id) from User u")
 				.getSingleResult();
 		
-		List<User> userList = entityManager.createQuery("select u from User u", User.class)
-				.setHint("javax.persistence.loadgraph", entityGraph)
+		List<Long> userIdList = entityManager.createQuery("select u.id from User u", Long.class)
 				.setFirstResult((page - 1) * pageSize)
 				.setMaxResults(pageSize)
+				.getResultList();
+		
+		List<User> userList = entityManager.createQuery("select u from User u where u.id in :userIdList", User.class)
+				.setParameter("userIdList", userIdList)
+				.setHint("javax.persistence.loadgraph", entityGraph)
 				.getResultList();
 		
         PageableList<User> userPageableList = new PageableList<User>(userList, userListSize, page, pageSize);

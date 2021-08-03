@@ -130,7 +130,7 @@ public class BookByBookCollectionResource {
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookId}/books")
+	@Path("{bookId: [0-9]+}/books")
 	@GET
 	public Response getBooksByBookCollectionAndBook(
 			@Parameter(name = "bookId", description = "The id of the book.", required = false) @PathParam("bookId") Long bookId, 
