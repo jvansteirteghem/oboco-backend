@@ -163,12 +163,13 @@ public class UserService {
 		Long userListSize = (Long) entityManager.createQuery("select count(u.id) from User u")
 				.getSingleResult();
 		
-		List<Long> userIdList = entityManager.createQuery("select u.id from User u", Long.class)
+		// fix HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
+		List<Long> userIdList = entityManager.createQuery("select u.id from User u order by u.createDate asc", Long.class)
 				.setFirstResult((page - 1) * pageSize)
 				.setMaxResults(pageSize)
 				.getResultList();
 		
-		List<User> userList = entityManager.createQuery("select u from User u where u.id in :userIdList", User.class)
+		List<User> userList = entityManager.createQuery("select u from User u where u.id in :userIdList order by u.createDate asc", User.class)
 				.setParameter("userIdList", userIdList)
 				.setHint("javax.persistence.loadgraph", entityGraph)
 				.getResultList();
