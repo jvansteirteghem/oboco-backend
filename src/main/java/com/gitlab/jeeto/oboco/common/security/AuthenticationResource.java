@@ -83,7 +83,7 @@ public class AuthenticationResource {
 		
 		UserToken refreshToken = userTokenService.getRefreshToken(refreshTokenValue);
 		
-		User user = userService.getUserByName(refreshToken.getName(), null);
+		User user = userService.getUserByName(refreshToken.getName());
 		
 		if(user == null) {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid."));

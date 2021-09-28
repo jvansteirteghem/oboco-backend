@@ -239,7 +239,7 @@ public class DefaultBookScanner implements BookScanner {
 				String name = entry.getKey();
 				List<TypeableFile> directoryList = entry.getValue();
 				
-				BookCollection bookCollection = bookCollectionService.getRootBookCollectionByName(name);
+				BookCollection bookCollection = bookCollectionService.getRootBookCollection(name);
 				
 				if(bookCollection == null) {
 					logger.info("create rootBookCollection " + name);
@@ -297,15 +297,15 @@ public class DefaultBookScanner implements BookScanner {
 			
 			logger.info("delete bookMarkReferences");
 	        
-	        bookMarkService.deleteBookMarkReferencesByUpdateDate(this.updateDate);
+	        bookMarkService.deleteBookMarkReferences(this.updateDate);
 	        
 	        logger.info("delete books");
 	        
-	        bookService.deleteBookByUpdateDate(this.updateDate);
+	        bookService.deleteBooks(this.updateDate);
 	        
 	        logger.info("delete bookCollections");
 	        
-	        bookCollectionService.deleteBookCollectionByUpdateDate(this.updateDate);
+	        bookCollectionService.deleteBookCollections(this.updateDate);
 	        
 	        deleteBookPageByUpdateDate();
 		} catch(ProblemException e) {
@@ -353,8 +353,8 @@ public class DefaultBookScanner implements BookScanner {
 			String path = file.getPath();
 			
 			if(file.isDirectory()) {
-				BookCollection bookCollection = bookCollectionService.getBookCollectionByBookCollectionIdAndDirectoryPath(rootBookCollection.getId(), path);
-				BookCollection bookCollectionUpdate = bookCollectionService.getBookCollectionByUpdateDateAndDirectoryPath(this.updateDate, path);
+				BookCollection bookCollection = bookCollectionService.getBookCollectionByRootBookCollectionAndDirectory(rootBookCollection.getId(), path);
+				BookCollection bookCollectionUpdate = bookCollectionService.getBookCollectionByDirectory(path, this.updateDate);
 				
 				if(bookCollection == null) {
 					logger.info("create bookCollection " + path);
@@ -427,8 +427,8 @@ public class DefaultBookScanner implements BookScanner {
 				FileType fileType = FileType.getFileType(file.getName());
 				
 				if(fileTypeList.contains(fileType)) {
-					Book book = bookService.getBookByBookCollectionIdAndFilePath(rootBookCollection.getId(), path);
-					Book bookUpdate = bookService.getBookByUpdateDateAndFilePath(this.updateDate, path);
+					Book book = bookService.getBookByRootBookCollectionAndFile(rootBookCollection.getId(), path);
+					Book bookUpdate = bookService.getBookByFile(path, this.updateDate);
 					
 					if(book == null) {
 						logger.info("create book " + path);
