@@ -295,21 +295,20 @@ public class BookCollectionService {
 			
 			String bookCollectionListQueryString = " where 1 = 1";
 			
-			bookCollectionListQueryString = bookCollectionListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId";
+			bookCollectionListQueryString = bookCollectionListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.createDate = :createDate";
 			
 			String normalizedName = null;
 			if(BookCollectionSearchType.NAME.equals(searchType)) {
 				normalizedName = NameHelper.getNormalizedName(search);
 				
 				if(normalizedName != null && "".equals(normalizedName) == false) {
-					bookCollectionListQueryString = bookCollectionListQueryString + " and b.bookCollection.normalizedName like :normalizedName";
+					bookCollectionListQueryString = bookCollectionListQueryString + " and bc.normalizedName like :normalizedName";
 				}
 			}
 			
-			bookCollectionListQueryString = bookCollectionListQueryString + " and b.createDate = :createDate";
-			
-			Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct b.bookCollection.id) from Book b" + bookCollectionListQueryString);
+			Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct bc.id) from BookCollection bc join bc.books b" + bookCollectionListQueryString);
 			bookCollectionListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+			bookCollectionListSizeQuery.setParameter("createDate", createDate);
 			
 			if(BookCollectionSearchType.NAME.equals(searchType)) {
 				if(normalizedName != null && "".equals(normalizedName) == false) {
@@ -317,12 +316,11 @@ public class BookCollectionService {
 				}
 			}
 			
-			bookCollectionListSizeQuery.setParameter("createDate", createDate);
-			
 			Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 			
-			TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select distinct b.bookCollection from Book b" + bookCollectionListQueryString + " order by b.bookCollection.number asc", BookCollection.class);
+			TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select distinct bc from BookCollection bc join bc.books b" + bookCollectionListQueryString + " order by bc.number asc", BookCollection.class);
 			bookCollectionListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+			bookCollectionListQuery.setParameter("createDate", createDate);
 			
 			if(BookCollectionSearchType.NAME.equals(searchType)) {
 				if(normalizedName != null && "".equals(normalizedName) == false) {
@@ -330,7 +328,6 @@ public class BookCollectionService {
 				}
 			}
 			
-			bookCollectionListQuery.setParameter("createDate", createDate);
 			bookCollectionListQuery.setHint("javax.persistence.loadgraph", entityGraph);
 			bookCollectionListQuery.setFirstResult((page - 1) * pageSize);
 			bookCollectionListQuery.setMaxResults(pageSize);
@@ -361,20 +358,18 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.rootBookCollection.id = :rootBookCollectionId";
-		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.user.id = :userId";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bcm.user.id = :userId";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
 			normalizedName = NameHelper.getNormalizedName(search);
 			
 			if(normalizedName != null && "".equals(normalizedName) == false) {
-				bookCollectionListQueryString = bookCollectionListQueryString + " and b.bookCollection.normalizedName like :normalizedName";
+				bookCollectionListQueryString = bookCollectionListQueryString + " and bc.normalizedName like :normalizedName";
 			}
 		}
 		
-		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct bmr.bookCollection.id) from BookMarkReference bmr" + bookCollectionListQueryString);
+		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct bc.id) from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString);
 		bookCollectionListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookCollectionListSizeQuery.setParameter("userId", user.getId());
 		
@@ -386,7 +381,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		Query bookCollectionListQuery = entityManager.createQuery("select bc, max(bmr.bookMark.updateDate) from BookMarkReference bmr inner join bmr.bookCollection bc" + bookCollectionListQueryString + " group by bc order by max(bmr.bookMark.updateDate) desc, bc.number asc");
+		Query bookCollectionListQuery = entityManager.createQuery("select distinct bc, bcm.updateDate from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString + " order by bcm.updateDate desc, bc.number asc");
 		bookCollectionListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookCollectionListQuery.setParameter("userId", user.getId());
 		
@@ -409,6 +404,7 @@ public class BookCollectionService {
 			
 			bookCollectionList.add(bookCollection);
 		}
+
 		
 		PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
 		
@@ -426,22 +422,18 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.rootBookCollection.id = :rootBookCollectionId";
-		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.user.id = :userId";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bcm.user.id = :userId and bcm.page = bcm.numberOfPages";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
 			normalizedName = NameHelper.getNormalizedName(search);
 			
 			if(normalizedName != null && "".equals(normalizedName) == false) {
-				bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.bookCollection.normalizedName like :normalizedName";
+				bookCollectionListQueryString = bookCollectionListQueryString + " and bc.normalizedName like :normalizedName";
 			}
 		}
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.book.numberOfPages = bmr.bookMark.page";
-		
-		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct bmr.bookCollection.id) from BookMarkReference bmr" + bookCollectionListQueryString);
+		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct bc.id) from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString);
 		bookCollectionListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookCollectionListSizeQuery.setParameter("userId", user.getId());
 		
@@ -453,7 +445,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select distinct bmr.bookCollection from BookMarkReference bmr" + bookCollectionListQueryString + " order by bmr.bookCollection.number asc", BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select distinct bc from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString + " order by bc.number asc", BookCollection.class);
 		bookCollectionListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookCollectionListQuery.setParameter("userId", user.getId());
 		
@@ -485,22 +477,18 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.rootBookCollection.id = :rootBookCollectionId";
-		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.user.id = :userId";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bcm.user.id = :userId and bcm.page <> bcm.numberOfPages";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
 			normalizedName = NameHelper.getNormalizedName(search);
 			
 			if(normalizedName != null && "".equals(normalizedName) == false) {
-				bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.bookCollection.normalizedName like :normalizedName";
+				bookCollectionListQueryString = bookCollectionListQueryString + " and bc.normalizedName like :normalizedName";
 			}
 		}
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bmr.book.numberOfPages <> bmr.bookMark.page";
-		
-		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct bmr.bookCollection.id) from BookMarkReference bmr" + bookCollectionListQueryString);
+		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(distinct bc.id) from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString);
 		bookCollectionListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookCollectionListSizeQuery.setParameter("userId", user.getId());
 		
@@ -512,7 +500,7 @@ public class BookCollectionService {
 		
 		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
 		
-		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select distinct bmr.bookCollection from BookMarkReference bmr" + bookCollectionListQueryString + " order by bmr.bookCollection.number asc", BookCollection.class);
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select distinct bc from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString + " order by bc.number asc", BookCollection.class);
 		bookCollectionListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookCollectionListQuery.setParameter("userId", user.getId());
 		
@@ -544,7 +532,7 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBooks > 0 and bc.id not in (select distinct bc.id from BookCollection bc join bc.bookCollectionMarks bcm where bc.rootBookCollection.id = :rootBookCollectionId and bcm.user.id = :userId)";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
@@ -554,8 +542,6 @@ public class BookCollectionService {
 				bookCollectionListQueryString = bookCollectionListQueryString + " and bc.normalizedName like :normalizedName";
 			}
 		}
-		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.numberOfBooks > 0 and bc.id not in (select distinct bmr.bookCollection.id from BookMarkReference bmr where bmr.rootBookCollection.id = :rootBookCollectionId and bmr.user.id = :userId)";
 		
 		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(bc.id) from BookCollection bc" + bookCollectionListQueryString);
 		bookCollectionListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());

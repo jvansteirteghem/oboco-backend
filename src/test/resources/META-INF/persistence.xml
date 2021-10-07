@@ -8,6 +8,7 @@
     <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>com.gitlab.jeeto.oboco.api.v1.user.User</class>
+        <class>com.gitlab.jeeto.oboco.api.v1.bookmark.BookCollectionMark</class>
         <class>com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark</class>
         <class>com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference</class>
         <class>com.gitlab.jeeto.oboco.api.v1.book.Book</class>
