@@ -90,7 +90,7 @@ public class AuthenticationResource {
 				user.setCreateDate(updateDate);
 				user.setUpdateDate(updateDate);
 				
-				BookCollection rootBookCollection = bookCollectionService.getRootBookCollectionByName("DEFAULT");
+				BookCollection rootBookCollection = bookCollectionService.getRootBookCollection("DEFAULT");
 				
 				user.setRootBookCollection(rootBookCollection);
 				
