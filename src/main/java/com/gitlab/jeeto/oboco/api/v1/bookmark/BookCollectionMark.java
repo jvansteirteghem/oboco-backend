@@ -1,9 +1,7 @@
 package com.gitlab.jeeto.oboco.api.v1.bookmark;
 
 import java.util.Date;
-import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,33 +11,31 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 
 @Entity
 @Table(
-	name = "bookMarks",
+	name = "bookCollectionMarks",
 	indexes = {
-		@Index(name = "bookMarkUserIdFileId", columnList = "userId,fileId", unique = true),
-		@Index(name = "bookMarkFileId", columnList = "fileId", unique = false),
-		@Index(name = "bookMarkCreateDate", columnList = "createDate", unique = false),
-		@Index(name = "bookMarkUpdateDate", columnList = "updateDate", unique = false)
+		@Index(name = "bookCollectionMarkUserIdBookCollectionId", columnList = "userId,bookCollectionId", unique = true),
+		@Index(name = "bookCollectionMarkCreateDate", columnList = "createDate", unique = false),
+		@Index(name = "bookCollectionMarkUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
-public class BookMark {
+public class BookCollectionMark {
 	private Long id;
 	private User user;
-	private String fileId;
+	private BookCollection bookCollection;
 	private Date createDate;
 	private Date updateDate;
 	private Integer numberOfPages;
 	private Integer page;
-	private List<BookMarkReference> bookMarkReferences;
-	public BookMark() {
+	public BookCollectionMark() {
 		super();
 	}
 	@Id
@@ -59,12 +55,13 @@ public class BookMark {
 	public void setUser(User user) {
 		this.user = user;
 	}
-	@Column(name = "fileId", length = 64, nullable = false)
-	public String getFileId() {
-		return fileId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "bookCollectionId", referencedColumnName = "id")
+	public BookCollection getBookCollection() {
+		return bookCollection;
 	}
-	public void setFileId(String fileId) {
-		this.fileId = fileId;
+	public void setBookCollection(BookCollection bookCollection) {
+		this.bookCollection = bookCollection;
 	}
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "createDate", nullable = false)
@@ -95,12 +92,5 @@ public class BookMark {
 	}
 	public void setPage(Integer page) {
 		this.page = page;
-	}
-	@OneToMany(mappedBy = "bookMark", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-	public List<BookMarkReference> getBookMarkReferences() {
-		return bookMarkReferences;
-	}
-	public void setBookMarkReferences(List<BookMarkReference> bookMarkReferences) {
-		this.bookMarkReferences = bookMarkReferences;
 	}
 }

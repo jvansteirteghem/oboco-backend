@@ -17,7 +17,6 @@ import javax.transaction.Transactional;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
-import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkStatus;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.Linkable;
@@ -58,7 +57,11 @@ public class BookService {
         return book;
 	}
 	
-	public Book getBookByUserAndId(User user, Long id, Graph graph) throws ProblemException {
+	public Book getBookByUser(User user, Long id) throws ProblemException {
+		return getBookByUser(user, id, null);
+	}
+	
+	public Book getBookByUser(User user, Long id, Graph graph) throws ProblemException {
 		Book book = null;
 		
 		try {
@@ -89,7 +92,7 @@ public class BookService {
         return book;
 	}
 	
-	public Book getBookByUpdateDateAndFilePath(Date updateDate, String filePath) throws ProblemException {
+	public Book getBookByFile(String filePath, Date updateDate) throws ProblemException {
 		Book book = null;
 		
 		try {
@@ -104,7 +107,7 @@ public class BookService {
         return book;
 	}
 	
-	public Book getBookByBookCollectionIdAndFilePath(Long rootBookCollectionId, String filePath) throws ProblemException {
+	public Book getBookByRootBookCollectionAndFile(Long rootBookCollectionId, String filePath) throws ProblemException {
 		Book book = null;
 		
 		try {
@@ -119,7 +122,7 @@ public class BookService {
         return book;
 	}
 	
-	public List<Book> getBooksByFileId(String fileId) throws ProblemException {
+	public List<Book> getBooksByFile(String fileId) throws ProblemException {
 		List<Book> bookList = entityManager.createQuery("select b from Book b where b.fileId = :fileId", Book.class)
 				.setParameter("fileId", fileId)
 				.getResultList();
@@ -128,60 +131,37 @@ public class BookService {
 	}
 	
 	public PageableList<Book> getBooksByUser(User user, Integer page, Integer pageSize, Graph graph) throws ProblemException {
-		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
-		if(graph != null) {
-			if(graph.containsKey("bookCollection")) {
-				entityGraph.addSubgraph("bookCollection", BookCollection.class);
-			}
-		}
-		
-		Long bookListSize = (Long) entityManager.createQuery("select count(b.id) from Book b where b.rootBookCollection.id = :rootBookCollectionId")
-				.setParameter("rootBookCollectionId", user.getRootBookCollection().getId())
-				.getSingleResult();
-	
-		List<Book> bookList = entityManager.createQuery("select b from Book b where b.rootBookCollection.id = :rootBookCollectionId order by b.number asc", Book.class)
-				.setParameter("rootBookCollectionId", user.getRootBookCollection().getId())
-				.setHint("javax.persistence.loadgraph", entityGraph)
-				.setFirstResult((page - 1) * pageSize)
-				.setMaxResults(pageSize)
-				.getResultList();
-		
-		if(graph != null) {
-			if(graph.containsKey("bookMark")) {
-				Graph bookMarkGraph = graph.get("bookMark");
-				
-				getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
-			}
-		}
-        
-        PageableList<Book> bookPageableList = new PageableList<Book>(bookList, bookListSize, page, pageSize);
-        
-        return bookPageableList;
+        return getBooksByUser(user, null, null, page, pageSize, graph);
 	}
 	
-	public PageableList<Book> getBooksByUserAndName(User user, String name, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+	public PageableList<Book> getBooksByUser(User user, BookSearchType searchType, String search, Integer page, Integer pageSize, Graph graph) throws ProblemException {
 		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
 		if(graph != null) {
 			if(graph.containsKey("bookCollection")) {
 				entityGraph.addSubgraph("bookCollection", BookCollection.class);
 			}
 		}
-		
-		String normalizedName = NameHelper.getNormalizedName(name);
 		
 		String bookListQueryString = " where 1 = 1";
 		
 		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId";
 		
-		if(normalizedName != null && "".equals(normalizedName) == false) {
-			bookListQueryString = bookListQueryString + " and b.normalizedName like :normalizedName";
+		String normalizedName = null;
+		if(BookSearchType.NAME.equals(searchType)) {
+			normalizedName = NameHelper.getNormalizedName(search);
+			
+			if(normalizedName != null && "".equals(normalizedName) == false) {
+				bookListQueryString = bookListQueryString + " and b.normalizedName like :normalizedName";
+			}
 		}
 		
 		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b" + bookListQueryString);
 		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		
-		if(normalizedName != null && "".equals(normalizedName) == false) {
-			bookListSizeQuery.setParameter("normalizedName", "%" + normalizedName + "%");
+		if(BookSearchType.NAME.equals(searchType)) {
+			if(normalizedName != null && "".equals(normalizedName) == false) {
+				bookListSizeQuery.setParameter("normalizedName", "%" + normalizedName + "%");
+			}
 		}
 		
 		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
@@ -189,8 +169,10 @@ public class BookService {
 		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number asc", Book.class);
 		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		
-		if(normalizedName != null && "".equals(normalizedName) == false) {
-			bookListQuery.setParameter("normalizedName", "%" + normalizedName + "%");
+		if(BookSearchType.NAME.equals(searchType)) {
+			if(normalizedName != null && "".equals(normalizedName) == false) {
+				bookListQuery.setParameter("normalizedName", "%" + normalizedName + "%");
+			}
 		}
 		
 		bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
@@ -212,7 +194,7 @@ public class BookService {
         return bookPageableList;
 	}
 	
-	public Linkable<Book> getBooksByUserAndBookCollectionIdAndId(User user, Long bookCollectionId, Long id, Graph graph) throws ProblemException {
+	public Linkable<Book> getLinkableBookByUserAndBookCollection(User user, Long bookCollectionId, Long id, Graph graph) throws ProblemException {
 		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
 		if(graph != null) {
 			if(graph.containsKey("bookCollection")) {
@@ -269,14 +251,8 @@ public class BookService {
 		return bookLinkable;
 	}
 	
-	public List<Book> getBooksByUserAndBookCollectionId(User user, Long bookCollectionId) throws ProblemException {
-		String bookListQueryString = " where 1 = 1";
-		
-		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId";
-		
-		bookListQueryString = bookListQueryString + " and b.bookCollection.id = :bookCollectionId";
-		
-		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number asc", Book.class);
+	public List<Book> getBooksByUserAndBookCollection(User user, Long bookCollectionId) throws ProblemException {
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId order by b.number asc", Book.class);
 		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
 		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
 		
@@ -285,7 +261,7 @@ public class BookService {
         return bookList;
 	}
 	
-	public PageableList<Book> getBooksByUserAndBookCollectionId(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+	public PageableList<Book> getBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
 		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
 		if(graph != null) {
 			if(graph.containsKey("bookCollection")) {
@@ -295,9 +271,7 @@ public class BookService {
 		
 		String bookListQueryString = " where 1 = 1";
 		
-		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId";
-		
-		bookListQueryString = bookListQueryString + " and b.bookCollection.id = :bookCollectionId";
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId";
 		
 		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b" + bookListQueryString);
 		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
@@ -327,7 +301,64 @@ public class BookService {
         return bookPageableList;
 	}
 	
-	public PageableList<Book> getBooksByUserAndBookCollectionIdAndBookMarkStatus(User user, Long bookCollectionId, BookMarkStatus bookMarkStatus, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+	public PageableList<Book> getNewBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
+		if(graph != null) {
+			if(graph.containsKey("bookCollection")) {
+				entityGraph.addSubgraph("bookCollection", BookCollection.class);
+			}
+		}
+		
+		PageableList<Book> bookPageableList;
+		
+		try {
+			Query createDateQuery = entityManager.createQuery("select max(b.createDate) from Book b");
+			
+			Date createDate = (Date) createDateQuery.getSingleResult();
+			
+			String bookListQueryString = " where 1 = 1";
+			
+			bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.createDate = :createDate";
+			
+			Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b" + bookListQueryString);
+			bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+			bookListSizeQuery.setParameter("bookCollectionId", bookCollectionId);
+			bookListSizeQuery.setParameter("createDate", createDate);
+			
+			Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
+			
+			TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number asc", Book.class);
+			bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+			bookListQuery.setParameter("bookCollectionId", bookCollectionId);
+			bookListQuery.setParameter("createDate", createDate);
+			bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
+			bookListQuery.setFirstResult((page - 1) * pageSize);
+			bookListQuery.setMaxResults(pageSize);
+			
+			List<Book> bookList = bookListQuery.getResultList();
+			
+			if(graph != null) {
+				if(graph.containsKey("bookMark")) {
+					Graph bookMarkGraph = graph.get("bookMark");
+					
+					getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
+				}
+			}
+	        
+	        bookPageableList = new PageableList<Book>(bookList, bookListSize, page, pageSize);
+		} catch(NoResultException e) {
+			Long bookListSize = 0L;
+			
+			List<Book> bookList = new ArrayList<Book>();
+			
+			bookPageableList = new PageableList<Book>(bookList, bookListSize, page, pageSize);
+		}
+		
+        return bookPageableList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public PageableList<Book> getLatestReadBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
 		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
 		if(graph != null) {
 			if(graph.containsKey("bookCollection")) {
@@ -337,17 +368,141 @@ public class BookService {
 		
 		String bookListQueryString = " where 1 = 1";
 		
-		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId";
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId";
 		
-		bookListQueryString = bookListQueryString + " and b.bookCollection.id = :bookCollectionId";
+		Query bookListSizeQuery = entityManager.createQuery("select count(distinct b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString);
+		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListSizeQuery.setParameter("bookCollectionId", bookCollectionId);
+		bookListSizeQuery.setParameter("userId", user.getId());
 		
-		if(BookMarkStatus.READ.equals(bookMarkStatus)) {
-			bookListQueryString = bookListQueryString + " and b.id in (select bmr.book.id from BookMarkReference bmr where bmr.rootBookCollection.id = :rootBookCollectionId and bmr.bookCollection.id = :bookCollectionId and bmr.user.id = :userId and bmr.book.numberOfPages = bmr.bookMark.page)";
-		} else if(BookMarkStatus.UNREAD.equals(bookMarkStatus)) {
-			bookListQueryString = bookListQueryString + " and b.id not in (select bmr.book.id from BookMarkReference bmr where bmr.rootBookCollection.id = :rootBookCollectionId and bmr.bookCollection.id = :bookCollectionId and bmr.user.id = :userId)";
-		} else if(BookMarkStatus.READING.equals(bookMarkStatus)) {
-			bookListQueryString = bookListQueryString + " and b.id in (select bmr.book.id from BookMarkReference bmr where bmr.rootBookCollection.id = :rootBookCollectionId and bmr.bookCollection.id = :bookCollectionId and bmr.user.id = :userId and bmr.book.numberOfPages <> bmr.bookMark.page)";
+		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
+		
+		Query bookListQuery = entityManager.createQuery("select distinct b, bmr.bookMark.updateDate from Book b join b.bookMarkReferences bmr" + bookListQueryString + " order by bmr.bookMark.updateDate desc, b.number asc");
+		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
+		bookListQuery.setParameter("userId", user.getId());
+		bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
+		bookListQuery.setFirstResult((page - 1) * pageSize);
+		bookListQuery.setMaxResults(pageSize);
+		
+		List<Object[]> bookObjectList = (List<Object[]>) bookListQuery.getResultList();
+		
+		List<Book> bookList = new ArrayList<Book>();
+		
+		for(Object[] bookObject: bookObjectList) {
+			Book book = (Book) bookObject[0];
+			
+			bookList.add(book);
 		}
+		
+		if(graph != null) {
+			if(graph.containsKey("bookMark")) {
+				Graph bookMarkGraph = graph.get("bookMark");
+				
+				getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
+			}
+		}
+        
+		PageableList<Book> bookPageableList = new PageableList<Book>(bookList, bookListSize, page, pageSize);
+		
+        return bookPageableList;
+	}
+	
+	public PageableList<Book> getReadBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
+		if(graph != null) {
+			if(graph.containsKey("bookCollection")) {
+				entityGraph.addSubgraph("bookCollection", BookCollection.class);
+			}
+		}
+		
+		String bookListQueryString = " where 1 = 1";
+		
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId and bmr.bookMark.page = b.numberOfPages";
+		
+		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString);
+		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListSizeQuery.setParameter("bookCollectionId", bookCollectionId);
+		bookListSizeQuery.setParameter("userId", user.getId());
+		
+		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
+		
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b join b.bookMarkReferences bmr" + bookListQueryString + " order by b.number asc", Book.class);
+		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
+		bookListQuery.setParameter("userId", user.getId());
+		bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
+		bookListQuery.setFirstResult((page - 1) * pageSize);
+		bookListQuery.setMaxResults(pageSize);
+		
+		List<Book> bookList = bookListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookMark")) {
+				Graph bookMarkGraph = graph.get("bookMark");
+				
+				getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
+			}
+		}
+        
+        PageableList<Book> bookPageableList = new PageableList<Book>(bookList, bookListSize, page, pageSize);
+        
+        return bookPageableList;
+	}
+	
+	public PageableList<Book> getReadingBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
+		if(graph != null) {
+			if(graph.containsKey("bookCollection")) {
+				entityGraph.addSubgraph("bookCollection", BookCollection.class);
+			}
+		}
+		
+		String bookListQueryString = " where 1 = 1";
+		
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId and bmr.bookMark.page <> b.numberOfPages";
+		
+		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString);
+		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListSizeQuery.setParameter("bookCollectionId", bookCollectionId);
+		bookListSizeQuery.setParameter("userId", user.getId());
+		
+		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
+		
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b join b.bookMarkReferences bmr" + bookListQueryString + " order by b.number asc", Book.class);
+		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
+		bookListQuery.setParameter("userId", user.getId());
+		bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
+		bookListQuery.setFirstResult((page - 1) * pageSize);
+		bookListQuery.setMaxResults(pageSize);
+		
+		List<Book> bookList = bookListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookMark")) {
+				Graph bookMarkGraph = graph.get("bookMark");
+				
+				getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
+			}
+		}
+        
+        PageableList<Book> bookPageableList = new PageableList<Book>(bookList, bookListSize, page, pageSize);
+        
+        return bookPageableList;
+	}
+	
+	public PageableList<Book> getUnreadBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
+		if(graph != null) {
+			if(graph.containsKey("bookCollection")) {
+				entityGraph.addSubgraph("bookCollection", BookCollection.class);
+			}
+		}
+		
+		String bookListQueryString = " where 1 = 1";
+		
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.id not in (select b.id from Book b join b.bookMarkReferences bmr where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId)";
 		
 		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b" + bookListQueryString);
 		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
@@ -380,13 +535,13 @@ public class BookService {
 	}
 	
 	@Transactional
-	public void deleteBook() throws ProblemException {
+	public void deleteBooks() throws ProblemException {
 		entityManager.createQuery("delete from Book")
 			.executeUpdate();
 	}
 	
 	@Transactional
-	public void deleteBookByUpdateDate(Date updateDate) throws ProblemException {
+	public void deleteBooks(Date updateDate) throws ProblemException {
 		entityManager.createQuery("delete from Book b where b.updateDate != :updateDate")
 			.setParameter("updateDate", updateDate)
 			.executeUpdate();
@@ -402,15 +557,15 @@ public class BookService {
 		
 		String bookListQueryString = " where 1 = 1";
 		
-		bookListQueryString = " and bmr.rootBookCollection.id = :rootBookCollectionId and bmr.user.id = :userId and bmr.bookMark.id = :bookMarkId";
+		bookListQueryString = " and b.rootBookCollection.id = :rootBookCollectionId and bmr.bookMark.user.id = :userId and bmr.bookMark.id = :bookMarkId";
 		
-		Long bookListSize = (Long) entityManager.createQuery("select count(bmr.book.id) from BookMarkReference bmr" + bookListQueryString)
+		Long bookListSize = (Long) entityManager.createQuery("select count(b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString)
 				.setParameter("rootBookCollectionId", user.getRootBookCollection().getId())
 				.setParameter("userId", user.getId())
 				.setParameter("bookMarkId", bookMark.getId())
 				.getSingleResult();
 		
-		List<Book> bookList = entityManager.createQuery("select bmr.book from BookMarkReference bmr" + bookListQueryString + " order by bmr.book.number asc", Book.class)
+		List<Book> bookList = entityManager.createQuery("select b from Book b join b.bookMarkReferences bmr" + bookListQueryString + " order by b.number asc", Book.class)
 				.setParameter("rootBookCollectionId", user.getRootBookCollection().getId())
 				.setParameter("userId", user.getId())
 				.setParameter("bookMarkId", bookMark.getId())

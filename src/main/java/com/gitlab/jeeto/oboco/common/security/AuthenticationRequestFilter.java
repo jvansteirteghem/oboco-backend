@@ -100,7 +100,9 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 				String name = tokenizer.nextToken();
 				String password = tokenizer.nextToken();
 				
-				User user = userService.getUserByNameAndPassword(name, password);
+				Graph graph = GraphHelper.createGraph("(rootBookCollection)");
+				
+				User user = userService.getUserByNameAndPassword(name, password, graph);
 				
 				if(user == null) {
 					ResponseBuilder responseBuilder = Response.status(401);

@@ -16,27 +16,22 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.gitlab.jeeto.oboco.api.v1.book.Book;
-import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
-import com.gitlab.jeeto.oboco.api.v1.user.User;
 
 @Entity
 @Table(
 	name = "bookMarkReferences",
 	indexes = {
-		@Index(name = "bookMarkReferenceUserIdBookId", columnList = "userId,bookId", unique = true),
+		@Index(name = "bookMarkReferenceBookIdBookMarkId", columnList = "bookId,bookMarkId", unique = true),
 		@Index(name = "bookMarkReferenceCreateDate", columnList = "createDate", unique = false),
 		@Index(name = "bookMarkReferenceUpdateDate", columnList = "updateDate", unique = false)
 	}
 )
 public class BookMarkReference {
 	private Long id;
-	private User user;
-	private Date createDate;
-	private Date updateDate;
 	private Book book;
 	private BookMark bookMark;
-	private BookCollection bookCollection;
-	private BookCollection rootBookCollection;
+	private Date createDate;
+	private Date updateDate;
 	public BookMarkReference() {
 		super();
 	}
@@ -48,30 +43,6 @@ public class BookMarkReference {
 	}
 	public void setId(Long id) {
 		this.id = id;
-	}
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "userId", referencedColumnName = "id", nullable = false)
-	public User getUser() {
-		return user;
-	}
-	public void setUser(User user) {
-		this.user = user;
-	}
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "createDate", nullable = false)
-	public Date getCreateDate() {
-		return createDate;
-	}
-	public void setCreateDate(Date createDate) {
-		this.createDate = createDate;
-	}
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "updateDate", nullable = false)
-	public Date getUpdateDate() {
-		return updateDate;
-	}
-	public void setUpdateDate(Date updateDate) {
-		this.updateDate = updateDate;
 	}
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "bookId", referencedColumnName = "id")
@@ -89,20 +60,20 @@ public class BookMarkReference {
 	public void setBookMark(BookMark bookMark) {
 		this.bookMark = bookMark;
 	}
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "bookCollectionId", referencedColumnName = "id", nullable = false)
-	public BookCollection getBookCollection() {
-		return bookCollection;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "createDate", nullable = false)
+	public Date getCreateDate() {
+		return createDate;
 	}
-	public void setBookCollection(BookCollection bookCollection) {
-		this.bookCollection = bookCollection;
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "rootBookCollectionId", referencedColumnName = "id", nullable = false)
-	public BookCollection getRootBookCollection() {
-		return rootBookCollection;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "updateDate", nullable = false)
+	public Date getUpdateDate() {
+		return updateDate;
 	}
-	public void setRootBookCollection(BookCollection rootBookCollection) {
-		this.rootBookCollection = rootBookCollection;
+	public void setUpdateDate(Date updateDate) {
+		this.updateDate = updateDate;
 	}
 }

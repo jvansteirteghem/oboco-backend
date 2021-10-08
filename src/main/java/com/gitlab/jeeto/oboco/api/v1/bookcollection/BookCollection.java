@@ -21,7 +21,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.gitlab.jeeto.oboco.api.v1.book.Book;
-import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
+import com.gitlab.jeeto.oboco.api.v1.bookmark.BookCollectionMark;
 
 @Entity
 @Table(
@@ -49,7 +49,7 @@ public class BookCollection {
 	private List<Book> books;
 	private Integer numberOfBooks;
 	private Integer number;
-	private List<BookMarkReference> bookMarkReferences;
+	private List<BookCollectionMark> bookCollectionMarks;
 	public BookCollection() {
 		super();
 	}
@@ -159,10 +159,10 @@ public class BookCollection {
 		this.number = number;
 	}
 	@OneToMany(mappedBy = "bookCollection", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-	public List<BookMarkReference> getBookMarkReferences() {
-		return bookMarkReferences;
+	public List<BookCollectionMark> getBookCollectionMarks() {
+		return bookCollectionMarks;
 	}
-	public void setBookMarkReferences(List<BookMarkReference> bookMarkReferences) {
-		this.bookMarkReferences = bookMarkReferences;
+	public void setBookCollectionMarks(List<BookCollectionMark> bookCollectionMarks) {
+		this.bookCollectionMarks = bookCollectionMarks;
 	}
 }

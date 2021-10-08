@@ -77,7 +77,7 @@ public class BookMarkByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		BookCollection bookCollection = bookCollectionService.getBookCollectionByUserAndId(user, bookCollectionId, null);
+		BookCollection bookCollection = bookCollectionService.getBookCollectionByUser(user, bookCollectionId, null);
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));
@@ -110,7 +110,7 @@ public class BookMarkByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		BookCollection bookCollection = bookCollectionService.getBookCollectionByUserAndId(user, bookCollectionId, null);
+		BookCollection bookCollection = bookCollectionService.getBookCollectionByUser(user, bookCollectionId, null);
 		
 		if(bookCollection == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_BOOK_COLLECTION_NOT_FOUND", "The bookCollection is not found."));

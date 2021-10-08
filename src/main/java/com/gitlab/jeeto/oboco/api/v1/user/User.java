@@ -24,8 +24,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.api.v1.bookmark.BookCollectionMark;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
-import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 
 @Entity
 @Table(
@@ -46,8 +46,8 @@ public class User implements Serializable {
 	private Date createDate;
 	private Date updateDate;
 	private BookCollection rootBookCollection;
-	private List<BookMarkReference> bookMarkReferences;
 	private List<BookMark> bookMarks;
+	private List<BookCollectionMark> bookCollectionMarks;
 	public User() {
 		super();
 		roles = new ArrayList<String>();
@@ -116,17 +116,17 @@ public class User implements Serializable {
 		this.rootBookCollection = rootBookCollection;
 	}
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-	public List<BookMarkReference> getBookMarkReferences() {
-		return bookMarkReferences;
-	}
-	public void setBookMarkReferences(List<BookMarkReference> bookMarkReferences) {
-		this.bookMarkReferences = bookMarkReferences;
-	}
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	public List<BookMark> getBookMarks() {
 		return bookMarks;
 	}
 	public void setBookMarks(List<BookMark> bookMarks) {
 		this.bookMarks = bookMarks;
+	}
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+	public List<BookCollectionMark> getBookCollectionMarks() {
+		return bookCollectionMarks;
+	}
+	public void setBookCollectionMarks(List<BookCollectionMark> bookCollectionMarks) {
+		this.bookCollectionMarks = bookCollectionMarks;
 	}
 }

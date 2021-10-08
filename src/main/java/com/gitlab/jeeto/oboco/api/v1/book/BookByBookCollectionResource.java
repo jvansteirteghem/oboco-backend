@@ -28,7 +28,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
-import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkStatus;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.GraphHelper;
@@ -85,7 +84,7 @@ public class BookByBookCollectionResource {
 	@Path("")
 	@GET
 	public Response getBooksByBookCollection(
-			@Parameter(name = "bookMarkStatus", description = "The status of the bookMark of the book. The status is READ, UNREAD or READING.", required = false) @QueryParam("bookMarkStatus") BookMarkStatus bookMarkStatus, 
+			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, LATEST_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookFilterType filterType, 
 			@Parameter(name = "page", description = "The page. The page is >= 1.", required = false) @DefaultValue("1") @QueryParam("page") Integer page, 
 			@Parameter(name = "pageSize", description = "The pageSize. The pageSize is >= 1 and <= 100.", required = false) @DefaultValue("25") @QueryParam("pageSize") Integer pageSize, 
 			@Parameter(name = "graph", description = "The graph. The full graph is (bookCollection,bookMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
@@ -102,12 +101,22 @@ public class BookByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		PageableList<Book> bookPageableList = null;
+		PageableList<Book> bookPageableList;
 		
-		if(uriInfo.getQueryParameters().containsKey("bookMarkStatus")) {
-			bookPageableList = bookService.getBooksByUserAndBookCollectionIdAndBookMarkStatus(user, bookCollectionId, bookMarkStatus, page, pageSize, graph);
+		if(BookFilterType.ALL.equals(filterType)) {
+			bookPageableList = bookService.getBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+		} else if(BookFilterType.NEW.equals(filterType)) {
+			bookPageableList = bookService.getNewBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+		} else if(BookFilterType.LATEST_READ.equals(filterType)) {
+			bookPageableList = bookService.getLatestReadBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+		} else if(BookFilterType.READ.equals(filterType)) {
+			bookPageableList = bookService.getReadBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+		} else if(BookFilterType.READING.equals(filterType)) {
+			bookPageableList = bookService.getReadingBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+		} else if(BookFilterType.UNREAD.equals(filterType)) {
+			bookPageableList = bookService.getUnreadBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		} else {
-			bookPageableList = bookService.getBooksByUserAndBookCollectionId(user, bookCollectionId, page, pageSize, graph);
+			bookPageableList = bookService.getBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		}
 		
 		PageableListDto<BookDto> bookPageableListDto = bookDtoMapper.getBooksDto(bookPageableList, graph);
@@ -119,10 +128,10 @@ public class BookByBookCollectionResource {
 	}
 	
 	@Operation(
-		description = "Get the previous and next books of the book of the bookCollection."
+		description = "Get the linkable book of the bookCollection."
 	)
 	@APIResponses({
-		@APIResponse(responseCode = "200", description = "The previous and next books.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookLinkableDto.class))),
+		@APIResponse(responseCode = "200", description = "The linkable book.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookLinkableDto.class))),
 		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_GRAPH_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
@@ -130,9 +139,9 @@ public class BookByBookCollectionResource {
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
-	@Path("{bookId: [0-9]+}/books")
+	@Path("{bookId: [0-9]+}")
 	@GET
-	public Response getBooksByBookCollectionAndBook(
+	public Response getLinkableBookByBookCollection(
 			@Parameter(name = "bookId", description = "The id of the book.", required = false) @PathParam("bookId") Long bookId, 
 			@Parameter(name = "graph", description = "The graph. The full graph is (bookCollection,bookMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		Graph graph = GraphHelper.createGraph(graphValue);
@@ -146,7 +155,7 @@ public class BookByBookCollectionResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND", "The user.rootBookCollection is not found."));
 		}
 		
-		Linkable<Book> bookLinkable = bookService.getBooksByUserAndBookCollectionIdAndId(user, bookCollectionId, bookId, graph);
+		Linkable<Book> bookLinkable = bookService.getLinkableBookByUserAndBookCollection(user, bookCollectionId, bookId, graph);
 		LinkableDto<BookDto> bookLinkableDto = bookDtoMapper.getBooksDto(bookLinkable, graph);
 		
 		ResponseBuilder responseBuilder = Response.status(200);
@@ -170,7 +179,7 @@ public class BookByBookCollectionResource {
 	@Path("FIRST/pages/1.jpg")
 	@GET
 	@Produces({"image/jpeg"})
-	public Response getBookPageAsByBookCollectionAndBook(
+	public Response getBookPageAsByBookCollection(
 			@Parameter(name = "scaleType", description = "The scaleType. The scaleType is DEFAULT, FIT or FILL.", required = false) @QueryParam("scaleType") ScaleType scaleType, 
 			@Parameter(name = "scaleWidth", description = "The scaleWidth.", required = false) @QueryParam("scaleWidth") Integer scaleWidth, 
 			@Parameter(name = "scaleHeight", description = "The scaleHeight.", required = false) @QueryParam("scaleHeight") Integer scaleHeight, 
@@ -183,7 +192,7 @@ public class BookByBookCollectionResource {
 		
 		Book book = null;
 		
-		PageableList<Book> bookPageableList = bookService.getBooksByUserAndBookCollectionId(user, bookCollectionId, 1, 1, null);
+		PageableList<Book> bookPageableList = bookService.getBooksByUserAndBookCollection(user, bookCollectionId, 1, 1, null);
 		
 		if(bookPageableList.getElements() != null && bookPageableList.getElements().size() == 1) {
 			book = bookPageableList.getElements().get(0);

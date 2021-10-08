@@ -134,7 +134,7 @@ public class UserResource {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_NOT_FOUND", "The user is not found."));
 		}
 		
-		user = userService.getUserByNameAndPassword(user, userPasswordDto.getPassword());
+		user = userService.getUserByNameAndPassword(userName, userPasswordDto.getPassword());
 		
 		if(user == null) {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_PASSWORD_INVALID", "The user.password is invalid."));
@@ -192,7 +192,7 @@ public class UserResource {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_NAME_INVALID", "The user.name is invalid: user.name is ''."));
 		}
 		
-		User user = userService.getUserByName(userDto.getName(), null);
+		User user = userService.getUserByName(userDto.getName());
 		
 		if(user != null) {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_NAME_INVALID", "The user.name is invalid: user.name is not unique."));
@@ -217,7 +217,7 @@ public class UserResource {
 		user.setUpdateDate(updateDate);
 		
 		if(userDto.getRootBookCollection() != null) {
-			BookCollection rootBookCollection = bookCollectionService.getRootBookCollectionById(userDto.getRootBookCollection().getId(), null);
+			BookCollection rootBookCollection = bookCollectionService.getRootBookCollection(userDto.getRootBookCollection().getId(), null);
 			
 			user.setRootBookCollection(rootBookCollection);
 		}
@@ -254,7 +254,7 @@ public class UserResource {
 
 		GraphHelper.validateGraph(graph, fullGraph);
 		
-		User user = userService.getUserById(userId, null);
+		User user = userService.getUser(userId, null);
 		
 		if(user == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_NOT_FOUND", "The user is not found."));
@@ -274,7 +274,7 @@ public class UserResource {
 		user.setUpdateDate(updateDate);
 		
 		if(userDto.getRootBookCollection() != null) {
-			BookCollection rootBookCollection = bookCollectionService.getRootBookCollectionById(userDto.getRootBookCollection().getId(), null);
+			BookCollection rootBookCollection = bookCollectionService.getRootBookCollection(userDto.getRootBookCollection().getId(), null);
 			
 			user.setRootBookCollection(rootBookCollection);
 		}
@@ -303,7 +303,7 @@ public class UserResource {
 	@DELETE
 	public Response deleteUser(
 			@Parameter(name = "userId", description = "The id of the user.", required = true) @PathParam("userId") Long userId) throws ProblemException {
-		User user = userService.getUserById(userId, null);
+		User user = userService.getUser(userId, null);
 		
 		if(user == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_NOT_FOUND", "The user is not found."));
@@ -369,7 +369,7 @@ public class UserResource {
 		
 		GraphHelper.validateGraph(graph, fullGraph);
 		
-		User user = userService.getUserById(userId, graph);
+		User user = userService.getUser(userId, graph);
 		
 		if(user == null) {
 			throw new ProblemException(new Problem(404, "PROBLEM_USER_NOT_FOUND", "The user is not found."));
