@@ -2,7 +2,9 @@ package com.gitlab.jeeto.oboco.api.v1.bookmark;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -45,7 +47,7 @@ public class BookMarkService {
 		BookMark bookMark = null;
 		
 		try {
-			bookMark = entityManager.createQuery("select bm from BookMark bm join bm.bookMarkReferences bmr where bmr.book.rootBookCollection.id = :rootBookCollectionId and bmr.bookMark.user.id = :userId order by bm.updateDate desc", BookMark.class)
+			bookMark = entityManager.createQuery("select bm from BookMark bm join bm.bookMarkReferences bmr where bmr.book.rootBookCollection.id = :rootBookCollectionId and bm.user.id = :userId order by bm.updateDate desc", BookMark.class)
 				.setParameter("rootBookCollectionId", user.getRootBookCollection().getId())
 				.setParameter("userId", user.getId())
 				.setMaxResults(1)
@@ -134,19 +136,12 @@ public class BookMarkService {
 	}
 	
 	@Transactional
-	public void deleteBookMarkReferences(Date updateDate) throws ProblemException {
-		entityManager.createQuery("delete from BookMarkReference bmr where bmr.updateDate != :updateDate")
-			.setParameter("updateDate", updateDate)
-			.executeUpdate();
-	}
-	
-	@Transactional
 	public void deleteBookMarksByUser(User user) throws ProblemException {
-		entityManager.createQuery("delete from BookMarkReference bmr where bmr.bookMark.user.id = :userId")
+		entityManager.createQuery("delete from BookMark bm where bm.user.id = :userId")
 			.setParameter("userId", user.getId())
 			.executeUpdate();
-			
-		entityManager.createQuery("delete from BookMark bm where bm.user.id = :userId")
+		
+		entityManager.createQuery("delete from BookCollectionMark bcm where bcm.user.id = :userId")
 			.setParameter("userId", user.getId())
 			.executeUpdate();
 	}
@@ -190,81 +185,139 @@ public class BookMarkService {
 	}
 	
 	@Transactional
-	public void createBookMarkReferencesByBook(Book book) throws ProblemException {
+	public void createBookMarkReferencesByBook(Book book, Date updateDate) throws ProblemException {
 		List<BookMark> bookMarkList = getBookMarksByFile(book.getFileId());
 		
 		for(BookMark bookMark: bookMarkList) {
+			if(bookMark.getNumberOfPages() != book.getNumberOfPages()) {
+				Integer page = bookMark.getPage() + book.getNumberOfPages() - bookMark.getNumberOfPages();
+				
+				if(page < 1) {
+					page = 1;
+				}
+				
+				bookMark.setNumberOfPages(book.getNumberOfPages());
+				bookMark.setPage(page);
+				
+				entityManager.merge(bookMark);
+			}
+			
 			BookMarkReference bookMarkReference = new BookMarkReference();
 			bookMarkReference.setBook(book);
 			bookMarkReference.setBookMark(bookMark);
-			bookMarkReference.setCreateDate(book.getUpdateDate());
-			bookMarkReference.setUpdateDate(book.getUpdateDate());
 			
 			entityManager.persist(bookMarkReference);
-			
-			createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(bookMark.getUser(), book.getBookCollection());
 		}
 	}
 	
 	@Transactional
-	public void updateBookMarkReferencesByBook(Book book) throws ProblemException {
-		List<BookMarkReference> bookMarkReferenceList = getBookMarkReferencesByBook(book.getId());
+	public void updateBookMarkReferencesByBook(Book book, Date updateDate) throws ProblemException {
+		List<BookMark> bookMarkList = getBookMarksByFile(book.getFileId());
 		
-		for(BookMarkReference bookMarkReference: bookMarkReferenceList) {
-			bookMarkReference.setUpdateDate(book.getUpdateDate());
-			
-			bookMarkReference = entityManager.merge(bookMarkReference);
+		for(BookMark bookMark: bookMarkList) {
+			if(bookMark.getNumberOfPages() != book.getNumberOfPages()) {
+				Integer page = bookMark.getPage() + book.getNumberOfPages() - bookMark.getNumberOfPages();
+				
+				if(page < 1) {
+					page = 1;
+				}
+				
+				bookMark.setNumberOfPages(book.getNumberOfPages());
+				bookMark.setPage(page);
+				
+				entityManager.merge(bookMark);
+			}
+		}
+	}
+	
+	@Transactional
+	public void createOrUpdateOrDeleteBookCollectionMarkByBookCollection(BookCollection bookCollection, Date updateDate) throws ProblemException {
+		List<User> userList = entityManager.createQuery("select distinct bmr.bookMark.user from BookMarkReference bmr where bmr.book.bookCollection.id = :bookCollectionId", User.class)
+				.setParameter("bookCollectionId", bookCollection.getId())
+				.getResultList();
+		
+		for(User user: userList) {
+			createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(user, bookCollection, updateDate);
 		}
 	}
 	
 	public void createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(User user, BookCollection bookCollection) throws ProblemException {
+		createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(user, bookCollection, null);
+	}
+	
+	public void createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(User user, BookCollection bookCollection, Date updateDate) throws ProblemException {
 		BookCollectionMark bookCollectionMark = getBookCollectionMarkByUserAndBookCollection(user, bookCollection.getId());
 		
 		try {
-			Query bookCollectionMarkQuery = entityManager.createQuery("select min(bm.createDate), max(bm.updateDate), (select sum(b.numberOfPages) from Book b where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId), sum(bm.page) from BookMark bm join bm.bookMarkReferences bmr where bmr.book.rootBookCollection.id = :rootBookCollectionId and bmr.book.bookCollection.id = :bookCollectionId and bm.user.id = :userId");
-			bookCollectionMarkQuery.setParameter("userId", user.getId());
-			bookCollectionMarkQuery.setParameter("rootBookCollectionId", bookCollection.getRootBookCollection().getId());
-			bookCollectionMarkQuery.setParameter("bookCollectionId", bookCollection.getId());
+			String bookQueryString = " where 1 = 1";
 			
-			Object[] bookCollectionMarkObject = (Object[]) bookCollectionMarkQuery.getSingleResult();
+			bookQueryString = bookQueryString + " and b.bookCollection.id = :bookCollectionId";
 			
-			if(bookCollectionMark == null) {
-				bookCollectionMark = new BookCollectionMark();
-				bookCollectionMark.setUser(user);
-				bookCollectionMark.setBookCollection(bookCollection);
-				bookCollectionMark.setCreateDate((Date) bookCollectionMarkObject[0]);
-				bookCollectionMark.setUpdateDate((Date) bookCollectionMarkObject[1]);
-				bookCollectionMark.setNumberOfPages(((Long) bookCollectionMarkObject[2]).intValue());
-				bookCollectionMark.setPage(((Long) bookCollectionMarkObject[3]).intValue());
-				
-				entityManager.persist(bookCollectionMark);
+			if(updateDate != null) {
+				bookQueryString = bookQueryString + " and b.updateDate = :updateDate";
+			}
+			
+			Query bookQuery = entityManager.createQuery("select sum(b.numberOfPages) from Book b" + bookQueryString);
+			bookQuery.setParameter("bookCollectionId", bookCollection.getId());
+			
+			if(updateDate != null) {
+				bookQuery.setParameter("updateDate", updateDate);
+			}
+			
+			Object bookObject = (Object) bookQuery.getSingleResult();
+			
+			String bookMarkQueryString = " where 1 = 1";
+			
+			bookMarkQueryString = bookMarkQueryString + " and bmr.book.bookCollection.id = :bookCollectionId and bm.user.id = :userId";
+			
+			if(updateDate != null) {
+				bookMarkQueryString = bookMarkQueryString + " and bmr.updateDate = :updateDate";
+			}
+			
+			Query bookMarkQuery = entityManager.createQuery("select min(bm.createDate), max(bm.updateDate), sum(bm.page) from BookMark bm join bm.bookMarkReferences bmr" + bookMarkQueryString);
+			bookMarkQuery.setParameter("userId", user.getId());
+			bookMarkQuery.setParameter("bookCollectionId", bookCollection.getId());
+			
+			if(updateDate != null) {
+				bookMarkQuery.setParameter("updateDate", updateDate);
+			}
+			
+			Object[] bookMarkObject = (Object[]) bookMarkQuery.getSingleResult();
+			
+			if(bookObject != null && bookMarkObject[0] != null && bookMarkObject[1] != null && bookMarkObject[2] != null) {
+				if(bookCollectionMark == null) {
+					bookCollectionMark = new BookCollectionMark();
+					bookCollectionMark.setUser(user);
+					bookCollectionMark.setBookCollection(bookCollection);
+					bookCollectionMark.setCreateDate((Date) bookMarkObject[0]);
+					bookCollectionMark.setUpdateDate((Date) bookMarkObject[1]);
+					bookCollectionMark.setNumberOfPages(((Long) bookObject).intValue());
+					bookCollectionMark.setPage(((Long) bookMarkObject[2]).intValue());
+					
+					entityManager.persist(bookCollectionMark);
+				} else {
+					bookCollectionMark.setCreateDate((Date) bookMarkObject[0]);
+					bookCollectionMark.setUpdateDate((Date) bookMarkObject[1]);
+					bookCollectionMark.setNumberOfPages(((Long) bookObject).intValue());
+					bookCollectionMark.setPage(((Long) bookMarkObject[2]).intValue());
+					
+					bookCollectionMark = entityManager.merge(bookCollectionMark);
+				}
 			} else {
-				bookCollectionMark.setUpdateDate((Date) bookCollectionMarkObject[1]);
-				bookCollectionMark.setPage(((Long) bookCollectionMarkObject[3]).intValue());
-				
-				bookCollectionMark = entityManager.merge(bookCollectionMark);
+				if(bookCollectionMark != null) {
+					entityManager.remove(bookCollectionMark);
+				}
 			}
 		} catch(NoResultException e) {
-			if(bookCollectionMark != null) {
-				entityManager.remove(bookCollectionMark);
-			}
+			
 		}
-	}
-	
-	public boolean hasBookCollection(List<BookCollection> bookCollectionList, Long bookCollectionId) {
-		for(BookCollection referencedBookCollection: bookCollectionList) {
-			if(referencedBookCollection.getId().equals(bookCollectionId)) {
-				return true;
-			}
-		}
-		return false;
 	}
 	
 	@Transactional
 	public void createOrUpdateBookMarksByUserAndBookCollection(User user, BookCollection bookCollection) throws ProblemException {
 		Date updateDate = new Date();
 		
-		List<BookCollection> referencedBookCollectionList = new ArrayList<BookCollection>();
+		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
 		
 		List<Book> bookList = getBookService().getBooksByUserAndBookCollection(user, bookCollection.getId());
 		
@@ -288,14 +341,10 @@ public class BookMarkService {
 					BookMarkReference bookMarkReference = new BookMarkReference();
 					bookMarkReference.setBook(referencedBook);
 					bookMarkReference.setBookMark(bookMark);
-					bookMarkReference.setCreateDate(updateDate);
-					bookMarkReference.setUpdateDate(updateDate);
 					
 					entityManager.persist(bookMarkReference);
 					
-					if(hasBookCollection(referencedBookCollectionList, referencedBook.getBookCollection().getId()) == false ) {
-						referencedBookCollectionList.add(referencedBook.getBookCollection());
-					}
+					referencedBookCollectionMap.put(referencedBook.getBookCollection().getId(), referencedBook.getBookCollection());
 				}
 			} else {
 				bookMark.setUpdateDate(updateDate);
@@ -306,13 +355,13 @@ public class BookMarkService {
 				List<Book> referencedBookList = getBookService().getBooksByFile(book.getFileId());
 				
 				for(Book referencedBook: referencedBookList) {
-					if(hasBookCollection(referencedBookCollectionList, referencedBook.getBookCollection().getId()) == false ) {
-						referencedBookCollectionList.add(referencedBook.getBookCollection());
-					}
+					referencedBookCollectionMap.put(referencedBook.getBookCollection().getId(), referencedBook.getBookCollection());
 				}
 			}
 			
-			for(BookCollection referencedBookCollection: referencedBookCollectionList) {
+			for(Map.Entry<Long, BookCollection> entry : referencedBookCollectionMap.entrySet()) {
+				BookCollection referencedBookCollection = entry.getValue();
+				
 				createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(user, referencedBookCollection);
 			}
 		}
@@ -320,7 +369,7 @@ public class BookMarkService {
 	
 	@Transactional
 	public void deleteBookMarksByUserAndBookCollection(User user, BookCollection bookCollection) throws ProblemException {
-		List<BookCollection> referencedBookCollectionList = new ArrayList<BookCollection>();
+		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
 		
 		List<Book> bookList = getBookService().getBooksByUserAndBookCollection(user, bookCollection.getId());
 		
@@ -333,14 +382,14 @@ public class BookMarkService {
 				List<Book> referencedBookList = getBookService().getBooksByFile(book.getFileId());
 				
 				for(Book referencedBook: referencedBookList) {
-					if(hasBookCollection(referencedBookCollectionList, referencedBook.getBookCollection().getId()) == false ) {
-						referencedBookCollectionList.add(referencedBook.getBookCollection());
-					}
+					referencedBookCollectionMap.put(referencedBook.getBookCollection().getId(), referencedBook.getBookCollection());
 				}
 			}
 		}
 		
-		for(BookCollection referencedBookCollection: referencedBookCollectionList) {
+		for(Map.Entry<Long, BookCollection> entry : referencedBookCollectionMap.entrySet()) {
+			BookCollection referencedBookCollection = entry.getValue();
+			
 			createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(user, referencedBookCollection);
 		}
 	}
@@ -349,7 +398,7 @@ public class BookMarkService {
 	public BookMarkReference createOrUpdateBookMarkByUserAndBook(User user, Book book, Integer bookPage, Graph graph) throws ProblemException {
 		Date updateDate = new Date();
 		
-		List<BookCollection> referencedBookCollectionList = new ArrayList<BookCollection>();
+		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
 		
 		BookMark bookMark = getBookMarkByUserAndFile(user, book.getFileId());
 		
@@ -370,14 +419,10 @@ public class BookMarkService {
 				BookMarkReference bookMarkReference = new BookMarkReference();
 				bookMarkReference.setBook(referencedBook);
 				bookMarkReference.setBookMark(bookMark);
-				bookMarkReference.setCreateDate(updateDate);
-				bookMarkReference.setUpdateDate(updateDate);
 				
 				entityManager.persist(bookMarkReference);
 				
-				if(hasBookCollection(referencedBookCollectionList, referencedBook.getBookCollection().getId()) == false ) {
-					referencedBookCollectionList.add(referencedBook.getBookCollection());
-				}
+				referencedBookCollectionMap.put(referencedBook.getBookCollection().getId(), referencedBook.getBookCollection());
 			}
 		} else {
 			bookMark.setUpdateDate(updateDate);
@@ -388,13 +433,13 @@ public class BookMarkService {
 			List<Book> referencedBookList = getBookService().getBooksByFile(book.getFileId());
 			
 			for(Book referencedBook: referencedBookList) {
-				if(hasBookCollection(referencedBookCollectionList, referencedBook.getBookCollection().getId()) == false ) {
-					referencedBookCollectionList.add(referencedBook.getBookCollection());
-				}
+				referencedBookCollectionMap.put(referencedBook.getBookCollection().getId(), referencedBook.getBookCollection());
 			}
 		}
 		
-		for(BookCollection referencedBookCollection: referencedBookCollectionList) {
+		for(Map.Entry<Long, BookCollection> entry : referencedBookCollectionMap.entrySet()) {
+			BookCollection referencedBookCollection = entry.getValue();
+			
 			createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(user, referencedBookCollection);
 		}
 		
@@ -405,7 +450,7 @@ public class BookMarkService {
 	
 	@Transactional
 	public void deleteBookMarkByUserAndBook(User user, Book book) throws ProblemException {
-		List<BookCollection> referencedBookCollectionList = new ArrayList<BookCollection>();
+		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
 		
 		BookMark bookMark = getBookMarkByUserAndFile(user, book.getFileId());
 		
@@ -415,13 +460,13 @@ public class BookMarkService {
 			List<Book> referencedBookList = getBookService().getBooksByFile(book.getFileId());
 			
 			for(Book referencedBook: referencedBookList) {
-				if(hasBookCollection(referencedBookCollectionList, referencedBook.getBookCollection().getId()) == false ) {
-					referencedBookCollectionList.add(referencedBook.getBookCollection());
-				}
+				referencedBookCollectionMap.put(referencedBook.getBookCollection().getId(), referencedBook.getBookCollection());
 			}
 		}
 		
-		for(BookCollection referencedBookCollection: referencedBookCollectionList) {
+		for(Map.Entry<Long, BookCollection> entry : referencedBookCollectionMap.entrySet()) {
+			BookCollection referencedBookCollection = entry.getValue();
+			
 			createOrUpdateOrDeleteBookCollectionMarkByUserAndBookCollection(user, referencedBookCollection);
 		}
 	}

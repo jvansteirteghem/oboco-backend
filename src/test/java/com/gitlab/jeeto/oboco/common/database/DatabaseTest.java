@@ -103,8 +103,6 @@ public class DatabaseTest extends TestCase {
 			System.out.println("created bookMark " + bookMark.getId());
 			
 			BookMarkReference bookMarkReference = new BookMarkReference();
-			bookMarkReference.setCreateDate(updateDate);
-			bookMarkReference.setUpdateDate(updateDate);
 			bookMarkReference.setBook(book);
 			bookMarkReference.setBookMark(bookMark);
 			
