@@ -23,8 +23,6 @@ create index bookCollectionUpdateDate on bookCollections (updateDate);
 alter table bookMarks add constraint FKefm1898i2glgb1dddnshvd3rb unique (userId, fileId);
 alter table bookMarks add constraint FKecm1898i2glkb1dddnsqvd3rb foreign key (userId) references users(id);
 create index bookMarkFileId on bookMarks (fileId);
-create index bookMarkReferenceCreateDate on bookMarkReferences (createDate);
-create index bookMarkReferenceUpdateDate on bookMarkReferences (updateDate);
 create index bookMarkCreateDate on bookMarks (createDate);
 create index bookMarkUpdateDate on bookMarks (updateDate);
 
