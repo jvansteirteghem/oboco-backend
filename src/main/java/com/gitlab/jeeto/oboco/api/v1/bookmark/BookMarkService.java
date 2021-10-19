@@ -271,7 +271,7 @@ public class BookMarkService {
 			bookMarkQueryString = bookMarkQueryString + " and bmr.book.bookCollection.id = :bookCollectionId and bm.user.id = :userId";
 			
 			if(updateDate != null) {
-				bookMarkQueryString = bookMarkQueryString + " and bmr.updateDate = :updateDate";
+				bookMarkQueryString = bookMarkQueryString + " and bmr.book.updateDate = :updateDate";
 			}
 			
 			Query bookMarkQuery = entityManager.createQuery("select min(bm.createDate), max(bm.updateDate), sum(bm.page) from BookMark bm join bm.bookMarkReferences bmr" + bookMarkQueryString);
