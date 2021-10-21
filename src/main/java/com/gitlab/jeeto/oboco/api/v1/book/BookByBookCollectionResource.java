@@ -84,7 +84,7 @@ public class BookByBookCollectionResource {
 	@Path("")
 	@GET
 	public Response getBooksByBookCollection(
-			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, LATEST_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookFilterType filterType, 
+			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, NEW, LATEST_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookFilterType filterType, 
 			@Parameter(name = "page", description = "The page. The page is >= 1.", required = false) @DefaultValue("1") @QueryParam("page") Integer page, 
 			@Parameter(name = "pageSize", description = "The pageSize. The pageSize is >= 1 and <= 100.", required = false) @DefaultValue("25") @QueryParam("pageSize") Integer pageSize, 
 			@Parameter(name = "graph", description = "The graph. The full graph is (bookCollection,bookMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
@@ -104,7 +104,7 @@ public class BookByBookCollectionResource {
 		PageableList<Book> bookPageableList;
 		
 		if(BookFilterType.ALL.equals(filterType)) {
-			bookPageableList = bookService.getBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+			bookPageableList = bookService.getAllBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		} else if(BookFilterType.NEW.equals(filterType)) {
 			bookPageableList = bookService.getNewBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		} else if(BookFilterType.LATEST_READ.equals(filterType)) {

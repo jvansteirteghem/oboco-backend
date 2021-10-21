@@ -33,8 +33,8 @@ public class BookCollectionMark {
 	private BookCollection bookCollection;
 	private Date createDate;
 	private Date updateDate;
-	private Integer numberOfPages;
-	private Integer page;
+	private Integer numberOfBookPages;
+	private Integer bookPage;
 	public BookCollectionMark() {
 		super();
 	}
@@ -79,18 +79,18 @@ public class BookCollectionMark {
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
 	}
-	@Column(name = "numberOfPages", nullable = false)
-	public Integer getNumberOfPages() {
-		return numberOfPages;
+	@Column(name = "numberOfBookPages", nullable = false)
+	public Integer getNumberOfBookPages() {
+		return numberOfBookPages;
 	}
-	public void setNumberOfPages(Integer numberOfPages) {
-		this.numberOfPages = numberOfPages;
+	public void setNumberOfBookPages(Integer numberOfBookPages) {
+		this.numberOfBookPages = numberOfBookPages;
 	}
-	@Column(name = "page", nullable = false)
-	public Integer getPage() {
-		return page;
+	@Column(name = "bookPage", nullable = false)
+	public Integer getBookPage() {
+		return bookPage;
 	}
-	public void setPage(Integer page) {
-		this.page = page;
+	public void setBookPage(Integer bookPage) {
+		this.bookPage = bookPage;
 	}
 }

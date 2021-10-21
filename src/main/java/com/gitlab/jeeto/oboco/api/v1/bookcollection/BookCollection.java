@@ -45,6 +45,7 @@ public class BookCollection {
 	private Integer numberOfBookCollections;
 	private List<Book> books;
 	private Integer numberOfBooks;
+	private Integer numberOfBookPages;
 	private Integer number;
 	private List<BookCollectionMark> bookCollectionMarks;
 	public BookCollection() {
@@ -146,6 +147,13 @@ public class BookCollection {
 	}
 	public void setNumber(Integer number) {
 		this.number = number;
+	}
+	@Column(name = "numberOfBookPages", nullable = false)
+	public Integer getNumberOfBookPages() {
+		return numberOfBookPages;
+	}
+	public void setNumberOfBookPages(Integer numberOfBookPages) {
+		this.numberOfBookPages = numberOfBookPages;
 	}
 	@OneToMany(mappedBy = "bookCollection", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 	public List<BookCollectionMark> getBookCollectionMarks() {
