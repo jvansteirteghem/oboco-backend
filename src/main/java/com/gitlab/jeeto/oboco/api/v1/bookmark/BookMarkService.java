@@ -249,57 +249,40 @@ public class BookMarkService {
 		BookCollectionMark bookCollectionMark = getBookCollectionMarkByUserAndBookCollection(user, bookCollection.getId());
 		
 		try {
-			String bookQueryString = " where 1 = 1";
+			String bookCollectionMarkQueryString = " where 1 = 1";
 			
-			bookQueryString = bookQueryString + " and b.bookCollection.id = :bookCollectionId";
-			
-			if(updateDate != null) {
-				bookQueryString = bookQueryString + " and b.updateDate = :updateDate";
-			}
-			
-			Query bookQuery = entityManager.createQuery("select sum(b.numberOfPages) from Book b" + bookQueryString);
-			bookQuery.setParameter("bookCollectionId", bookCollection.getId());
+			bookCollectionMarkQueryString = bookCollectionMarkQueryString + " and bmr.book.bookCollection.id = :bookCollectionId and bm.user.id = :userId";
 			
 			if(updateDate != null) {
-				bookQuery.setParameter("updateDate", updateDate);
+				bookCollectionMarkQueryString = bookCollectionMarkQueryString + " and bmr.book.updateDate = :updateDate";
 			}
 			
-			Object bookObject = (Object) bookQuery.getSingleResult();
-			
-			String bookMarkQueryString = " where 1 = 1";
-			
-			bookMarkQueryString = bookMarkQueryString + " and bmr.book.bookCollection.id = :bookCollectionId and bm.user.id = :userId";
+			Query bookCollectionMarkQuery = entityManager.createQuery("select min(bm.createDate), max(bm.updateDate), sum(bm.page) from BookMark bm join bm.bookMarkReferences bmr" + bookCollectionMarkQueryString);
+			bookCollectionMarkQuery.setParameter("userId", user.getId());
+			bookCollectionMarkQuery.setParameter("bookCollectionId", bookCollection.getId());
 			
 			if(updateDate != null) {
-				bookMarkQueryString = bookMarkQueryString + " and bmr.book.updateDate = :updateDate";
+				bookCollectionMarkQuery.setParameter("updateDate", updateDate);
 			}
 			
-			Query bookMarkQuery = entityManager.createQuery("select min(bm.createDate), max(bm.updateDate), sum(bm.page) from BookMark bm join bm.bookMarkReferences bmr" + bookMarkQueryString);
-			bookMarkQuery.setParameter("userId", user.getId());
-			bookMarkQuery.setParameter("bookCollectionId", bookCollection.getId());
+			Object[] bookCollectionMarkObject = (Object[]) bookCollectionMarkQuery.getSingleResult();
 			
-			if(updateDate != null) {
-				bookMarkQuery.setParameter("updateDate", updateDate);
-			}
-			
-			Object[] bookMarkObject = (Object[]) bookMarkQuery.getSingleResult();
-			
-			if(bookObject != null && bookMarkObject[0] != null && bookMarkObject[1] != null && bookMarkObject[2] != null) {
+			if(bookCollectionMarkObject[0] != null && bookCollectionMarkObject[1] != null && bookCollectionMarkObject[2] != null) {
 				if(bookCollectionMark == null) {
 					bookCollectionMark = new BookCollectionMark();
 					bookCollectionMark.setUser(user);
 					bookCollectionMark.setBookCollection(bookCollection);
-					bookCollectionMark.setCreateDate((Date) bookMarkObject[0]);
-					bookCollectionMark.setUpdateDate((Date) bookMarkObject[1]);
-					bookCollectionMark.setNumberOfPages(((Long) bookObject).intValue());
-					bookCollectionMark.setPage(((Long) bookMarkObject[2]).intValue());
+					bookCollectionMark.setCreateDate((Date) bookCollectionMarkObject[0]);
+					bookCollectionMark.setUpdateDate((Date) bookCollectionMarkObject[1]);
+					bookCollectionMark.setNumberOfBookPages(bookCollection.getNumberOfBookPages());
+					bookCollectionMark.setBookPage(((Long) bookCollectionMarkObject[2]).intValue());
 					
 					entityManager.persist(bookCollectionMark);
 				} else {
-					bookCollectionMark.setCreateDate((Date) bookMarkObject[0]);
-					bookCollectionMark.setUpdateDate((Date) bookMarkObject[1]);
-					bookCollectionMark.setNumberOfPages(((Long) bookObject).intValue());
-					bookCollectionMark.setPage(((Long) bookMarkObject[2]).intValue());
+					bookCollectionMark.setCreateDate((Date) bookCollectionMarkObject[0]);
+					bookCollectionMark.setUpdateDate((Date) bookCollectionMarkObject[1]);
+					bookCollectionMark.setNumberOfBookPages(bookCollection.getNumberOfBookPages());
+					bookCollectionMark.setBookPage(((Long) bookCollectionMarkObject[2]).intValue());
 					
 					bookCollectionMark = entityManager.merge(bookCollectionMark);
 				}

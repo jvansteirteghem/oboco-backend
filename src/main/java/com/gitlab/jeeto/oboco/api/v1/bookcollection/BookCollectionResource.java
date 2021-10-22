@@ -73,7 +73,7 @@ public class BookCollectionResource {
 	public Response getBookCollections(
 			@Parameter(name = "searchType", description = "The searchType. The searchType is NAME.", required = false) @QueryParam("searchType") BookCollectionSearchType searchType, 
 			@Parameter(name = "search", description = "The search.", required = false) @QueryParam("search") String search, 
-			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, NEW or LATEST_READ.", required = false) @QueryParam("filterType") BookCollectionFilterType filterType, 
+			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, NEW, LATEST_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookCollectionFilterType filterType, 
 			@Parameter(name = "page", description = "The page. The page is >= 1.", required = false) @DefaultValue("1") @QueryParam("page") Integer page, 
 			@Parameter(name = "pageSize", description = "The pageSize. The pageSize is >= 1 and <= 100.", required = false) @DefaultValue("25") @QueryParam("pageSize") Integer pageSize, 
 			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
@@ -93,7 +93,7 @@ public class BookCollectionResource {
 		PageableList<BookCollection> bookCollectionPageableList;
 		
 		if(BookCollectionFilterType.ALL.equals(filterType)) {
-			bookCollectionPageableList = bookCollectionService.getBookCollectionsByUser(user, searchType, search, page, pageSize, graph);
+			bookCollectionPageableList = bookCollectionService.getAllBookCollectionsByUser(user, searchType, search, page, pageSize, graph);
 		} else if(BookCollectionFilterType.NEW.equals(filterType)) {
 			bookCollectionPageableList = bookCollectionService.getNewBookCollectionsByUser(user, searchType, search, page, pageSize, graph);
 		} else if(BookCollectionFilterType.LATEST_READ.equals(filterType)) {

@@ -301,6 +301,46 @@ public class BookService {
         return bookPageableList;
 	}
 	
+	public PageableList<Book> getAllBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
+		if(graph != null) {
+			if(graph.containsKey("bookCollection")) {
+				entityGraph.addSubgraph("bookCollection", BookCollection.class);
+			}
+		}
+		
+		String bookListQueryString = " where 1 = 1";
+		
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0";
+		
+		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b" + bookListQueryString);
+		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListSizeQuery.setParameter("bookCollectionId", bookCollectionId);
+		
+		Long bookListSize = (Long) bookListSizeQuery.getSingleResult();
+		
+		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b" + bookListQueryString + " order by b.number asc", Book.class);
+		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
+		bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
+		bookListQuery.setFirstResult((page - 1) * pageSize);
+		bookListQuery.setMaxResults(pageSize);
+		
+		List<Book> bookList = bookListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookMark")) {
+				Graph bookMarkGraph = graph.get("bookMark");
+				
+				getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
+			}
+		}
+        
+        PageableList<Book> bookPageableList = new PageableList<Book>(bookList, bookListSize, page, pageSize);
+        
+        return bookPageableList;
+	}
+	
 	public PageableList<Book> getNewBooksByUserAndBookCollection(User user, Long bookCollectionId, Integer page, Integer pageSize, Graph graph) throws ProblemException {
 		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
 		if(graph != null) {
@@ -318,7 +358,7 @@ public class BookService {
 			
 			String bookListQueryString = " where 1 = 1";
 			
-			bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.createDate = :createDate";
+			bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and b.createDate = :createDate";
 			
 			Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b" + bookListQueryString);
 			bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
@@ -377,7 +417,7 @@ public class BookService {
 			
 			String bookListQueryString = " where 1 = 1";
 			
-			bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId and bmr.bookMark.updateDate = :updateDate";
+			bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and bmr.bookMark.user.id = :userId and bmr.bookMark.updateDate = :updateDate";
 			
 			Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString);
 			bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
@@ -428,7 +468,7 @@ public class BookService {
 		
 		String bookListQueryString = " where 1 = 1";
 		
-		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId and bmr.bookMark.page = b.numberOfPages";
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and bmr.bookMark.user.id = :userId and bmr.bookMark.page = b.numberOfPages";
 		
 		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString);
 		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
@@ -470,7 +510,7 @@ public class BookService {
 		
 		String bookListQueryString = " where 1 = 1";
 		
-		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId and bmr.bookMark.page <> b.numberOfPages";
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and bmr.bookMark.user.id = :userId and bmr.bookMark.page <> b.numberOfPages";
 		
 		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString);
 		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
@@ -512,7 +552,7 @@ public class BookService {
 		
 		String bookListQueryString = " where 1 = 1";
 		
-		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.id not in (select b.id from Book b join b.bookMarkReferences bmr where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId)";
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and b.id not in (select b.id from Book b join b.bookMarkReferences bmr where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and bmr.bookMark.user.id = :userId)";
 		
 		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b" + bookListQueryString);
 		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
