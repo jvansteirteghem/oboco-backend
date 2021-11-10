@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -13,6 +14,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 
+import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.NameHelper;
@@ -23,6 +25,16 @@ import com.gitlab.jeeto.oboco.common.exception.ProblemException;
 public class BookCollectionService {
 	@Inject
 	EntityManager entityManager;
+	private BookMarkService bookMarkService;
+	@Inject
+	Provider<BookMarkService> bookMarkServiceProvider;
+	
+	private BookMarkService getBookMarkService() {
+		if(bookMarkService == null) {
+			bookMarkService = bookMarkServiceProvider.get();
+		}
+		return bookMarkService;
+	}
 	
 	public BookCollectionService() {
 		super();
@@ -98,6 +110,14 @@ public class BookCollectionService {
 					.setParameter("id", id)
 					.setHint("javax.persistence.loadgraph", entityGraph)
 					.getSingleResult();
+			
+			if(graph != null) {
+				if(graph.containsKey("bookCollectionMark")) {
+					Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+					
+					getBookMarkService().loadBookCollectionMarkGraph(user, bookCollection, bookCollectionMarkGraph);
+				}
+			}
 		} catch(NoResultException e) {
 			
 		}
@@ -215,6 +235,14 @@ public class BookCollectionService {
 		
 		List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
 		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
+		
         PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
         
         return bookCollectionPageableList;
@@ -271,6 +299,14 @@ public class BookCollectionService {
 		bookCollectionListQuery.setMaxResults(pageSize);
 		
 		List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
         
         PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
         
@@ -324,6 +360,14 @@ public class BookCollectionService {
 		bookCollectionListQuery.setMaxResults(pageSize);
 		
 		List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
         
         PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
         
@@ -386,6 +430,14 @@ public class BookCollectionService {
 			bookCollectionListQuery.setMaxResults(pageSize);
 			
 			List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
+			
+			if(graph != null) {
+				if(graph.containsKey("bookCollectionMark")) {
+					Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+					
+					getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+				}
+			}
 	        
 	        bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
 		} catch(NoResultException e) {
@@ -395,6 +447,69 @@ public class BookCollectionService {
 			
 			bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
 		}
+        
+        return bookCollectionPageableList;
+	}
+	
+	public PageableList<BookCollection> getToReadBookCollectionsByUser(User user, BookCollectionSearchType searchType, String search, Integer page, Integer pageSize, Graph graph) throws ProblemException {
+		EntityGraph<BookCollection> entityGraph = entityManager.createEntityGraph(BookCollection.class);
+		
+		if(graph != null) {
+			if(graph.containsKey("parentBookCollection")) {
+				entityGraph.addSubgraph("parentBookCollection", BookCollection.class);
+			}
+		}
+		
+		String bookCollectionListQueryString = " where 1 = 1";
+		
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage = 0";
+		
+		String normalizedName = null;
+		if(BookCollectionSearchType.NAME.equals(searchType)) {
+			normalizedName = NameHelper.getNormalizedName(search);
+			
+			if(normalizedName != null && "".equals(normalizedName) == false) {
+				bookCollectionListQueryString = bookCollectionListQueryString + " and bc.normalizedName like :normalizedName";
+			}
+		}
+		
+		Query bookCollectionListSizeQuery = entityManager.createQuery("select count(bc.id) from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString);
+		bookCollectionListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookCollectionListSizeQuery.setParameter("userId", user.getId());
+		
+		if(BookCollectionSearchType.NAME.equals(searchType)) {
+			if(normalizedName != null && "".equals(normalizedName) == false) {
+				bookCollectionListSizeQuery.setParameter("normalizedName", "%" + normalizedName + "%");
+			}
+		}
+		
+		Long bookCollectionListSize = (Long) bookCollectionListSizeQuery.getSingleResult();
+		
+		TypedQuery<BookCollection> bookCollectionListQuery = entityManager.createQuery("select bc from BookCollection bc join bc.bookCollectionMarks bcm" + bookCollectionListQueryString + " order by bc.number asc", BookCollection.class);
+		bookCollectionListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+		bookCollectionListQuery.setParameter("userId", user.getId());
+		
+		if(BookCollectionSearchType.NAME.equals(searchType)) {
+			if(normalizedName != null && "".equals(normalizedName) == false) {
+				bookCollectionListQuery.setParameter("normalizedName", "%" + normalizedName + "%");
+			}
+		}
+		
+		bookCollectionListQuery.setHint("javax.persistence.loadgraph", entityGraph);
+		bookCollectionListQuery.setFirstResult((page - 1) * pageSize);
+		bookCollectionListQuery.setMaxResults(pageSize);
+		
+		List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
+        
+        PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
         
         return bookCollectionPageableList;
 	}
@@ -411,7 +526,7 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage > 0";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
@@ -457,7 +572,14 @@ public class BookCollectionService {
 			
 			bookCollectionList.add(bookCollection);
 		}
-
+		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
 		
 		PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
 		
@@ -475,7 +597,7 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage = bcm.numberOfBookPages";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage > 0 and bcm.bookPage = bcm.numberOfBookPages";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
@@ -513,6 +635,14 @@ public class BookCollectionService {
 		bookCollectionListQuery.setMaxResults(pageSize);
 		
 		List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
         
         PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
         
@@ -530,7 +660,7 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage <> bcm.numberOfBookPages";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage > 0 and bcm.bookPage < bcm.numberOfBookPages";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
@@ -568,6 +698,14 @@ public class BookCollectionService {
 		bookCollectionListQuery.setMaxResults(pageSize);
 		
 		List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
         
         PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
         
@@ -585,7 +723,7 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bc.id not in (select distinct bc.id from BookCollection bc join bc.bookCollectionMarks bcm where bc.rootBookCollection.id = :rootBookCollectionId and bcm.user.id = :userId)";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bc.id not in (select distinct bc.id from BookCollection bc join bc.bookCollectionMarks bcm where bc.rootBookCollection.id = :rootBookCollectionId and bcm.user.id = :userId and bcm.bookPage > 0)";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {
@@ -623,6 +761,14 @@ public class BookCollectionService {
 		bookCollectionListQuery.setMaxResults(pageSize);
 		
 		List<BookCollection> bookCollectionList = bookCollectionListQuery.getResultList();
+		
+		if(graph != null) {
+			if(graph.containsKey("bookCollectionMark")) {
+				Graph bookCollectionMarkGraph = graph.get("bookCollectionMark");
+				
+				getBookMarkService().loadBookCollectionMarkGraph(user, bookCollectionList, bookCollectionMarkGraph);
+			}
+		}
         
         PageableList<BookCollection> bookCollectionPageableList = new PageableList<BookCollection>(bookCollectionList, bookCollectionListSize, page, pageSize);
         
