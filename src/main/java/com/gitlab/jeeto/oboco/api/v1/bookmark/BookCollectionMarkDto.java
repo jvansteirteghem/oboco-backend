@@ -9,19 +9,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.gitlab.jeeto.oboco.api.v1.book.BookDto;
+import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDto;
 
-@Schema(name = "BookMark", description = "A bookMark.")
-@XmlRootElement(name = "BookMark")
+@Schema(name = "BookCollectionMark", description = "A bookCollectionMark.")
+@XmlRootElement(name = "BookCollectionMark")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class BookMarkDto {
+public class BookCollectionMarkDto {
 	private Long id;
 	private Date createDate;
 	private Date updateDate;
-	private Integer numberOfPages;
-	private Integer page;
-	private BookDto book;
-	public BookMarkDto() {
+	private Integer numberOfBookPages;
+	private Integer bookPage;
+	private BookCollectionDto bookCollection;
+	public BookCollectionMarkDto() {
 		super();
 	}
 	@Schema(name = "id")
@@ -52,28 +52,28 @@ public class BookMarkDto {
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
 	}
-	@Schema(name = "numberOfPages")
-	@XmlElement(name = "numberOfPages")
-	public Integer getNumberOfPages() {
-		return numberOfPages;
+	@Schema(name = "numberOfBookPages")
+	@XmlElement(name = "numberOfBookPages")
+	public Integer getNumberOfBookPages() {
+		return numberOfBookPages;
 	}
-	public void setNumberOfPages(Integer numberOfPages) {
-		this.numberOfPages = numberOfPages;
+	public void setNumberOfBookPages(Integer numberOfBookPages) {
+		this.numberOfBookPages = numberOfBookPages;
 	}
-	@Schema(name = "page")
-	@XmlElement(name = "page")
-	public Integer getPage() {
-		return page;
+	@Schema(name = "bookPage")
+	@XmlElement(name = "bookPage")
+	public Integer getBookPage() {
+		return bookPage;
 	}
-	public void setPage(Integer page) {
-		this.page = page;
+	public void setBookPage(Integer bookPage) {
+		this.bookPage = bookPage;
 	}
-	@Schema(name = "book")
-	@XmlElement(name = "book")
-	public BookDto getBook() {
-		return book;
+	@Schema(name = "bookCollection")
+	@XmlElement(name = "bookCollection")
+	public BookCollectionDto getBookCollection() {
+		return bookCollection;
 	}
-	public void setBook(BookDto book) {
-		this.book = book;
+	public void setBookCollection(BookCollectionDto bookCollection) {
+		this.bookCollection = bookCollection;
 	}
 }

@@ -12,6 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.gitlab.jeeto.oboco.api.v1.book.BookDto;
 import com.gitlab.jeeto.oboco.api.v1.book.BookPageableListDto;
+import com.gitlab.jeeto.oboco.api.v1.bookmark.BookCollectionMarkDto;
 
 @Schema(name = "BookCollection", description = "A bookCollection.")
 @XmlRootElement(name = "BookCollection")
@@ -26,6 +27,7 @@ public class BookCollectionDto {
 	private Integer numberOfBookCollections;
 	private List<BookDto> books;
 	private Integer numberOfBooks;
+	private BookCollectionMarkDto bookCollectionMark;
 	public BookCollectionDto() {
 		super();
 	}
@@ -104,5 +106,13 @@ public class BookCollectionDto {
 	}
 	public void setNumberOfBooks(Integer numberOfBooks) {
 		this.numberOfBooks = numberOfBooks;
+	}
+	@Schema(name = "bookCollectionMark")
+	@XmlElement(name = "bookCollectionMark")
+	public BookCollectionMarkDto getBookCollectionMark() {
+		return bookCollectionMark;
+	}
+	public void setBookCollectionMark(BookCollectionMarkDto bookCollectionMark) {
+		this.bookCollectionMark = bookCollectionMark;
 	}
 }

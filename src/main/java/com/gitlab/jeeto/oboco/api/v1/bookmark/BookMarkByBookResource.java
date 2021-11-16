@@ -99,8 +99,8 @@ public class BookMarkByBookResource {
 			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_MARK_PAGE_INVALID", "The bookMark.page is invalid: bookMark.page is null."));
 		}
 		
-		if(bookMarkDto.getPage() < 0 || bookMarkDto.getPage() > book.getNumberOfPages()) {
-			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_MARK_PAGE_INVALID", "The bookMark.page is invalid: bookMark.page is < 0 or bookMark.page is > book.numberOfPages."));
+		if(bookMarkDto.getPage() < -1 || bookMarkDto.getPage() > book.getNumberOfPages()) {
+			throw new ProblemException(new Problem(400, "PROBLEM_BOOK_MARK_PAGE_INVALID", "The bookMark.page is invalid: bookMark.page is < -1 or bookMark.page is > book.numberOfPages."));
 		}
 		
 		BookMarkReference bookMarkReference = bookMarkService.createOrUpdateBookMarkByUserAndBook(user, book, bookMarkDto.getPage(), graph);

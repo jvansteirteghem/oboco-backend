@@ -73,14 +73,14 @@ public class BookCollectionResource {
 	public Response getBookCollections(
 			@Parameter(name = "searchType", description = "The searchType. The searchType is NAME.", required = false) @QueryParam("searchType") BookCollectionSearchType searchType, 
 			@Parameter(name = "search", description = "The search.", required = false) @QueryParam("search") String search, 
-			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, NEW, LATEST_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookCollectionFilterType filterType, 
+			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, NEW, TO_READ, LATEST_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookCollectionFilterType filterType, 
 			@Parameter(name = "page", description = "The page. The page is >= 1.", required = false) @DefaultValue("1") @QueryParam("page") Integer page, 
 			@Parameter(name = "pageSize", description = "The pageSize. The pageSize is >= 1 and <= 100.", required = false) @DefaultValue("25") @QueryParam("pageSize") Integer pageSize, 
-			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection,bookCollectionMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		PageableListDtoHelper.validatePageableList(page, pageSize);
 		
 		Graph graph = GraphHelper.createGraph(graphValue);
-		Graph fullGraph = GraphHelper.createGraph("(parentBookCollection)");
+		Graph fullGraph = GraphHelper.createGraph("(parentBookCollection,bookCollectionMark)");
 		
 		GraphHelper.validateGraph(graph, fullGraph);
 		
@@ -96,6 +96,8 @@ public class BookCollectionResource {
 			bookCollectionPageableList = bookCollectionService.getAllBookCollectionsByUser(user, searchType, search, page, pageSize, graph);
 		} else if(BookCollectionFilterType.NEW.equals(filterType)) {
 			bookCollectionPageableList = bookCollectionService.getNewBookCollectionsByUser(user, searchType, search, page, pageSize, graph);
+		} else if(BookCollectionFilterType.TO_READ.equals(filterType)) {
+			bookCollectionPageableList = bookCollectionService.getToReadBookCollectionsByUser(user, searchType, search, page, pageSize, graph);
 		} else if(BookCollectionFilterType.LATEST_READ.equals(filterType)) {
 			bookCollectionPageableList = bookCollectionService.getLatestReadBookCollectionsByUser(user, searchType, search, page, pageSize, graph);
 		} else if(BookCollectionFilterType.READ.equals(filterType)) {
@@ -131,9 +133,9 @@ public class BookCollectionResource {
 	@Path("ROOT")
 	@GET
 	public Response getRootBookCollection(
-			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection,bookCollectionMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		Graph graph = GraphHelper.createGraph(graphValue);
-		Graph fullGraph = GraphHelper.createGraph("(parentBookCollection)");
+		Graph fullGraph = GraphHelper.createGraph("(parentBookCollection,bookCollectionMark)");
 		
 		GraphHelper.validateGraph(graph, fullGraph);
 		
@@ -175,9 +177,9 @@ public class BookCollectionResource {
 	@GET
 	public Response getBookCollection(
 			@Parameter(name = "bookCollectionId", description = "The id of the bookCollection.", required = true) @PathParam("bookCollectionId") Long bookCollectionId, 
-			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+			@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection,bookCollectionMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 		Graph graph = GraphHelper.createGraph(graphValue);
-		Graph fullGraph = GraphHelper.createGraph("(parentBookCollection)");
+		Graph fullGraph = GraphHelper.createGraph("(parentBookCollection,bookCollectionMark)");
 		
 		GraphHelper.validateGraph(graph, fullGraph);
 		
@@ -221,11 +223,11 @@ public class BookCollectionResource {
 				@Parameter(name = "search", description = "The search.", required = false) @QueryParam("search") String search, 
 				@Parameter(name = "page", description = "The page. The page is >= 1.", required = false) @DefaultValue("1") @QueryParam("page") Integer page, 
 				@Parameter(name = "pageSize", description = "The pageSize. The pageSize is >= 1 and <= 100.", required = false) @DefaultValue("25") @QueryParam("pageSize") Integer pageSize, 
-				@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
+				@Parameter(name = "graph", description = "The graph. The full graph is (parentBookCollection,bookCollectionMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
 			PageableListDtoHelper.validatePageableList(page, pageSize);
 			
 			Graph graph = GraphHelper.createGraph(graphValue);
-			Graph fullGraph = GraphHelper.createGraph("(parentBookCollection)");
+			Graph fullGraph = GraphHelper.createGraph("(parentBookCollection,bookCollectionMark)");
 			
 			GraphHelper.validateGraph(graph, fullGraph);
 			
