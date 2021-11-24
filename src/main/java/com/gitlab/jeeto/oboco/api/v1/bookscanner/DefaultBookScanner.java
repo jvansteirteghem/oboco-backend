@@ -27,6 +27,7 @@ import com.gitlab.jeeto.oboco.api.v1.book.BookService;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkService;
+import com.gitlab.jeeto.oboco.common.DateHelper;
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileType.Type;
 import com.gitlab.jeeto.oboco.common.NameHelper;
@@ -223,8 +224,7 @@ public class DefaultBookScanner implements BookScanner {
 	public void start(BookScannerMode mode) throws ProblemException {
 		this.mode = mode;
 		this.status = BookScannerStatus.STARTING;
-		// no milliseconds
-		this.updateDate = new Date((new Date().getTime() / 1000L) * 1000L);
+		this.updateDate = DateHelper.getDate();
 		this.status = BookScannerStatus.STARTED;
 		try {
 			this.defaultBookPageList = createBookPageList();

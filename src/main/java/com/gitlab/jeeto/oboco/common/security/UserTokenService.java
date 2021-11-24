@@ -4,6 +4,7 @@ import java.util.Date;
 
 import javax.enterprise.context.RequestScoped;
 
+import com.gitlab.jeeto.oboco.common.DateHelper;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
@@ -26,7 +27,7 @@ public class UserTokenService {
 		Long age = getConfiguration().getAsLong("security.authentication.accessToken.age", "3600") * 1000L;
 		
 		UserToken accessToken = new UserToken();
-		accessToken.setStartDate(new Date());
+		accessToken.setStartDate(DateHelper.getDate());
 		accessToken.setStopDate(new Date(accessToken.getStartDate().getTime() + age));
 		accessToken.setName(name);
 		
@@ -53,7 +54,7 @@ public class UserTokenService {
 		Long age = getConfiguration().getAsLong("security.authentication.refreshToken.age", "31536000") * 1000L;
 		
 		UserToken refreshToken = new UserToken();
-		refreshToken.setStartDate(new Date());
+		refreshToken.setStartDate(DateHelper.getDate());
 		refreshToken.setStopDate(new Date(refreshToken.getStartDate().getTime() + age));
 		refreshToken.setName(name);
 		

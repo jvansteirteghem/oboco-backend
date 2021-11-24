@@ -20,6 +20,7 @@ import com.gitlab.jeeto.oboco.api.v1.book.Book;
 import com.gitlab.jeeto.oboco.api.v1.book.BookService;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
+import com.gitlab.jeeto.oboco.common.DateHelper;
 import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.GraphHelper;
 import com.gitlab.jeeto.oboco.common.PageableList;
@@ -329,7 +330,7 @@ public class BookMarkService {
 	
 	@Transactional
 	public BookCollectionMark createOrUpdateBookMarksByUserAndBookCollection(User user, BookCollection bookCollection, Integer bookPage, Graph graph) throws ProblemException {
-		Date updateDate = new Date();
+		Date updateDate = DateHelper.getDate();
 		
 		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
 		
@@ -423,7 +424,7 @@ public class BookMarkService {
 	
 	@Transactional
 	public BookMarkReference createOrUpdateBookMarkByUserAndBook(User user, Book book, Integer bookPage, Graph graph) throws ProblemException {
-		Date updateDate = new Date();
+		Date updateDate = DateHelper.getDate();
 		
 		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
 		

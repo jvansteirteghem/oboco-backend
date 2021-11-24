@@ -14,6 +14,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMark;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkReference;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
+import com.gitlab.jeeto.oboco.common.DateHelper;
 
 import junit.framework.TestCase;
 
@@ -119,7 +120,7 @@ public class DatabaseTest extends TestCase {
 	}
 
 	public void testDeleteBook() throws Exception {
-		Date updateDate = new Date();
+		Date updateDate = DateHelper.getDate();
 		
 		scan(updateDate);
 		
@@ -153,7 +154,7 @@ public class DatabaseTest extends TestCase {
 	}
 	
 	public void testDeleteBookCollection() throws Exception {
-		Date updateDate = new Date();
+		Date updateDate = DateHelper.getDate();
 		
 		scan(updateDate);
 		

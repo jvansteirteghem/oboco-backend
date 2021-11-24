@@ -35,6 +35,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDto;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDtoMapper;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionPageableListDto;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
+import com.gitlab.jeeto.oboco.common.DateHelper;
 import com.gitlab.jeeto.oboco.common.Graph;
 import com.gitlab.jeeto.oboco.common.GraphHelper;
 import com.gitlab.jeeto.oboco.common.PageableList;
@@ -150,7 +151,7 @@ public class UserResource {
 		
 		user.setPassword(userPasswordDto.getUpdatePassword());
 		
-		Date updateDate = new Date();
+		Date updateDate = DateHelper.getDate();
 		
 		user.setUpdateDate(updateDate);
 		
@@ -211,7 +212,7 @@ public class UserResource {
 		user.setPassword(userDto.getPassword());
 		user.setRoles(userDto.getRoles());
 		
-		Date updateDate = new Date();
+		Date updateDate = DateHelper.getDate();
 		
 		user.setCreateDate(updateDate);
 		user.setUpdateDate(updateDate);
@@ -269,7 +270,7 @@ public class UserResource {
 		user.setPassword(userDto.getPassword());
 		user.setRoles(userDto.getRoles());
 		
-		Date updateDate = new Date();
+		Date updateDate = DateHelper.getDate();
 		
 		user.setUpdateDate(updateDate);
 		
