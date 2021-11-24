@@ -27,6 +27,7 @@ import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
 import com.gitlab.jeeto.oboco.api.v1.user.User;
 import com.gitlab.jeeto.oboco.api.v1.user.UserService;
+import com.gitlab.jeeto.oboco.common.DateHelper;
 import com.gitlab.jeeto.oboco.common.exception.Problem;
 import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
 import com.gitlab.jeeto.oboco.common.exception.ProblemException;
@@ -85,7 +86,7 @@ public class AuthenticationResource {
 				
 				user.setRoles(roles);
 				
-				Date updateDate = new Date();
+				Date updateDate = DateHelper.getDate();
 				
 				user.setCreateDate(updateDate);
 				user.setUpdateDate(updateDate);
