@@ -154,7 +154,7 @@ public class AuthenticationRequestFilter implements ContainerRequestFilter {
 		    		return;
 				}
 				
-				if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(accessToken.getStartDate()) >= 0) {
+				if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(accessToken.getStartDate()) > 0) {
 					ResponseBuilder responseBuilder = Response.status(401);
 					responseBuilder.header("WWW-Authenticate", "Bearer realm=\"oboco\"");
 					responseBuilder.entity(new ProblemDto(401, "PROBLEM_USER_NOT_AUTHENTICATED", "The user is not authenticated."));

@@ -89,7 +89,7 @@ public class AuthenticationResource {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid."));
 		}
 		
-		if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(refreshToken.getStartDate()) >= 0) {
+		if(user.getUpdateDate() == null || user.getUpdateDate().compareTo(refreshToken.getStartDate()) > 0) {
 			throw new ProblemException(new Problem(400, "PROBLEM_USER_TOKEN_INVALID", "The userToken is invalid."));
 		}
 		
