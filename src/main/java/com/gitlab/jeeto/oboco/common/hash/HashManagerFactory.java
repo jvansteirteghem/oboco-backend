@@ -1,7 +1,5 @@
 package com.gitlab.jeeto.oboco.common.hash;
 
-import com.gitlab.jeeto.oboco.common.hash.impl.HashManagerImpl;
-
 public class HashManagerFactory {
 	private static HashManagerFactory instance;
 	
@@ -24,7 +22,9 @@ public class HashManagerFactory {
 		HashManager hashManager = null;
 		
 		if(outputHashType.equals(HashType.SHA256)) {
-			hashManager = new HashManagerImpl();
+			hashManager = new DefaultHashManager();
+		} else {
+			throw new Exception("hashType not supported.");
 		}
 		
 		return hashManager;

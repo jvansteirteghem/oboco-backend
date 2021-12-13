@@ -8,6 +8,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.TypeableFile;
+import com.gitlab.jeeto.oboco.common.image.ImageManager;
+import com.gitlab.jeeto.oboco.common.image.ScaleType;
 
 import junit.framework.TestCase;
 

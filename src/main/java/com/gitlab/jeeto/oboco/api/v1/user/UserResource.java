@@ -30,22 +30,24 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
-import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.api.PageableListDto;
+import com.gitlab.jeeto.oboco.api.PageableListDtoHelper;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDto;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionDtoMapper;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionPageableListDto;
-import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionService;
-import com.gitlab.jeeto.oboco.common.DateHelper;
-import com.gitlab.jeeto.oboco.common.Graph;
-import com.gitlab.jeeto.oboco.common.GraphHelper;
-import com.gitlab.jeeto.oboco.common.PageableList;
-import com.gitlab.jeeto.oboco.common.PageableListDto;
-import com.gitlab.jeeto.oboco.common.PageableListDtoHelper;
-import com.gitlab.jeeto.oboco.common.exception.Problem;
-import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
-import com.gitlab.jeeto.oboco.common.exception.ProblemException;
-import com.gitlab.jeeto.oboco.common.security.Authentication;
-import com.gitlab.jeeto.oboco.common.security.Authorization;
+import com.gitlab.jeeto.oboco.data.DateHelper;
+import com.gitlab.jeeto.oboco.database.Graph;
+import com.gitlab.jeeto.oboco.database.GraphHelper;
+import com.gitlab.jeeto.oboco.database.PageableList;
+import com.gitlab.jeeto.oboco.database.bookcollection.BookCollection;
+import com.gitlab.jeeto.oboco.database.bookcollection.BookCollectionService;
+import com.gitlab.jeeto.oboco.database.user.User;
+import com.gitlab.jeeto.oboco.database.user.UserService;
+import com.gitlab.jeeto.oboco.problem.Problem;
+import com.gitlab.jeeto.oboco.problem.ProblemDto;
+import com.gitlab.jeeto.oboco.problem.ProblemException;
+import com.gitlab.jeeto.oboco.server.authentication.Authentication;
+import com.gitlab.jeeto.oboco.server.authorization.Authorization;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")

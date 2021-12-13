@@ -13,12 +13,12 @@ import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import org.eclipse.microprofile.openapi.annotations.servers.Server;
 
+import com.gitlab.jeeto.oboco.api.v1.authentication.AuthenticationResource;
 import com.gitlab.jeeto.oboco.api.v1.book.BookResource;
 import com.gitlab.jeeto.oboco.api.v1.bookcollection.BookCollectionResource;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkResource;
 import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerResource;
 import com.gitlab.jeeto.oboco.api.v1.user.UserResource;
-import com.gitlab.jeeto.oboco.common.security.AuthenticationResource;
 
 @OpenAPIDefinition(
     info = @Info(

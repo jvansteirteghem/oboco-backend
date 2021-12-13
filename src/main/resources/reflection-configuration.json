@@ -1,6 +1,6 @@
 [
   {
-    "name" : "com.gitlab.jeeto.oboco.api.ApiProblemDtoExceptionMapper",
+    "name" : "com.gitlab.jeeto.oboco.api.ApiParameterConverterProvider",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -10,6 +10,24 @@
   },
   {
     "name" : "com.gitlab.jeeto.oboco.api.ApiResource",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.gitlab.jeeto.oboco.api.ProblemDtoExceptionMapper",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "allDeclaredFields" : true,
+    "allPublicFields" : true
+  },
+  {
+    "name" : "com.gitlab.jeeto.oboco.api.v1.authentication.AuthenticationResource",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -90,7 +108,7 @@
     "allPublicFields" : true
   },
   {
-    "name" : "com.gitlab.jeeto.oboco.common.ParameterConverterProvider",
+    "name" : "com.gitlab.jeeto.oboco.server.authentication.AuthenticationRequestFilter",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -99,7 +117,7 @@
     "allPublicFields" : true
   },
   {
-    "name" : "com.gitlab.jeeto.oboco.common.security.AuthenticationRequestFilter",
+    "name" : "com.gitlab.jeeto.oboco.server.authentication.AuthenticationResponseFilter",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -108,25 +126,7 @@
     "allPublicFields" : true
   },
   {
-    "name" : "com.gitlab.jeeto.oboco.common.security.AuthenticationResource",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "allDeclaredFields" : true,
-    "allPublicFields" : true
-  },
-  {
-    "name" : "com.gitlab.jeeto.oboco.common.security.AuthenticationResponseFilter",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "allDeclaredFields" : true,
-    "allPublicFields" : true
-  },
-  {
-    "name" : "com.gitlab.jeeto.oboco.common.security.AuthorizationRequestFilter",
+    "name" : "com.gitlab.jeeto.oboco.server.authorization.AuthorizationRequestFilter",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,

@@ -28,21 +28,23 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
-import com.gitlab.jeeto.oboco.api.v1.user.User;
-import com.gitlab.jeeto.oboco.common.Graph;
-import com.gitlab.jeeto.oboco.common.GraphHelper;
-import com.gitlab.jeeto.oboco.common.Linkable;
-import com.gitlab.jeeto.oboco.common.LinkableDto;
-import com.gitlab.jeeto.oboco.common.PageableList;
-import com.gitlab.jeeto.oboco.common.PageableListDto;
-import com.gitlab.jeeto.oboco.common.PageableListDtoHelper;
-import com.gitlab.jeeto.oboco.common.exception.Problem;
-import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
-import com.gitlab.jeeto.oboco.common.exception.ProblemException;
+import com.gitlab.jeeto.oboco.api.LinkableDto;
+import com.gitlab.jeeto.oboco.api.PageableListDto;
+import com.gitlab.jeeto.oboco.api.PageableListDtoHelper;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
-import com.gitlab.jeeto.oboco.common.security.Authentication;
-import com.gitlab.jeeto.oboco.common.security.Authorization;
-import com.gitlab.jeeto.oboco.common.security.UserPrincipal;
+import com.gitlab.jeeto.oboco.database.Graph;
+import com.gitlab.jeeto.oboco.database.GraphHelper;
+import com.gitlab.jeeto.oboco.database.Linkable;
+import com.gitlab.jeeto.oboco.database.PageableList;
+import com.gitlab.jeeto.oboco.database.book.Book;
+import com.gitlab.jeeto.oboco.database.book.BookService;
+import com.gitlab.jeeto.oboco.database.user.User;
+import com.gitlab.jeeto.oboco.problem.Problem;
+import com.gitlab.jeeto.oboco.problem.ProblemDto;
+import com.gitlab.jeeto.oboco.problem.ProblemException;
+import com.gitlab.jeeto.oboco.server.authentication.Authentication;
+import com.gitlab.jeeto.oboco.server.authentication.UserPrincipal;
+import com.gitlab.jeeto.oboco.server.authorization.Authorization;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")
