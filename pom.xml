@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.gitlab.jeeto.oboco</groupId>
 	<artifactId>oboco-backend</artifactId>
 	<version>2.0.0-SNAPSHOT</version> <!--MOD4DEL-->
@@ -15,12 +15,12 @@
 		<tag>HEAD</tag>
 	</scm>
 
-    <properties>
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>8</java.version>
-        <javadoc.disabled>true</javadoc.disabled>
-        <deploy.disabled>true</deploy.disabled>
-        <source.disabled>true</source.disabled>
+		<javadoc.disabled>true</javadoc.disabled>
+		<deploy.disabled>true</deploy.disabled>
+		<source.disabled>true</source.disabled>
 		<!-- >>> quarkus -->
 		<compiler-plugin.version>3.8.1</compiler-plugin.version>
 		<maven.compiler.parameters>true</maven.compiler.parameters>
@@ -33,20 +33,20 @@
 		<quarkus.platform.version>2.2.3.Final</quarkus.platform.version>
 		<surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
 		<!-- <<< quarkus -->
-    </properties>
+	</properties>
 	
 	<!-- >>> quarkus -->
 	<dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>${quarkus.platform.group-id}</groupId>
+				<artifactId>${quarkus.platform.artifact-id}</artifactId>
+				<version>${quarkus.platform.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<!-- <<< quarkus -->
 	
 	<dependencies>
@@ -64,26 +64,26 @@
 			<artifactId>quarkus-jdbc-mysql</artifactId>
 		</dependency>
 		<dependency>
-	        <groupId>io.quarkus</groupId>
-	        <artifactId>quarkus-jdbc-postgresql</artifactId>
-	    </dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-jdbc-postgresql</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-agroal</artifactId>
 		</dependency>
 		<dependency>
-		  <groupId>io.quarkus</groupId>
-		  <artifactId>quarkus-junit5</artifactId>
-		  <scope>test</scope>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-junit5</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-		  <groupId>io.rest-assured</groupId>
-		  <artifactId>rest-assured</artifactId>
-		  <scope>test</scope>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-		  <groupId>io.quarkus</groupId>
-		  <artifactId>quarkus-resteasy</artifactId>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-resteasy</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
@@ -105,10 +105,10 @@
 		
 		<!-- java.lang.ClassNotFoundException: io.netty.internal.tcnative.SSLPrivateKeyMethod -->
 		<dependency>
-	        <groupId>io.netty</groupId>
-	        <artifactId>netty-tcnative</artifactId>
-	        <version>2.0.31.Final</version>
-	    </dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-tcnative</artifactId>
+			<version>2.0.31.Final</version>
+		</dependency>
 		<!-- <<< quarkus -->
 		
 		<!-- jwt -->
@@ -120,9 +120,9 @@
 		
 		<!-- bcrypt -->
 		<dependency>
-		    <groupId>at.favre.lib</groupId>
-		    <artifactId>bcrypt</artifactId>
-		    <version>0.9.0</version>
+			<groupId>at.favre.lib</groupId>
+			<artifactId>bcrypt</artifactId>
+			<version>0.9.0</version>
 		</dependency>
 		
 		<!-- icu -->
@@ -146,49 +146,49 @@
 		</dependency>
 		
 		<dependency>
-		    <groupId>net.sf.sevenzipjbinding</groupId>
-		    <artifactId>sevenzipjbinding-linux-arm64</artifactId>
-		    <version>16.02-2.01</version>
+			<groupId>net.sf.sevenzipjbinding</groupId>
+			<artifactId>sevenzipjbinding-linux-arm64</artifactId>
+			<version>16.02-2.01</version>
 		</dependency>
 		
 		<dependency>
-		    <groupId>net.sf.sevenzipjbinding</groupId>
-		    <artifactId>sevenzipjbinding-linux-armv71</artifactId>
-		    <version>16.02-2.01</version>
+			<groupId>net.sf.sevenzipjbinding</groupId>
+			<artifactId>sevenzipjbinding-linux-armv71</artifactId>
+			<version>16.02-2.01</version>
 		</dependency>
 		
 		<dependency>
-		    <groupId>net.sf.sevenzipjbinding</groupId>
-		    <artifactId>sevenzipjbinding-linux-armv6</artifactId>
-		    <version>16.02-2.01</version>
+			<groupId>net.sf.sevenzipjbinding</groupId>
+			<artifactId>sevenzipjbinding-linux-armv6</artifactId>
+			<version>16.02-2.01</version>
 		</dependency>
 		
 		<dependency>
-		    <groupId>net.sf.sevenzipjbinding</groupId>
-		    <artifactId>sevenzipjbinding-linux-armv5</artifactId>
-		    <version>16.02-2.01</version>
+			<groupId>net.sf.sevenzipjbinding</groupId>
+			<artifactId>sevenzipjbinding-linux-armv5</artifactId>
+			<version>16.02-2.01</version>
 		</dependency>
 		
 		<!-- imageio -->
-        <!--
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-jpeg</artifactId>
-            <version>3.6.4</version>
-        </dependency>
-        -->
-        
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-core</artifactId>
-            <version>3.6.4</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.twelvemonkeys.imageio</groupId>
-            <artifactId>imageio-metadata</artifactId>
-            <version>3.6.4</version>
-        </dependency>
+		<!--
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-jpeg</artifactId>
+			<version>3.6.4</version>
+		</dependency>
+		-->
+		
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-core</artifactId>
+			<version>3.6.4</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio-metadata</artifactId>
+			<version>3.6.4</version>
+		</dependency>
 		
 		<!-- test -->
 		<dependency>
@@ -206,31 +206,31 @@
 		</dependency>
 		
 		<dependency>
-		    <groupId>org.mockito</groupId>
-		    <artifactId>mockito-all</artifactId>
-		    <version>1.10.19</version>
-		    <scope>test</scope>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.10.19</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
-    <build>
-        <resources>
-            <resource>
-                <filtering>false</filtering>
-                <directory>src/main/java</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
+	<build>
+		<resources>
+			<resource>
+				<filtering>false</filtering>
+				<directory>src/main/java</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-eclipse-plugin</artifactId>
-			  <version>2.9</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.9</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -252,9 +252,9 @@
 									<directory>${project.basedir}/src/non-packaged-resources</directory>
 									<filtering>true</filtering>
 									<includes>
-								        <include>**/application.bat</include>
-								        <include>**/application.sh</include>
-								    </includes>
+										<include>**/application.bat</include>
+										<include>**/application.sh</include>
+									</includes>
 								</resource>
 								<resource>
 									<directory>${project.basedir}/src/non-packaged-resources</directory>
@@ -262,8 +262,8 @@
 									<excludes>
 										<exclude>**/.gitignore</exclude>
 										<exclude>**/application.bat</exclude>
-								        <exclude>**/application.sh</exclude>
-								    </excludes>
+										<exclude>**/application.sh</exclude>
+									</excludes>
 								</resource>
 							</resources>
 						</configuration>
@@ -271,38 +271,38 @@
 				</executions>
 			</plugin>
 			<plugin>
-		      <groupId>org.apache.maven.plugins</groupId>
-		      <artifactId>maven-assembly-plugin</artifactId>
-		      <version>2.4.1</version>
-		      <configuration>
-		        <descriptor>src/assembly/bin.xml</descriptor>
-		        <finalName>${project.artifactId}-${project.version}</finalName>
-		      </configuration>
-		      <executions>
-		        <execution>
-		          <phase>install</phase>
-		          <goals>
-		            <goal>single</goal>
-		          </goals>
-		          <configuration>
-                      <appendAssemblyId>false</appendAssemblyId>
-                  </configuration>
-		        </execution>
-		      </executions>
-		    </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<descriptor>src/assembly/bin.xml</descriptor>
+					<finalName>${project.artifactId}-${project.version}</finalName>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- >>> quarkus -->
 			<plugin>
-			  <groupId>org.jboss.jandex</groupId>
-			  <artifactId>jandex-maven-plugin</artifactId>
-			  <version>1.0.7</version>
-			  <executions>
-				<execution>
-				  <id>make-index</id>
-				  <goals>
-					<goal>jandex</goal>
-				  </goals>
-				</execution>
-			  </executions>
+				<groupId>org.jboss.jandex</groupId>
+				<artifactId>jandex-maven-plugin</artifactId>
+				<version>1.0.7</version>
+				<executions>
+					<execution>
+						<id>make-index</id>
+						<goals>
+							<goal>jandex</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<!-- <<< quarkus -->
 			<plugin>
@@ -319,19 +319,19 @@
 			</plugin>
 			<!-- >>> quarkus -->
 			<plugin>
-                <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
+				<groupId>io.quarkus</groupId>
+				<artifactId>quarkus-maven-plugin</artifactId>
+				<version>${quarkus-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
 							<goal>generate-code</goal>
 							<goal>generate-code-tests</goal>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+							<goal>build</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${compiler-plugin.version}</version>
@@ -340,53 +340,53 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${surefire-plugin.version}</version>
 				<configuration>
-				  <systemPropertyVariables>
-					<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-					<maven.home>${maven.home}</maven.home>
-				  </systemPropertyVariables>
+					<systemPropertyVariables>
+						<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+						<maven.home>${maven.home}</maven.home>
+					</systemPropertyVariables>
 				</configuration>
-			  </plugin>
+			</plugin>
 			<!-- <<< quarkus -->
 		</plugins>
-    </build>
+	</build>
 	
 	<!-- >>> quarkus -->
 	<profiles>
-        <profile>
-            <id>native</id>
-            <activation>
-                <property>
-                    <name>native</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-				  <plugin>
-					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>${surefire-plugin.version}</version>
-					<executions>
-					  <execution>
-						<goals>
-						  <goal>integration-test</goal>
-						  <goal>verify</goal>
-						</goals>
-						<configuration>
-						  <systemPropertyVariables>
-							<native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
-							<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-							<maven.home>${maven.home}</maven.home>
-						  </systemPropertyVariables>
-						</configuration>
-					  </execution>
-					</executions>
-				  </plugin>
+		<profile>
+			<id>native</id>
+			<activation>
+				<property>
+					<name>native</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>${surefire-plugin.version}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+								<configuration>
+									<systemPropertyVariables>
+										<native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+										<java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+										<maven.home>${maven.home}</maven.home>
+									</systemPropertyVariables>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 				</plugins>
-            </build>
+			</build>
 			<properties>
 				<quarkus.package.type>native</quarkus.package.type>
-				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.impl.ArchiveReaderImpl,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.image.impl.ImageManagerImpl,--initialize-at-run-time=org.libjpegturbo.turbojpeg,--initialize-at-run-time=io.netty.internal.tcnative.SSL,-J-Dorg.graalvm.version=21.0.0.0</quarkus.native.additional-build-args>
-			  </properties>
-        </profile>
-    </profiles>
+				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.DefaultArchiveReader,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.image.DefaultImageManager,--initialize-at-run-time=org.libjpegturbo.turbojpeg,--initialize-at-run-time=io.netty.internal.tcnative.SSL,-J-Dorg.graalvm.version=21.0.0.0</quarkus.native.additional-build-args>
+			</properties>
+		</profile>
+	</profiles>
 	<!-- <<< quarkus -->
 </project>

@@ -7,13 +7,15 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.gitlab.jeeto.oboco.api.v1.book.Book;
+import com.gitlab.jeeto.oboco.api.PageableListDto;
 import com.gitlab.jeeto.oboco.api.v1.book.BookDto;
 import com.gitlab.jeeto.oboco.api.v1.book.BookDtoMapper;
-import com.gitlab.jeeto.oboco.common.Graph;
-import com.gitlab.jeeto.oboco.common.PageableList;
-import com.gitlab.jeeto.oboco.common.PageableListDto;
-import com.gitlab.jeeto.oboco.common.exception.ProblemException;
+import com.gitlab.jeeto.oboco.database.Graph;
+import com.gitlab.jeeto.oboco.database.PageableList;
+import com.gitlab.jeeto.oboco.database.book.Book;
+import com.gitlab.jeeto.oboco.database.bookmark.BookMark;
+import com.gitlab.jeeto.oboco.database.bookmark.BookMarkReference;
+import com.gitlab.jeeto.oboco.problem.ProblemException;
 
 @RequestScoped
 public class BookMarkDtoMapper {

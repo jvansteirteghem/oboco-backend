@@ -24,17 +24,19 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
-import com.gitlab.jeeto.oboco.api.v1.book.Book;
-import com.gitlab.jeeto.oboco.api.v1.book.BookService;
-import com.gitlab.jeeto.oboco.api.v1.user.User;
-import com.gitlab.jeeto.oboco.common.Graph;
-import com.gitlab.jeeto.oboco.common.GraphHelper;
-import com.gitlab.jeeto.oboco.common.exception.Problem;
-import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
-import com.gitlab.jeeto.oboco.common.exception.ProblemException;
-import com.gitlab.jeeto.oboco.common.security.Authentication;
-import com.gitlab.jeeto.oboco.common.security.Authorization;
-import com.gitlab.jeeto.oboco.common.security.UserPrincipal;
+import com.gitlab.jeeto.oboco.database.Graph;
+import com.gitlab.jeeto.oboco.database.GraphHelper;
+import com.gitlab.jeeto.oboco.database.book.Book;
+import com.gitlab.jeeto.oboco.database.book.BookService;
+import com.gitlab.jeeto.oboco.database.bookmark.BookMarkReference;
+import com.gitlab.jeeto.oboco.database.bookmark.BookMarkService;
+import com.gitlab.jeeto.oboco.database.user.User;
+import com.gitlab.jeeto.oboco.problem.Problem;
+import com.gitlab.jeeto.oboco.problem.ProblemDto;
+import com.gitlab.jeeto.oboco.problem.ProblemException;
+import com.gitlab.jeeto.oboco.server.authentication.Authentication;
+import com.gitlab.jeeto.oboco.server.authentication.UserPrincipal;
+import com.gitlab.jeeto.oboco.server.authorization.Authorization;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")

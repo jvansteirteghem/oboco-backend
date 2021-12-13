@@ -17,12 +17,12 @@ import org.eclipse.microprofile.context.ManagedExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScanner;
-import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerMode;
-import com.gitlab.jeeto.oboco.api.v1.bookscanner.BookScannerStatus;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
+import com.gitlab.jeeto.oboco.data.bookreader.BookReaderManager;
+import com.gitlab.jeeto.oboco.data.bookscanner.BookScanner;
+import com.gitlab.jeeto.oboco.data.bookscanner.BookScannerMode;
+import com.gitlab.jeeto.oboco.data.bookscanner.BookScannerStatus;
 
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
@@ -137,27 +137,27 @@ public class Main {
     }
     
     @ApplicationScoped
-    public static class ArchiveReaderFactoryEventListener {
-    	private static Logger logger = LoggerFactory.getLogger(ArchiveReaderFactoryEventListener.class.getName());
-    	private ArchiveReaderFactory archiveReaderFactory;
+    public static class BookReaderEventListener {
+    	private static Logger logger = LoggerFactory.getLogger(BookReaderEventListener.class.getName());
+    	private BookReaderManager bookReaderManager;
     	
     	void onStart(@Observes @Priority(Interceptor.Priority.APPLICATION + 10) StartupEvent ev) {
     		logger.info("start");
         	
-        	archiveReaderFactory = ArchiveReaderFactory.getInstance();
-        	archiveReaderFactory.start();
+    		bookReaderManager = BookReaderManager.getInstance();
+    		bookReaderManager.start();
     	}
     	
     	void onStop(@Observes @Priority(Interceptor.Priority.APPLICATION + 10) ShutdownEvent ev) {
     		logger.info("stop");
     		
-    		archiveReaderFactory.stop();
+    		bookReaderManager.stop();
     	}
     }
     
     @ApplicationScoped
-    public static class BookScannerServiceEventListener {
-    	private static Logger logger = LoggerFactory.getLogger(BookScannerServiceEventListener.class.getName());
+    public static class BookScannerEventListener {
+    	private static Logger logger = LoggerFactory.getLogger(BookScannerEventListener.class.getName());
     	@Inject
     	Instance<BookScanner> bookScannerProvider;
     	@Inject
@@ -176,8 +176,8 @@ public class Main {
 						public void run() {
 							try {
 			        			bookScanner.start(BookScannerMode.UPDATE);
-			        		} catch(Exception e) {
-			        			logger.error("error", e);
+			        		} catch(Throwable t) {
+			        			logger.error("error", t);
 			        		}
 						}
 	        		});

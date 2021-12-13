@@ -29,13 +29,16 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gitlab.jeeto.oboco.common.Graph;
-import com.gitlab.jeeto.oboco.common.GraphHelper;
-import com.gitlab.jeeto.oboco.common.exception.Problem;
-import com.gitlab.jeeto.oboco.common.exception.ProblemDto;
-import com.gitlab.jeeto.oboco.common.exception.ProblemException;
-import com.gitlab.jeeto.oboco.common.security.Authentication;
-import com.gitlab.jeeto.oboco.common.security.Authorization;
+import com.gitlab.jeeto.oboco.data.bookscanner.BookScanner;
+import com.gitlab.jeeto.oboco.data.bookscanner.BookScannerMode;
+import com.gitlab.jeeto.oboco.data.bookscanner.BookScannerStatus;
+import com.gitlab.jeeto.oboco.database.Graph;
+import com.gitlab.jeeto.oboco.database.GraphHelper;
+import com.gitlab.jeeto.oboco.problem.Problem;
+import com.gitlab.jeeto.oboco.problem.ProblemDto;
+import com.gitlab.jeeto.oboco.problem.ProblemException;
+import com.gitlab.jeeto.oboco.server.authentication.Authentication;
+import com.gitlab.jeeto.oboco.server.authorization.Authorization;
 
 @SecurityRequirement(name = "bearerAuth")
 @Authentication(type = "BEARER")
@@ -164,8 +167,8 @@ public class BookScannerResource {
 			public void run() {
 				try {
         			bookScanner.start(mode);
-        		} catch(Exception e) {
-        			logger.error("error", e);
+        		} catch(Throwable t) {
+        			logger.error("error", t);
         		}
 			}
 		});

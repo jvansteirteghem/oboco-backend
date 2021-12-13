@@ -1,6 +1,5 @@
 package com.gitlab.jeeto.oboco.common.image;
 
-import com.gitlab.jeeto.oboco.common.image.impl.ImageManagerImpl;
 import com.gitlab.jeeto.oboco.common.FileType;
 
 public class ImageManagerFactory {
@@ -25,9 +24,11 @@ public class ImageManagerFactory {
 		ImageManager imageManager = null;
 		
 		if(FileType.JPG.equals(inputFileType) && FileType.JPG.equals(outputFileType)) {
-			imageManager = new ImageManagerImpl();
+			imageManager = new DefaultImageManager();
 		} else if(FileType.PNG.equals(inputFileType) && FileType.JPG.equals(outputFileType)) {
-			imageManager = new ImageManagerImpl();
+			imageManager = new DefaultImageManager();
+		} else {
+			throw new Exception("fileType not supported.");
 		}
 		
 		return imageManager;

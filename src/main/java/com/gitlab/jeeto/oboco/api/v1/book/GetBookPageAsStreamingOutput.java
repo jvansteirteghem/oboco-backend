@@ -10,13 +10,14 @@ import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.TypeableFile;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
 import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ImageManagerFactory;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
+import com.gitlab.jeeto.oboco.data.bookreader.BookReader;
+import com.gitlab.jeeto.oboco.data.bookreader.BookReaderManager;
+import com.gitlab.jeeto.oboco.database.book.Book;
 
 public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 	private static Logger logger = LoggerFactory.getLogger(GetBookPageAsStreamingOutput.class.getName());
@@ -95,12 +96,12 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 		return isWritten;
 	}
 	
-	private boolean writeBookPage3(OutputStream outputStream, ArchiveReader archiveReader) throws Exception {
+	private boolean writeBookPage3(OutputStream outputStream, BookReader bookReader) throws Exception {
 		boolean isWritten = false;
 		
 		TypeableFile bookPageInputFile = null;
 		try {
-			bookPageInputFile = archiveReader.readFile(page - 1);
+			bookPageInputFile = bookReader.getBookPage(page - 1);
 			
 			if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
 					&& scaleType == null 
@@ -147,7 +148,7 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 	@Override
 	public void write(OutputStream outputStream) throws IOException, WebApplicationException {
 		try {
-			ArchiveReader archiveReader = null;
+			BookReader bookReader = null;
 			try {
 				boolean isWritten = writeBookPage(outputStream);
 				
@@ -155,22 +156,22 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 					isWritten = writeBookPage2(outputStream);
 					
 					if(isWritten == false) {
-						if(archiveReader == null) {
+						if(bookReader == null) {
 							TypeableFile bookInputFile = new TypeableFile(book.getFilePath());
 							
-							ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
+							BookReaderManager bookReaderManager = BookReaderManager.getInstance();
 							
-							archiveReader = archiveReaderFactory.getArchiveReader(bookInputFile.getFileType());
-							archiveReader.openArchive(bookInputFile);
+							bookReader = bookReaderManager.getBookReader();
+							bookReader.openBook(bookInputFile);
 						}
 						
-						writeBookPage3(outputStream, archiveReader);
+						writeBookPage3(outputStream, bookReader);
 					}
 				}
 			} finally {
 				try {
-					if(archiveReader != null) {
-						archiveReader.closeArchive();
+					if(bookReader != null) {
+						bookReader.closeBook();
 					}
 				} catch(Exception e) {
 					// pass
