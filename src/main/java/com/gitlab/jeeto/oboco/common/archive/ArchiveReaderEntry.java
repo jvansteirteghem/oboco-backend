@@ -1,9 +1,14 @@
 package com.gitlab.jeeto.oboco.common.archive;
 
-public class ArchiveEntry {
+public class ArchiveReaderEntry {
+	public enum Type {
+		FILE,
+		DIRECTORY;
+	}
+	
 	private String name;
-	private ArchiveEntryType type;
-	public ArchiveEntry(String name, ArchiveEntryType type) {
+	private Type type;
+	public ArchiveReaderEntry(String name, Type type) {
 		super();
 		this.name = name;
 		this.type = type;
@@ -11,7 +16,7 @@ public class ArchiveEntry {
 	public String getName() {
 		return name;
 	}
-	public ArchiveEntryType getType() {
+	public Type getType() {
 		return type;
 	}
 }

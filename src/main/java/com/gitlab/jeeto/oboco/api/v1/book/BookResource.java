@@ -223,7 +223,7 @@ public class BookResource {
 	public Response getBookPageAs(
 			@Parameter(name = "bookId", description = "The id of the book.", required = true) @PathParam("bookId") Long bookId, 
 			@Parameter(name = "page", description = "The page. The page is >= 1 and <= book.numberOfPages.", required = false) @DefaultValue("1") @PathParam("page") Integer page, 
-			@Parameter(name = "scaleType", description = "The scaleType. The scaleType is DEFAULT, FIT or FILL.", required = false) @QueryParam("scaleType") ScaleType scaleType, 
+			@Parameter(name = "scaleType", description = "The scaleType. The scaleType is DEFAULT.", required = false) @QueryParam("scaleType") ScaleType scaleType, 
 			@Parameter(name = "scaleWidth", description = "The scaleWidth.", required = false) @QueryParam("scaleWidth") Integer scaleWidth, 
 			@Parameter(name = "scaleHeight", description = "The scaleHeight.", required = false) @QueryParam("scaleHeight") Integer scaleHeight, 
 			@Context Request request) throws ProblemException {

@@ -25,13 +25,13 @@ public class BookReaderPool {
 	}
 	
 	private void closeBook(BookReaderPoolEntry poolEntry) {
-		logger.debug("closeBook: " + poolEntry.getBookPath());
+		logger.debug("poolEntry.bookPath=" + poolEntry.getBookPath());
 		
+		BookReader bookReader = poolEntry.getBookReader();
 		try {
-			BookReader bookReader = poolEntry.getBookReader();
 			bookReader.closeBook();
 		} catch (Exception e) {
-			logger.error("Error.", e);
+			// pass
 		}
 	}
 	
@@ -43,19 +43,20 @@ public class BookReaderPool {
 			public synchronized void run() {
 				Date date = new Date(new Date().getTime() - age);
 				
-				logger.debug("timerTask: date=" + date);
+				logger.debug("date=" + date);
 				
 				Iterator<BookReaderPoolEntry> iterator = pool.iterator();
 				while(iterator.hasNext()) {
 					BookReaderPoolEntry nextPoolEntry = iterator.next();
 					
 					if(nextPoolEntry.getDate().compareTo(date) < 0) {
+						logger.debug("poolEntry.date=" + nextPoolEntry.getDate());
+						
 						closeBook(nextPoolEntry);
 						
 						iterator.remove();
 						
-						logger.debug("timerTask: poolEntry.date=" + nextPoolEntry.getDate());
-						logger.debug("timerTask: removed poolEntry, pool.size=" + pool.size() + "/" + size);
+						logger.debug("removed poolEntry: pool.size=" + pool.size() + "/" + size);
 					}
 				}
 			}
@@ -76,7 +77,7 @@ public class BookReaderPool {
 			
 			iterator.remove();
 			
-			logger.debug("stop: removed poolEntry, pool.size=" + pool.size() + "/" + size);
+			logger.debug("removed poolEntry: pool.size=" + pool.size() + "/" + size);
 		}
 	}
 	
@@ -90,7 +91,7 @@ public class BookReaderPool {
 				
 				iterator.remove();
 				
-				logger.debug("addBookReader: removed poolEntry, pool.size=" + pool.size() + "/" + size);
+				logger.debug("removed poolEntry: pool.size=" + pool.size() + "/" + size);
 				
 				break;
 			}
@@ -100,7 +101,7 @@ public class BookReaderPool {
 		
 		pool.add(poolEntry);
 		
-		logger.debug("addBookReader: added poolEntry, pool.size=" + pool.size() + "/" + size);
+		logger.debug("added poolEntry: pool.size=" + pool.size() + "/" + size);
 	}
 	
 	public synchronized BookReader removeBookReader(String bookPath) {
@@ -115,7 +116,7 @@ public class BookReaderPool {
 				
 				iterator.remove();
 				
-				logger.debug("removeBookReader: removed poolEntry, pool.size=" + pool.size() + "/" + size);
+				logger.debug("removed poolEntry: pool.size=" + pool.size() + "/" + size);
 				
 				break;
 			}

@@ -7,74 +7,102 @@ import com.gitlab.jeeto.oboco.data.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.common.FileType;
 import com.gitlab.jeeto.oboco.common.FileType.Type;
 import com.gitlab.jeeto.oboco.common.TypeableFile;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveEntry;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveEntryType;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
+import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderEntry;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderFactory;
 
 public class DefaultBookReader implements BookReader {
+	private Boolean archiveReaderOpen = false;
 	private ArchiveReader archiveReader = null;
-	private List<ArchiveEntry> archiveEntryList = null;
+	private List<ArchiveReaderEntry> archiveReaderEntryList = null;
 	
 	@Override
 	public void openBook(TypeableFile inputFile) throws Exception {
-		if(archiveReader != null) {
-			throw new Exception("book is open.");
+		if(archiveReaderOpen) {
+			throw new Exception("book open.");
 		}
 		
-		ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
-		archiveReader = archiveReaderFactory.getArchiveReader(inputFile.getFileType());
-		archiveReader.openArchive(inputFile);
-		
-		List<FileType> outputFileTypeList = FileType.getFileTypeList(Type.IMAGE);
-		
-		archiveEntryList = new ArrayList<ArchiveEntry>();
-		
-		for(ArchiveEntry archiveEntry: archiveReader.getArchiveEntrySet()) {
-			if(ArchiveEntryType.FILE.equals(archiveEntry.getType())) {
-				FileType outputFileType = FileType.getFileType(archiveEntry.getName());
+		try {
+			ArchiveReaderFactory archiveReaderFactory = ArchiveReaderFactory.getInstance();
+			archiveReader = archiveReaderFactory.getArchiveReader(inputFile.getFileType());
+			archiveReader.openArchive(inputFile);
+			
+			List<FileType> outputFileTypeList = FileType.getFileTypeList(Type.IMAGE);
+			
+			archiveReaderEntryList = new ArrayList<ArchiveReaderEntry>();
+			
+			for(ArchiveReaderEntry archiveReaderEntry: archiveReader.getArchiveReaderEntrySet()) {
+				if(ArchiveReaderEntry.Type.FILE.equals(archiveReaderEntry.getType())) {
+					FileType outputFileType = FileType.getFileType(archiveReaderEntry.getName());
+					
+					if(outputFileTypeList.contains(outputFileType)) {
+						archiveReaderEntryList.add(archiveReaderEntry);
+					}
+				}
+			}
+			
+			archiveReaderEntryList.sort(new NaturalOrderComparator<ArchiveReaderEntry>() {
+				@Override
+				public String toString(ArchiveReaderEntry o) {
+					return o.getName();
+				}
+			});
+			
+			archiveReaderOpen = true;
+		} finally {
+			if(archiveReaderOpen == false) {
+				archiveReaderEntryList = null;
 				
-				if(outputFileTypeList.contains(outputFileType)) {
-					archiveEntryList.add(archiveEntry);
+				try {
+					if(archiveReader != null) {
+						archiveReader.closeArchive();
+						archiveReader = null;
+					}
+				} catch(Exception e) {
+					// pass
 				}
 			}
 		}
-		
-		archiveEntryList.sort(new NaturalOrderComparator<ArchiveEntry>() {
-			@Override
-			public String toString(ArchiveEntry o) {
-				return o.getName();
-			}
-		});
 	}
 
 	@Override
 	public void closeBook() throws Exception {
-		if(archiveReader == null) {
-			throw new Exception("book is closed.");
+		if(archiveReaderOpen == false) {
+			throw new Exception("book not open.");
 		}
 		
-		archiveReader.closeArchive();
+		archiveReaderEntryList = null;
+		
+		try {
+			if(archiveReader != null) {
+				archiveReader.closeArchive();
+				archiveReader = null;
+			}
+		} catch(Exception e) {
+			// pass
+		}
+		
+		archiveReaderOpen = false;
 	}
 
 	@Override
 	public TypeableFile getBookPage(Integer index) throws Exception {
-		if(archiveReader == null) {
-			throw new Exception("book is closed.");
+		if(archiveReaderOpen == false) {
+			throw new Exception("book not open.");
 		}
 		
-		ArchiveEntry archiveEntry = archiveEntryList.get(index);
+		ArchiveReaderEntry archiveReaderEntry = archiveReaderEntryList.get(index);
 		
-		return archiveReader.getFile(archiveEntry);
+		return archiveReader.getFile(archiveReaderEntry);
 	}
 
 	@Override
 	public Integer getNumberOfBookPages() throws Exception {
-		if(archiveReader == null) {
-			throw new Exception("book is closed.");
+		if(archiveReaderOpen == false) {
+			throw new Exception("book not open.");
 		}
 		
-		return archiveEntryList.size();
+		return archiveReaderEntryList.size();
 	}
 
 }

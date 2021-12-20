@@ -9,6 +9,7 @@ public class BookReaderPoolDelegator implements BookReader {
 	
 	public BookReaderPoolDelegator(BookReaderPool bookReaderPool) {
 		this.bookReaderPool = bookReaderPool;
+		this.bookReader = null;
 	}
 
 	@Override
@@ -16,17 +17,19 @@ public class BookReaderPoolDelegator implements BookReader {
 		bookPath = inputFile.getPath();
 		
 		BookReader bookReader = bookReaderPool.removeBookReader(bookPath);
-		if(bookReader != null) {
-			this.bookReader = bookReader;
-		} else {
-			this.bookReader = new DefaultBookReader();
-			this.bookReader.openBook(inputFile);
+		if(bookReader == null) {
+			bookReader = new DefaultBookReader();
+			bookReader.openBook(inputFile);
 		}
+		
+		this.bookReader = bookReader;
 	}
 
 	@Override
 	public void closeBook() throws Exception {
-		bookReaderPool.addBookReader(bookPath, bookReader);
+		if(bookReader != null) {
+			bookReaderPool.addBookReader(bookPath, bookReader);
+		}
 	}
 
 	@Override

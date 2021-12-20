@@ -37,7 +37,7 @@ import com.gitlab.jeeto.oboco.data.DateHelper;
 import com.gitlab.jeeto.oboco.data.NameHelper;
 import com.gitlab.jeeto.oboco.data.NaturalOrderComparator;
 import com.gitlab.jeeto.oboco.data.bookreader.BookReader;
-import com.gitlab.jeeto.oboco.data.bookreader.BookReaderManager;
+import com.gitlab.jeeto.oboco.data.bookreader.DefaultBookReader;
 import com.gitlab.jeeto.oboco.database.book.Book;
 import com.gitlab.jeeto.oboco.database.book.BookService;
 import com.gitlab.jeeto.oboco.database.bookcollection.BookCollection;
@@ -603,11 +603,10 @@ public class DefaultBookScanner implements BookScanner {
     			book.setNumberOfPages(bookUpdate.getNumberOfPages());
     		}
 		} else {
-			BookReaderManager bookReaderManager = BookReaderManager.getInstance();
 	    	BookReader bookReader = null;
 			try {
 				if(BookScannerMode.CREATE.equals(mode)) {
-					bookReader = bookReaderManager.getBookReader();
+					bookReader = new DefaultBookReader();
 					bookReader.openBook(bookInputFile);
 		
 					Integer numberOfPages = bookReader.getNumberOfBookPages();
@@ -640,7 +639,7 @@ public class DefaultBookScanner implements BookScanner {
 								
 								if(bookPageInputFile == null) {
 									if(bookReader == null) {
-										bookReader = bookReaderManager.getBookReader();
+										bookReader = new DefaultBookReader();
 										bookReader.openBook(bookInputFile);
 									}
 									

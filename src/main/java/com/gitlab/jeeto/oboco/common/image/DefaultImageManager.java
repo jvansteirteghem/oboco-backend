@@ -50,7 +50,7 @@ public class DefaultImageManager implements ImageManager {
 			TwelveMonkeysJpegImageWriterSpi twelveMonkeysJPEGImageWriterSpi = new TwelveMonkeysJpegImageWriterSpi(turboJpegImageWriterSpi);
 			registry.registerServiceProvider(twelveMonkeysJPEGImageWriterSpi);
 		} catch(Exception e) {
-			logger.error("Error", e);
+			logger.error("error", e);
 		}
 	}
 	
@@ -70,30 +70,66 @@ public class DefaultImageManager implements ImageManager {
 		return imageWriter;
 	}
 	
-	public TypeableFile createImage(TypeableFile inputFile, FileType outputFileType) throws Exception {
-		return createImage(inputFile, outputFileType, null, null, null);
+	private double calculateFactor(int inputDimension, int outputDimension) {
+		double factor;
+		
+		if(inputDimension > outputDimension) {
+			factor = (double) outputDimension / (double) inputDimension;
+		} else {
+			factor = 1d;
+		}
+		
+		return factor;
+	}
+	
+	private BufferedImage scale(BufferedImage inputImage, ScaleType outputType, Integer outputWidth, Integer outputHeight) throws Exception {
+		BufferedImage outputImage = inputImage;
+		
+		if(ScaleType.DEFAULT.equals(outputType)) {
+			double factor;
+			
+			if(outputWidth != null && outputHeight == null) {
+				factor = calculateFactor(inputImage.getWidth(), outputWidth);
+			} else if(outputWidth == null && outputHeight != null) {
+				factor = calculateFactor(inputImage.getHeight(), outputHeight);
+			} else if(outputWidth != null && outputHeight != null) {
+				factor = Math.max(calculateFactor(inputImage.getWidth(), outputWidth), calculateFactor(inputImage.getHeight(), outputHeight));
+			} else {
+				factor = 1d;
+			}
+			
+			if(factor < 1d) {
+				int width = (int) Math.round(inputImage.getWidth() * factor);
+				int height = (int) Math.round(inputImage.getHeight() * factor);
+				
+				BufferedImageOp op = new ResampleOp(width, height, ResampleOp.FILTER_LANCZOS);
+				
+				outputImage = op.filter(inputImage, null);
+			}
+		} else {
+			throw new Exception("scaleType not supported.");
+		}
+		
+		return outputImage;
 	}
 	
 	private BufferedImage read(TypeableFile inputFile) throws Exception {
-		BufferedImage bufferedImage = null;
-		
 		ImageReader imageReader = null;
-		ImageReadParam imageReadParam = null;
 		try {
+			ImageReadParam imageReadParameter = null;
+			
 			FileType inputFileType = inputFile.getFileType();
 			
 			if(FileType.JPG.equals(inputFileType)) {
 				imageReader = getImageReader("jpg");
+				
+				imageReadParameter = imageReader.getDefaultReadParam();
 			} else if(FileType.PNG.equals(inputFileType)) {
 				imageReader = getImageReader("png");
-			}
-			
-			if(imageReader == null) {
-				throw new Exception("inputFileType not supported.");
-			}
-			
-			if(imageReadParam == null) {
-				imageReadParam = imageReader.getDefaultReadParam();
+				
+				imageReadParameter = imageReader.getDefaultReadParam();
+			} else {
+				throw new Exception("fileType not supported.");
 			}
 			
 			FileImageInputStream fileImageInputStream = null;
@@ -102,7 +138,9 @@ public class DefaultImageManager implements ImageManager {
 				
 				imageReader.setInput(fileImageInputStream);
 				
-				bufferedImage = imageReader.read(0, imageReadParam);
+				BufferedImage outputImage = imageReader.read(0, imageReadParameter);
+				
+				return outputImage;
 			} finally {
 				try {
 					if(fileImageInputStream != null) {
@@ -121,32 +159,25 @@ public class DefaultImageManager implements ImageManager {
 				// pass
 			}
 		}
-		
-		return bufferedImage;
 	}
 	
 	private void write(TypeableFile outputFile, BufferedImage outputImage) throws Exception {
 		ImageWriter imageWriter = null;
-		ImageWriteParam imageWriteParam = null;
 		try {
+			ImageWriteParam imageWriteParameter = null;
+			
 			FileType outputFileType = outputFile.getFileType();
 			
 			if(FileType.JPG.equals(outputFileType)) {
 				imageWriter = getImageWriter("jpg");
 				
-				JPEGImageWriteParam jpegImageWriteParam = new JPEGImageWriteParam(null);
-				jpegImageWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-				jpegImageWriteParam.setCompressionQuality(0.9f);
+				JPEGImageWriteParam jpegImageWriteParameter = new JPEGImageWriteParam(null);
+				jpegImageWriteParameter.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+				jpegImageWriteParameter.setCompressionQuality(0.9f);
 				
-				imageWriteParam = jpegImageWriteParam;
-			}
-			
-			if(imageWriter == null) {
-				throw new Exception("outputFileType not supported.");
-			}
-			
-			if(imageWriteParam == null) {
-				imageWriteParam = imageWriter.getDefaultWriteParam();
+				imageWriteParameter = jpegImageWriteParameter;
+			} else {
+				throw new Exception("fileType not supported.");
 			}
 			
 			FileImageOutputStream fileImageOutputStream = null;
@@ -155,7 +186,7 @@ public class DefaultImageManager implements ImageManager {
 				
 				imageWriter.setOutput(fileImageOutputStream);
 				 
-				imageWriter.write(null, new IIOImage(outputImage, null, null), imageWriteParam);
+				imageWriter.write(null, new IIOImage(outputImage, null, null), imageWriteParameter);
 			} finally {
 				try {
 					if(fileImageOutputStream != null) {
@@ -176,63 +207,28 @@ public class DefaultImageManager implements ImageManager {
 		}
 	}
 	
-	private BufferedImage scale(BufferedImage inputImage, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-		BufferedImage outputImage;
-	    
-	    if(inputImage.getWidth() < outputScaleWidth || inputImage.getHeight() < outputScaleHeight) {
-	    	int regionWidth;
-	    	int regionX;
-	    	if(inputImage.getWidth() < outputScaleWidth) {
-	    		regionWidth = inputImage.getWidth();
-	    		regionX = 0;
-	    	} else {
-	    		regionWidth = outputScaleWidth;
-	    		regionX = (inputImage.getWidth() - regionWidth) / 2;
-	    	}
-	    	
-	    	int regionHeight;
-	    	int regionY;
-	    	if(inputImage.getHeight() < outputScaleHeight) {
-	    		regionHeight = inputImage.getHeight();
-	    		regionY = 0;
-	    	} else {
-	    		regionHeight = outputScaleHeight;
-	    		regionY = (inputImage.getHeight() - regionHeight) / 2;
-	    	}
-		    
-		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
-		    
-		    BufferedImageOp resampler = new ResampleOp(regionWidth, regionHeight, ResampleOp.FILTER_LANCZOS);
-			outputImage = resampler.filter(inputImage, null);
-	    } else {
-		    double scaleFactor = Math.min(inputImage.getWidth() / outputScaleWidth, inputImage.getHeight() / outputScaleHeight);
-		    
-			int regionWidth = (int) (outputScaleWidth * scaleFactor);
-			int regionHeight = (int) (outputScaleHeight * scaleFactor);
-			int regionX = (inputImage.getWidth() - regionWidth) / 2;
-			int regionY = (inputImage.getHeight() - regionHeight) / 2;
-		    
-		    inputImage = inputImage.getSubimage(regionX, regionY, regionWidth, regionHeight);
-			
-		    BufferedImageOp resampler = new ResampleOp(outputScaleWidth, outputScaleHeight, ResampleOp.FILTER_LANCZOS);
-			outputImage = resampler.filter(inputImage, null);
-	    }
-		
-		return outputImage;
+	@Override
+	public TypeableFile createImage(TypeableFile inputFile, FileType outputFileType) throws Exception {
+		return createImage(inputFile, outputFileType, null, null, null);
 	}
 	
+	@Override
 	public TypeableFile createImage(TypeableFile inputFile, FileType outputFileType, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-		BufferedImage inputBufferedImage = read(inputFile);
+		BufferedImage inputImage = read(inputFile);
 		
-		BufferedImage outputBufferedImage = scale(inputBufferedImage, outputScaleType, outputScaleWidth, outputScaleHeight);
+		BufferedImage outputImage = inputImage;
 		
-		inputBufferedImage.flush();
+		if(outputScaleType != null) {
+			outputImage = scale(inputImage, outputScaleType, outputScaleWidth, outputScaleHeight);
+			
+			inputImage.flush();
+		}
 		
-		TypeableFile outputFile = new TypeableFile(File.createTempFile("oboco-plugin-image-jdk-", ".tmp"), outputFileType);
+		TypeableFile outputFile = new TypeableFile(File.createTempFile("oboco-common-image-", ".tmp"), outputFileType);
 		
-		write(outputFile, outputBufferedImage);
+		write(outputFile, outputImage);
 		
-		outputBufferedImage.flush();
+		outputImage.flush();
 		
 		return outputFile;
 	}
