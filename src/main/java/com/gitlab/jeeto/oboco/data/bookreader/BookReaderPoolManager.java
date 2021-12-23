@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
 
-public class BookReaderManager {
-	private static Logger logger = LoggerFactory.getLogger(BookReaderManager.class.getName());
-	private static BookReaderManager instance;
+public class BookReaderPoolManager {
+	private static Logger logger = LoggerFactory.getLogger(BookReaderPoolManager.class.getName());
+	private static BookReaderPoolManager instance;
 	private Configuration configuration;
 	
 	private Configuration getConfiguration() {
@@ -21,18 +21,18 @@ public class BookReaderManager {
 	
 	private BookReaderPool bookReaderPool;
 	
-	public static BookReaderManager getInstance() {
+	public static BookReaderPoolManager getInstance() {
 		if(instance == null) {
-			synchronized(BookReaderManager.class) {
+			synchronized(BookReaderPoolManager.class) {
 				if(instance == null) {
-					instance = new BookReaderManager();
+					instance = new BookReaderPoolManager();
 				}
 			}
 		}
 		return instance;
 	}
 	
-	private BookReaderManager() {
+	private BookReaderPoolManager() {
 		super();
 	}
 	
@@ -43,7 +43,7 @@ public class BookReaderManager {
 	}
 	
 	public void start() {
-		logger.info("start bookReaderManager");
+		logger.info("start bookReaderPoolManager");
 		
 		Integer size = getConfiguration().getAsInteger("data.bookreader.bookReaderPool.size", "25");
 		Long interval = getConfiguration().getAsLong("data.bookreader.bookReaderPool.interval", "60") * 1000L;
@@ -54,7 +54,7 @@ public class BookReaderManager {
 	}
 	
 	public void stop() {
-		logger.info("stop bookReaderManager");
+		logger.info("stop bookReaderPoolManager");
 		
 		bookReaderPool.stop();
 	}

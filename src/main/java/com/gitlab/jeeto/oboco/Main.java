@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
-import com.gitlab.jeeto.oboco.data.bookreader.BookReaderManager;
+import com.gitlab.jeeto.oboco.data.bookreader.BookReaderPoolManager;
 import com.gitlab.jeeto.oboco.data.bookscanner.BookScanner;
 import com.gitlab.jeeto.oboco.data.bookscanner.BookScannerMode;
 import com.gitlab.jeeto.oboco.data.bookscanner.BookScannerStatus;
@@ -137,21 +137,21 @@ public class Main {
     }
     
     @ApplicationScoped
-    public static class BookReaderEventListener {
-    	private static Logger logger = LoggerFactory.getLogger(BookReaderEventListener.class.getName());
-    	private BookReaderManager bookReaderManager;
+    public static class BookReaderPoolManagerEventListener {
+    	private static Logger logger = LoggerFactory.getLogger(BookReaderPoolManagerEventListener.class.getName());
+    	private BookReaderPoolManager bookReaderPoolManager;
     	
     	void onStart(@Observes @Priority(Interceptor.Priority.APPLICATION + 10) StartupEvent ev) {
     		logger.info("start");
         	
-    		bookReaderManager = BookReaderManager.getInstance();
-    		bookReaderManager.start();
+    		bookReaderPoolManager = BookReaderPoolManager.getInstance();
+    		bookReaderPoolManager.start();
     	}
     	
     	void onStop(@Observes @Priority(Interceptor.Priority.APPLICATION + 10) ShutdownEvent ev) {
     		logger.info("stop");
     		
-    		bookReaderManager.stop();
+    		bookReaderPoolManager.stop();
     	}
     }
     

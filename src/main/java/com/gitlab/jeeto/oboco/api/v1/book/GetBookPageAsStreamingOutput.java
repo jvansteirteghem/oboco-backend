@@ -16,7 +16,7 @@ import com.gitlab.jeeto.oboco.common.image.ImageManager;
 import com.gitlab.jeeto.oboco.common.image.ImageManagerFactory;
 import com.gitlab.jeeto.oboco.common.image.ScaleType;
 import com.gitlab.jeeto.oboco.data.bookreader.BookReader;
-import com.gitlab.jeeto.oboco.data.bookreader.BookReaderManager;
+import com.gitlab.jeeto.oboco.data.bookreader.BookReaderPoolManager;
 import com.gitlab.jeeto.oboco.database.book.Book;
 
 public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
@@ -159,9 +159,9 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 						if(bookReader == null) {
 							TypeableFile bookInputFile = new TypeableFile(book.getFilePath());
 							
-							BookReaderManager bookReaderManager = BookReaderManager.getInstance();
+							BookReaderPoolManager bookReaderPoolManager = BookReaderPoolManager.getInstance();
 							
-							bookReader = bookReaderManager.getBookReader();
+							bookReader = bookReaderPoolManager.getBookReader();
 							bookReader.openBook(bookInputFile);
 						}
 						
