@@ -59,9 +59,9 @@ the backend of [oboco](https://gitlab.com/jeeto/oboco) as a quarkus and quarkus-
 ### run
 
 - start
-	- docker run -e TZ=Europe/Brussels -e OBOCO_SECURITY_AUTHENTICATION_SECRET=secret -e OBOCO_DATABASE_URL=jdbc:mysql://192.168.0.219:3306/oboco -e OBOCO_DATABASE_USER_NAME=root -e OBOCO_DATABASE_USER_PASSWORD=toor -i --rm -p 8080:8080 -v c:/oboco/application-logger-data:/application-logger-data -v c:/oboco/application-data:/application-data -v c:/oboco/user-data:/user-data --name oboco-backend oboco-backend/2.0.0
+	- docker run -e TZ=Europe/Brussels -e OBOCO_SERVER_AUTHENTICATION_SECRET=secret -e OBOCO_DATABASE_URL=jdbc:mysql://192.168.0.219:3306/oboco -e OBOCO_DATABASE_USER_NAME=root -e OBOCO_DATABASE_USER_PASSWORD=toor -i --rm -p 8080:8080 -v c:/oboco/application-logger-data:/application-logger-data -v c:/oboco/application-data:/application-data -v c:/oboco/user-data:/user-data --name oboco-backend oboco-backend/2.0.0
 		- "-e TZ=Europe/Brussels": the timezone
-		- "-e OBOCO_SECURITY_AUTHENTICATION_SECRET=secret": the authentication secret
+		- "-e OBOCO_SERVER_AUTHENTICATION_SECRET=secret": the authentication secret
 		- "-e OBOCO_DATABASE_URL=jdbc:mysql://192.168.0.124:3306/oboco": the database url
 		- "-e OBOCO_DATABASE_USER_NAME=root": the database user name
 		- "-e OBOCO_DATABASE_USER_PASSWORD=toor": the database user password
