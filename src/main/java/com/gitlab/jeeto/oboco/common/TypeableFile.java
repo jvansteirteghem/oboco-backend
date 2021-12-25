@@ -11,8 +11,10 @@ import java.nio.file.Path;
 
 public class TypeableFile extends File {
 	private static final long serialVersionUID = 1L;
-	private boolean isFileTyped = false;
-	private FileType fileType = null;
+	private boolean hasType = false;
+	private FileType type = null;
+	private boolean hasExtension = false;
+	private String extension = null;
 
 	public TypeableFile(File parent, String child) {
 		super(parent, child);
@@ -34,24 +36,35 @@ public class TypeableFile extends File {
 		super(file, "");
 	}
 	
-	public TypeableFile(File file, FileType fileType) {
+	public TypeableFile(File file, FileType type) {
 		super(file, "");
 		
-		this.isFileTyped = true;
-		this.fileType = fileType;
+		this.hasType = true;
+		this.type = type;
 	}
 	
-	public FileType getFileType() {
-		if(isFileTyped == false) {
-			isFileTyped = true;
+	public FileType getType() {
+		if(hasType == false) {
+			hasType = true;
 			
-			if(this.isFile()) {
-				fileType = FileType.getFileType(this);
-			} else {
-				fileType = FileType.getFileType(this.getName());
+			type = FileType.getFileType(this);
+		}
+		return type;
+	}
+	
+	public String getExtension() {
+		if(hasExtension == false) {
+			hasExtension = true;
+			
+			String fileName = this.getName();
+			
+			int index = fileName.lastIndexOf('.');
+			if(index != -1) {
+				extension = fileName.substring(index);
+				extension = extension.toLowerCase();
 			}
 		}
-		return fileType;
+		return extension;
 	}
 
 	@Override

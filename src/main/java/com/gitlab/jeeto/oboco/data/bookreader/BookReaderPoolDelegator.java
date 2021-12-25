@@ -18,7 +18,9 @@ public class BookReaderPoolDelegator implements BookReader {
 		
 		BookReader bookReader = bookReaderPool.removeBookReader(bookPath);
 		if(bookReader == null) {
-			bookReader = new DefaultBookReader();
+			BookReaderFactory bookReaderFactory = BookReaderFactory.getInstance();
+			
+			bookReader = bookReaderFactory.getBookReader(inputFile.getExtension());
 			bookReader.openBook(inputFile);
 		}
 		

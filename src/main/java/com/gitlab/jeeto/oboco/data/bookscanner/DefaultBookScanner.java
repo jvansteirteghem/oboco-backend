@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.FileType.Type;
 import com.gitlab.jeeto.oboco.common.TypeableFile;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
@@ -71,6 +70,7 @@ public class DefaultBookScanner implements BookScanner {
 	private BookScannerStatus status;
 	private Date updateDate;
 	private List<BookPage> defaultBookPageList;
+	private List<String> fileExtensionList;
 	
 	public DefaultBookScanner() {
 		super();
@@ -79,6 +79,13 @@ public class DefaultBookScanner implements BookScanner {
 		this.status = BookScannerStatus.STOPPED;
 		this.updateDate = null;
 		this.defaultBookPageList = new ArrayList<BookPage>();
+		this.fileExtensionList = new ArrayList<String>();
+		this.fileExtensionList.add(".cbz");
+		this.fileExtensionList.add(".zip");
+		this.fileExtensionList.add(".cbr");
+		this.fileExtensionList.add(".rar");
+		this.fileExtensionList.add(".cb7");
+		this.fileExtensionList.add(".7z");
 	}
 	
 	private List<BookPage> createBookPageList() throws Exception {
@@ -325,8 +332,6 @@ public class DefaultBookScanner implements BookScanner {
 	}
     
 	private Integer add(Integer number, BookCollection rootBookCollection, BookCollection parentBookCollection, TypeableFile parentFile) throws Exception {
-		List<FileType> fileTypeList = FileType.getFileTypeList(Type.ARCHIVE);
-		
 		Integer numberOfBookCollections = parentBookCollection.getNumberOfBookCollections();
 		Integer numberOfBooks = parentBookCollection.getNumberOfBooks();
 		Integer numberOfBookPages = parentBookCollection.getNumberOfBookPages();
@@ -418,9 +423,7 @@ public class DefaultBookScanner implements BookScanner {
 				
 				number = add(number, rootBookCollection, bookCollection, file);
 			} else {
-				FileType fileType = FileType.getFileType(file.getName());
-				
-				if(fileTypeList.contains(fileType)) {
+				if(this.fileExtensionList.contains(file.getExtension())) {
 					Book book = bookService.getBookByRootBookCollectionAndFile(rootBookCollection.getId(), path);
 					Book bookUpdate = bookService.getBookByFile(path, this.updateDate);
 					
@@ -646,7 +649,7 @@ public class DefaultBookScanner implements BookScanner {
 									bookPageInputFile = bookReader.getBookPage(bookPage.getPage() - 1);
 								}
 								
-								if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
+								if(FileType.JPG.equals(bookPageInputFile.getType()) 
 										&& bookPageConfiguration.getScaleType() == null 
 										&& bookPageConfiguration.getScaleWidth() == null 
 										&& bookPageConfiguration.getScaleHeight() == null) {
@@ -732,7 +735,7 @@ public class DefaultBookScanner implements BookScanner {
     
     private TypeableFile createBookPage(TypeableFile bookPageInputFile, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
 		ImageManagerFactory imageManagerFactory = ImageManagerFactory.getInstance();
-    	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFile.getFileType(), FileType.JPG);
+    	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFile.getType(), FileType.JPG);
 		
     	TypeableFile bookPageOutputFile = imageManager.createImage(bookPageInputFile, FileType.JPG, scaleType, scaleWidth, scaleHeight);
 		

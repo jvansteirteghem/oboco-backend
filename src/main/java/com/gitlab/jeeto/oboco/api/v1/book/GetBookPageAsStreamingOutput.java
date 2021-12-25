@@ -64,7 +64,7 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 		TypeableFile bookPageInputFile = getBookPage(null, null, null);
 		
 		if(bookPageInputFile.isFile()) {
-			if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
+			if(FileType.JPG.equals(bookPageInputFile.getType()) 
 					&& scaleType == null 
 					&& scaleWidth == null 
 					&& scaleHeight == null) {
@@ -103,7 +103,7 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 		try {
 			bookPageInputFile = bookReader.getBookPage(page - 1);
 			
-			if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
+			if(FileType.JPG.equals(bookPageInputFile.getType()) 
 					&& scaleType == null 
 					&& scaleWidth == null 
 					&& scaleHeight == null) {
@@ -216,7 +216,7 @@ public class GetBookPageAsStreamingOutput extends GetAsStreamingOutput {
 	
 	private TypeableFile createBookPage(TypeableFile bookPageInputFile) throws Exception {
 		ImageManagerFactory imageManagerFactory = ImageManagerFactory.getInstance();
-    	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFile.getFileType(), FileType.JPG);
+    	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFile.getType(), FileType.JPG);
 		
     	TypeableFile bookPageOutputFile = imageManager.createImage(bookPageInputFile, FileType.JPG, scaleType, scaleWidth, scaleHeight);
 		

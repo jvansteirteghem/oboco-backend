@@ -118,7 +118,7 @@ public class DefaultImageManager implements ImageManager {
 		try {
 			ImageReadParam imageReadParameter = null;
 			
-			FileType inputFileType = inputFile.getFileType();
+			FileType inputFileType = inputFile.getType();
 			
 			if(FileType.JPG.equals(inputFileType)) {
 				imageReader = getImageReader("jpg");
@@ -166,7 +166,7 @@ public class DefaultImageManager implements ImageManager {
 		try {
 			ImageWriteParam imageWriteParameter = null;
 			
-			FileType outputFileType = outputFile.getFileType();
+			FileType outputFileType = outputFile.getType();
 			
 			if(FileType.JPG.equals(outputFileType)) {
 				imageWriter = getImageWriter("jpg");
