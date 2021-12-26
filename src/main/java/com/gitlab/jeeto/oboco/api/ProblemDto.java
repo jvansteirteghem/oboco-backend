@@ -1,4 +1,4 @@
-package com.gitlab.jeeto.oboco.problem;
+package com.gitlab.jeeto.oboco.api;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

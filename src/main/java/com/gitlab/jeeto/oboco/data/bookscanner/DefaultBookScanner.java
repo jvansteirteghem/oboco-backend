@@ -435,12 +435,16 @@ public class DefaultBookScanner implements BookScanner {
 				    	try {
 							processBook(file, book, bookUpdate, BookScannerMode.CREATE);
 							
-							processBookPageList(file, book, bookUpdate, BookScannerMode.CREATE);
+							processBookPages(file, book, bookUpdate, BookScannerMode.CREATE);
 						} catch(Exception e) {
 							logger.error("error create book " + path, e);
 							
 							continue;
 						}
+				    	
+				    	if(book.getNumberOfPages() == null || book.getNumberOfPages() == 0) {
+				    		continue;
+				    	}
 				    	
 				    	book.setFilePath(file.getPath());
 				    	book.setRootBookCollection(rootBookCollection);
@@ -473,12 +477,16 @@ public class DefaultBookScanner implements BookScanner {
 						try {
 							processBook(file, book, bookUpdate, mode);
 							
-							processBookPageList(file, book, bookUpdate, mode);
+							processBookPages(file, book, bookUpdate, mode);
 						} catch(Exception e) {
 							logger.error("error update book " + path, e);
 							
 							continue;
 						}
+						
+						if(book.getNumberOfPages() == null || book.getNumberOfPages() == 0) {
+				    		continue;
+				    	}
 						
 						book.setUpdateDate(this.updateDate);
 						
@@ -600,7 +608,7 @@ public class DefaultBookScanner implements BookScanner {
     	return bookPageList;
 	}
     
-	protected void processBookPageList(TypeableFile bookInputFile, Book book, Book bookUpdate, BookScannerMode mode) throws Exception {
+	protected void processBookPages(TypeableFile bookInputFile, Book book, Book bookUpdate, BookScannerMode mode) throws Exception {
     	if(bookUpdate != null) {
     		if(BookScannerMode.CREATE.equals(mode)) {
     			book.setNumberOfPages(bookUpdate.getNumberOfPages());

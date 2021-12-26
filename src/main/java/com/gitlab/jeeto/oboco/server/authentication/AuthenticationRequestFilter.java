@@ -20,11 +20,11 @@ import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gitlab.jeeto.oboco.api.ProblemDto;
 import com.gitlab.jeeto.oboco.database.Graph;
 import com.gitlab.jeeto.oboco.database.GraphHelper;
 import com.gitlab.jeeto.oboco.database.user.User;
 import com.gitlab.jeeto.oboco.database.user.UserService;
-import com.gitlab.jeeto.oboco.problem.ProblemDto;
 
 @Authentication
 @Provider

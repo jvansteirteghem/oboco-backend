@@ -17,10 +17,10 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 
+import com.gitlab.jeeto.oboco.api.ProblemDto;
 import com.gitlab.jeeto.oboco.database.user.User;
 import com.gitlab.jeeto.oboco.database.user.UserService;
 import com.gitlab.jeeto.oboco.problem.Problem;
-import com.gitlab.jeeto.oboco.problem.ProblemDto;
 import com.gitlab.jeeto.oboco.problem.ProblemException;
 import com.gitlab.jeeto.oboco.server.authentication.UserToken;
 import com.gitlab.jeeto.oboco.server.authentication.UserTokenService;
