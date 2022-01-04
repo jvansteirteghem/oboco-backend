@@ -1,26 +1,30 @@
-package com.gitlab.jeeto.oboco.data.bookreader;
+package com.gitlab.jeeto.oboco.data.book;
 
-import com.gitlab.jeeto.oboco.common.TypeableFile;
+import java.io.File;
 
 public class BookReaderPoolDelegator implements BookReader {
+	private BookType bookType;
 	private BookReaderPool bookReaderPool;
 	private BookReader bookReader;
 	private String bookPath;
 	
-	public BookReaderPoolDelegator(BookReaderPool bookReaderPool) {
+	public BookReaderPoolDelegator(BookType bookType, BookReaderPool bookReaderPool) {
+		super();
+		
+		this.bookType = bookType;
 		this.bookReaderPool = bookReaderPool;
 		this.bookReader = null;
 	}
 
 	@Override
-	public void openBook(TypeableFile inputFile) throws Exception {
+	public void openBook(File inputFile) throws Exception {
 		bookPath = inputFile.getPath();
 		
 		BookReader bookReader = bookReaderPool.removeBookReader(bookPath);
 		if(bookReader == null) {
 			BookReaderFactory bookReaderFactory = BookReaderFactory.getInstance();
 			
-			bookReader = bookReaderFactory.getBookReader(inputFile.getExtension());
+			bookReader = bookReaderFactory.getBookReader(bookType);
 			bookReader.openBook(inputFile);
 		}
 		
@@ -33,9 +37,14 @@ public class BookReaderPoolDelegator implements BookReader {
 			bookReaderPool.addBookReader(bookPath, bookReader);
 		}
 	}
+	
+	@Override
+	public BookType getBookType() {
+		return bookReader.getBookType();
+	}
 
 	@Override
-	public TypeableFile getBookPage(Integer index) throws Exception {
+	public File getBookPage(Integer index) throws Exception {
 		return bookReader.getBookPage(index);
 	}
 

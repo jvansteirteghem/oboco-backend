@@ -1,4 +1,4 @@
-package com.gitlab.jeeto.oboco.data.bookreader;
+package com.gitlab.jeeto.oboco.data.book;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +36,8 @@ public class BookReaderPoolManager {
 		super();
 	}
 	
-	public BookReader getBookReader() throws Exception {
-		BookReader bookReader = new BookReaderPoolDelegator(bookReaderPool);
+	public BookReader getBookReader(BookType bookType) throws Exception {
+		BookReader bookReader = new BookReaderPoolDelegator(bookType, bookReaderPool);
 		
         return bookReader;
 	}
@@ -45,9 +45,9 @@ public class BookReaderPoolManager {
 	public void start() {
 		logger.info("start bookReaderPoolManager");
 		
-		Integer size = getConfiguration().getAsInteger("data.bookreader.bookReaderPool.size", "25");
-		Long interval = getConfiguration().getAsLong("data.bookreader.bookReaderPool.interval", "60") * 1000L;
-		Long age = getConfiguration().getAsLong("data.bookreader.bookReaderPool.age", "600") * 1000L;
+		Integer size = getConfiguration().getAsInteger("data.book.bookReaderPool.size", "25");
+		Long interval = getConfiguration().getAsLong("data.book.bookReaderPool.interval", "60") * 1000L;
+		Long age = getConfiguration().getAsLong("data.book.bookReaderPool.age", "600") * 1000L;
 		
 		bookReaderPool = new BookReaderPool(size, interval, age);
 		bookReaderPool.start();

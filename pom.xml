@@ -384,7 +384,7 @@
 			</build>
 			<properties>
 				<quarkus.package.type>native</quarkus.package.type>
-				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.DefaultArchiveReader,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.image.DefaultImageManager,--initialize-at-run-time=org.libjpegturbo.turbojpeg,--initialize-at-run-time=io.netty.internal.tcnative.SSL,-J-Dorg.graalvm.version=21.0.0.0</quarkus.native.additional-build-args>
+				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.SevenZipJBindingArchiveIOFactory,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.image.TwelveMonkeysImageIOFactory,--initialize-at-run-time=org.libjpegturbo.turbojpeg,--initialize-at-run-time=io.netty.internal.tcnative.SSL,-J-Dorg.graalvm.version=21.0.0.0</quarkus.native.additional-build-args>
 			</properties>
 		</profile>
 	</profiles>

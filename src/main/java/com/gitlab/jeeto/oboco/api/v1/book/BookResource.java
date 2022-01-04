@@ -33,7 +33,7 @@ import com.gitlab.jeeto.oboco.api.PageableListDto;
 import com.gitlab.jeeto.oboco.api.PageableListDtoHelper;
 import com.gitlab.jeeto.oboco.api.ProblemDto;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkByBookResource;
-import com.gitlab.jeeto.oboco.common.image.ScaleType;
+import com.gitlab.jeeto.oboco.data.bookpage.ScaleType;
 import com.gitlab.jeeto.oboco.database.Graph;
 import com.gitlab.jeeto.oboco.database.GraphHelper;
 import com.gitlab.jeeto.oboco.database.PageableList;

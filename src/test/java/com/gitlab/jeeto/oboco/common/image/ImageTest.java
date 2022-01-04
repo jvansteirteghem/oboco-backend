@@ -1,15 +1,16 @@
 package com.gitlab.jeeto.oboco.common.image;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.TypeableFile;
-import com.gitlab.jeeto.oboco.common.image.ImageManager;
-import com.gitlab.jeeto.oboco.common.image.ScaleType;
+import com.gitlab.jeeto.oboco.common.image.JdkImageReader.JdkPngImageReader;
+import com.gitlab.jeeto.oboco.common.image.TwelveMonkeysImageWriter.TwelveMonkeysJpegImageWriter;
 
 import junit.framework.TestCase;
 
@@ -18,13 +19,17 @@ import junit.framework.TestCase;
 public class ImageTest extends TestCase {
 	@Test
 	public void testFileType() throws Exception {
-		//TypeableFile inputFile = new TypeableFile("src/test/resources/java-duke.png");
-		TypeableFile inputFile = new TypeableFile("src/test/resources/java-duke-large.jpg");
-		FileType outputFileType = FileType.JPG;
+		JdkPngImageReader imageReader = Mockito.spy(JdkPngImageReader.class);
 		
-		ImageManager imageManager = Mockito.spy(ImageManager.class);
+		File inputFile = new File("src/test/resources/java-duke.png");
 		
-		TypeableFile outputFile = imageManager.createImage(inputFile, outputFileType, ScaleType.DEFAULT, 250, 450);
+		BufferedImage outputImage = imageReader.read(inputFile);
+		
+		TwelveMonkeysJpegImageWriter imageWriter = Mockito.spy(TwelveMonkeysJpegImageWriter.class);
+		
+		File outputFile = File.createTempFile("oboco-plugin-image-jdk-", ".jpg");
+		
+		imageWriter.write(outputFile, outputImage);
 		
 		System.out.println(outputFile.getPath());
 	}

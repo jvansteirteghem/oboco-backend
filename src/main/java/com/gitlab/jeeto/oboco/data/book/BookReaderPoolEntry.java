@@ -1,4 +1,4 @@
-package com.gitlab.jeeto.oboco.data.bookreader;
+package com.gitlab.jeeto.oboco.data.book;
 
 import java.util.Date;
 

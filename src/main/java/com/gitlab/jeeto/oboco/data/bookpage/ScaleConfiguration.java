@@ -1,12 +1,10 @@
-package com.gitlab.jeeto.oboco.data.bookscanner;
+package com.gitlab.jeeto.oboco.data.bookpage;
 
-import com.gitlab.jeeto.oboco.common.image.ScaleType;
-
-public class BookPageConfiguration {
+public class ScaleConfiguration {
 	private ScaleType scaleType;
 	private Integer scaleWidth;
 	private Integer scaleHeight;
-	public BookPageConfiguration() {
+	public ScaleConfiguration() {
 		super();
 	}
 	public ScaleType getScaleType() {
