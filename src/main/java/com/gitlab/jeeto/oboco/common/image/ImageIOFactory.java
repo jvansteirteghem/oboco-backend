@@ -1,12 +1,28 @@
 package com.gitlab.jeeto.oboco.common.image;
 
 import com.gitlab.jeeto.oboco.common.Factory;
+import com.gitlab.jeeto.oboco.common.FactoryManager;
 
-public class ImageIOFactory implements Factory {
+public class ImageIOFactory extends Factory {
+	private static ImageIOFactory instance;
 	private JdkImageIOFactory jdkImageIOFactory;
 	private TwelveMonkeysImageIOFactory twelveMonkeysImageIOFactory;
 	
-	public ImageIOFactory() {
+	public static ImageIOFactory getInstance() {
+		if(instance == null) {
+			synchronized(ImageIOFactory.class) {
+				if(instance == null) {
+					instance = new ImageIOFactory();
+					
+					FactoryManager factoryManager = FactoryManager.getInstance();
+					factoryManager.addFactory(instance);
+				}
+			}
+		}
+		return instance;
+	}
+	
+	private ImageIOFactory() {
 		super();
 		
 		jdkImageIOFactory = new JdkImageIOFactory();

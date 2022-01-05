@@ -4,14 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gitlab.jeeto.oboco.common.FactoryManager;
 import com.gitlab.jeeto.oboco.common.FileHelper;
-import com.gitlab.jeeto.oboco.data.NaturalOrderComparator;
-import com.gitlab.jeeto.oboco.data.bookpage.BookPageType;
+import com.gitlab.jeeto.oboco.common.archive.ArchiveIOFactory;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReader;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveReaderEntry;
-import com.gitlab.jeeto.oboco.common.archive.ArchiveIOFactory;
 import com.gitlab.jeeto.oboco.common.archive.ArchiveType;
+import com.gitlab.jeeto.oboco.data.NaturalOrderComparator;
+import com.gitlab.jeeto.oboco.data.bookpage.BookPageType;
 
 public class DefaultBookReader implements BookReader {
 	private BookType bookType;
@@ -32,9 +31,7 @@ public class DefaultBookReader implements BookReader {
 		}
 		
 		try {
-			FactoryManager factoryManager = FactoryManager.getInstance();
-			
-			ArchiveIOFactory archiveIOFactory = factoryManager.getFactory(ArchiveIOFactory.class);
+			ArchiveIOFactory archiveIOFactory = ArchiveIOFactory.getInstance();
 			ArchiveType archiveType = ArchiveType.getArchiveType(inputFile);
 			archiveReader = archiveIOFactory.getArchiveReader(archiveType);
 			archiveReader.openArchive(inputFile);

@@ -14,7 +14,7 @@ import com.gitlab.jeeto.oboco.common.archive.SevenZipJBindingArchiveReader.Seven
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipNativeInitializationException;
 
-public class SevenZipJBindingArchiveIOFactory implements Factory {
+public class SevenZipJBindingArchiveIOFactory extends Factory {
 	private static Logger logger = LoggerFactory.getLogger(SevenZipJBindingArchiveReader.class.getName());
 	private static boolean factoryStarted = false;
 	
@@ -75,10 +75,5 @@ public class SevenZipJBindingArchiveIOFactory implements Factory {
 		} catch(Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public void stop() {
-		
 	}
 }

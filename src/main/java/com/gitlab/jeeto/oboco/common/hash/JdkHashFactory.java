@@ -3,7 +3,7 @@ package com.gitlab.jeeto.oboco.common.hash;
 import com.gitlab.jeeto.oboco.common.Factory;
 import com.gitlab.jeeto.oboco.common.hash.JdkHash.JdkSha256Hash;
 
-public class JdkHashFactory implements Factory {
+public class JdkHashFactory extends Factory {
 	public JdkHashFactory() {
 		super();
 	}
@@ -18,15 +18,5 @@ public class JdkHashFactory implements Factory {
 		}
 		
 		return hash;
-	}
-
-	@Override
-	public void start() {
-		
-	}
-
-	@Override
-	public void stop() {
-		
 	}
 }

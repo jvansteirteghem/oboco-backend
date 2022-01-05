@@ -1,11 +1,27 @@
 package com.gitlab.jeeto.oboco.common.archive;
 
 import com.gitlab.jeeto.oboco.common.Factory;
+import com.gitlab.jeeto.oboco.common.FactoryManager;
 
-public class ArchiveIOFactory implements Factory {
+public class ArchiveIOFactory extends Factory {
+	private static ArchiveIOFactory instance;
 	private SevenZipJBindingArchiveIOFactory sevenZipJBindingArchiveIOFactory;
 	
-	public ArchiveIOFactory() {
+	public static ArchiveIOFactory getInstance() {
+		if(instance == null) {
+			synchronized(ArchiveIOFactory.class) {
+				if(instance == null) {
+					instance = new ArchiveIOFactory();
+					
+					FactoryManager factoryManager = FactoryManager.getInstance();
+					factoryManager.addFactory(instance);
+				}
+			}
+		}
+		return instance;
+	}
+	
+	private ArchiveIOFactory() {
 		super();
 		
 		sevenZipJBindingArchiveIOFactory = new SevenZipJBindingArchiveIOFactory();

@@ -1,6 +1,15 @@
 package com.gitlab.jeeto.oboco.common;
 
-public interface Factory {
-	public void start();
-	public void stop();
+public abstract class Factory {
+	public Factory() {
+		super();
+	}
+	
+	public void start() {
+		
+	}
+	
+	public void stop() {
+		
+	}
 }

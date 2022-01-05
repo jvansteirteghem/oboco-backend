@@ -4,7 +4,7 @@ import com.gitlab.jeeto.oboco.common.Factory;
 import com.gitlab.jeeto.oboco.common.image.JdkImageReader.JdkPngImageReader;
 import com.gitlab.jeeto.oboco.common.image.JdkImageWriter.JdkPngImageWriter;
 
-public class JdkImageIOFactory implements Factory {
+public class JdkImageIOFactory extends Factory {
 	public JdkImageIOFactory() {
 		super();
 	}
@@ -31,15 +31,5 @@ public class JdkImageIOFactory implements Factory {
 		}
 		
 		return imageWriter;
-	}
-
-	@Override
-	public void start() {
-		
-	}
-
-	@Override
-	public void stop() {
-		
 	}
 }

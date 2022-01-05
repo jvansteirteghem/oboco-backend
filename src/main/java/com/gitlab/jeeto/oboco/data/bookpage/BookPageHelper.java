@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gitlab.jeeto.oboco.common.FactoryManager;
 import com.gitlab.jeeto.oboco.common.image.ImageIOFactory;
 import com.gitlab.jeeto.oboco.common.image.ImageReader;
 import com.gitlab.jeeto.oboco.common.image.ImageType;
@@ -64,9 +63,7 @@ public class BookPageHelper {
 	}
 	
 	public static File getBookPage(File inputFile, BookPageType outputBookPageType, ScaleType outputScaleType, Integer outputScaleWidth, Integer outputScaleHeight) throws Exception {
-		FactoryManager factoryManager = FactoryManager.getInstance();
-		
-		ImageIOFactory imageIOFactory = factoryManager.getFactory(ImageIOFactory.class);
+		ImageIOFactory imageIOFactory = ImageIOFactory.getInstance();
 		
 		ImageType inputImageType = ImageType.getImageType(inputFile);
 		ImageReader imageReader = imageIOFactory.getImageReader(inputImageType);

@@ -13,7 +13,7 @@ import com.gitlab.jeeto.oboco.common.image.turbojpeg.TurboJpegImageWriterSpi;
 import com.gitlab.jeeto.oboco.common.image.twelvemonkeys.TwelveMonkeysJpegImageReaderSpi;
 import com.gitlab.jeeto.oboco.common.image.twelvemonkeys.TwelveMonkeysJpegImageWriterSpi;
 
-public class TwelveMonkeysImageIOFactory implements Factory {
+public class TwelveMonkeysImageIOFactory extends Factory {
 	private static Logger logger = LoggerFactory.getLogger(TwelveMonkeysImageIOFactory.class.getName());
 	private static boolean factoryStarted = false;
 	
@@ -73,10 +73,5 @@ public class TwelveMonkeysImageIOFactory implements Factory {
 		} catch(Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public void stop() {
-		
 	}
 }

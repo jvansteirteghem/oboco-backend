@@ -21,7 +21,6 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gitlab.jeeto.oboco.common.FactoryManager;
 import com.gitlab.jeeto.oboco.common.FileHelper;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
@@ -476,9 +475,7 @@ public class DefaultBookScanner implements BookScanner {
 	}
 	
 	private String getFileId(File bookInputFile) throws Exception {
-		FactoryManager factoryManager = FactoryManager.getInstance();
-		
-		HashFactory hashFactory = factoryManager.getFactory(HashFactory.class);
+		HashFactory hashFactory = HashFactory.getInstance();
 		Hash hash = hashFactory.getHash(HashType.SHA256);
 
 		return hash.calculate(bookInputFile);
