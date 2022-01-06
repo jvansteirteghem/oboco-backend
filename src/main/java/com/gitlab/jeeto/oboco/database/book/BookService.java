@@ -196,57 +196,65 @@ public class BookService {
 	}
 	
 	public Linkable<Book> getLinkableBookByUserAndBookCollection(User user, Long bookCollectionId, Long id, Graph graph) throws ProblemException {
-		EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
-		if(graph != null) {
-			if(graph.containsKey("bookCollection")) {
-				entityGraph.addSubgraph("bookCollection", BookCollection.class);
-			}
-		}
+		Linkable<Book> bookLinkable = null;
 		
-		TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId order by b.number asc", Book.class);
-		bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
-		bookListQuery.setParameter("bookCollectionId", bookCollectionId);
-		bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
-		
-		List<Book> bookList = bookListQuery.getResultList();
-		
-		Linkable<Book> bookLinkable = new Linkable<Book>();
-		
-		Integer index = 0;
-		while(index < bookList.size()) {
-			Book book = bookList.get(index);
-			
-			if(book.getId().equals(id)) {
-				if(index - 1 >= 0) {
-					Book previousBook = bookList.get(index - 1);
-					
-					bookLinkable.setPreviousElement(previousBook);
+		try {
+			EntityGraph<Book> entityGraph = entityManager.createEntityGraph(Book.class);
+			if(graph != null) {
+				if(graph.containsKey("bookCollection")) {
+					entityGraph.addSubgraph("bookCollection", BookCollection.class);
 				}
-				
-				bookLinkable.setElement(book);
-				
-				if(index + 1 < bookList.size()) {
-					Book nextBook = bookList.get(index + 1);
-					
-					bookLinkable.setNextElement(nextBook);
-				}
-				break;
 			}
 			
-			index = index + 1;
-		}
-		
-		bookList = new ArrayList<Book>();
-		bookList.add(bookLinkable.getPreviousElement());
-		bookList.add(bookLinkable.getElement());
-		bookList.add(bookLinkable.getNextElement());
-		
-		if(graph != null) {
-			if(graph.containsKey("bookMark")) {
-				Graph bookMarkGraph = graph.get("bookMark");
+			TypedQuery<Book> bookQuery = entityManager.createQuery("select b from Book b where b.rootBookCollection.id = :rootBookCollectionId and b.id = :id", Book.class);
+			bookQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+			bookQuery.setParameter("id", id);
+			bookQuery.setHint("javax.persistence.loadgraph", entityGraph);
+			
+			Book book = bookQuery.getSingleResult();
+			
+			TypedQuery<Book> bookListQuery = entityManager.createQuery("select b from Book b join b.bookMarkReferences bmr where b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and bmr.bookMark.user.id = :userId and bmr.bookMark.page <> b.numberOfPages order by b.number asc", Book.class);
+			bookListQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
+			bookListQuery.setParameter("bookCollectionId", bookCollectionId);
+			bookListQuery.setParameter("userId", user.getId());
+			bookListQuery.setHint("javax.persistence.loadgraph", entityGraph);
+			
+			List<Book> bookList = bookListQuery.getResultList();
+			
+			Integer bookNumber = book.getNumber();
+			
+			bookLinkable = new Linkable<Book>();
+			bookLinkable.setElement(book);
+			
+			Integer index = 0;
+			while(index < bookList.size()) {
+				book = bookList.get(index);
 				
-				getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
+				if(book.getNumber() < bookNumber) {
+					bookLinkable.setPreviousElement(book);
+				} else if(book.getNumber() > bookNumber) {
+					bookLinkable.setNextElement(book);
+					
+					break;
+				}
+				
+				index = index + 1;
 			}
+			
+			bookList = new ArrayList<Book>();
+			bookList.add(bookLinkable.getPreviousElement());
+			bookList.add(bookLinkable.getElement());
+			bookList.add(bookLinkable.getNextElement());
+			
+			if(graph != null) {
+				if(graph.containsKey("bookMark")) {
+					Graph bookMarkGraph = graph.get("bookMark");
+					
+					getBookMarkService().loadBookMarkGraph(user, bookList, bookMarkGraph);
+				}
+			}
+		} catch(NoResultException e) {
+			
 		}
 		
 		return bookLinkable;
@@ -408,7 +416,7 @@ public class BookService {
 		
 		String bookListQueryString = " where 1 = 1";
 		
-		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and bmr.bookMark.user.id = :userId and bmr.bookMark.page = 0";
+		bookListQueryString = bookListQueryString + " and b.rootBookCollection.id = :rootBookCollectionId and b.bookCollection.id = :bookCollectionId and b.numberOfPages > 0 and bmr.bookMark.user.id = :userId and bmr.bookMark.page <> b.numberOfPages";
 		
 		Query bookListSizeQuery = entityManager.createQuery("select count(b.id) from Book b join b.bookMarkReferences bmr" + bookListQueryString);
 		bookListSizeQuery.setParameter("rootBookCollectionId", user.getRootBookCollection().getId());
