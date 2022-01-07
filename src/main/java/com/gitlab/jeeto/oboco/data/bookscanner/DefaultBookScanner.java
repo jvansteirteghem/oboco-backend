@@ -352,6 +352,12 @@ public class DefaultBookScanner implements BookScanner {
 					Book book = bookService.getBookByRootBookCollectionAndFile(rootBookCollection.getId(), path);
 					Book bookUpdate = bookService.getBookByFile(path, this.updateDate);
 					
+					Date fileUpdateDate = new Date(file.lastModified());
+					
+					if(book != null && book.getUpdateDate().compareTo(fileUpdateDate) < 0) {
+						book = null;
+					}
+					
 					if(book == null) {
 						logger.info("create book " + path);
 						
@@ -388,16 +394,6 @@ public class DefaultBookScanner implements BookScanner {
 						bookMarkService.createBookMarkReferencesByBook(book, this.updateDate);
 					} else {
 						logger.info("update book " + path);
-						
-						BookScannerMode mode = this.mode;
-						
-						if(BookScannerMode.UPDATE.equals(mode)) {
-							Date fileUpdateDate = new Date(file.lastModified());
-							
-							if(book.getUpdateDate().compareTo(fileUpdateDate) < 0) {
-								mode = BookScannerMode.CREATE;
-							}
-						}
 						
 						try {
 							processBook(file, bookType, book, bookUpdate, mode);
