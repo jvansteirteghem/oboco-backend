@@ -459,7 +459,7 @@ public class DefaultBookScanner implements BookScanner {
 			}
 		} else {
 			if(BookScannerMode.CREATE.equals(mode)) {
-				String name = FileHelper.getName(bookCollectionInputFile);
+				String name = bookCollectionInputFile.getName();
 				
 				bookCollection.setName(name);
 				
