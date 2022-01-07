@@ -1,9 +1,8 @@
 package com.gitlab.jeeto.oboco.data.bookscanner;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -22,22 +21,23 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gitlab.jeeto.oboco.common.FileType;
-import com.gitlab.jeeto.oboco.common.FileType.Type;
-import com.gitlab.jeeto.oboco.common.TypeableFile;
+import com.gitlab.jeeto.oboco.common.FileHelper;
 import com.gitlab.jeeto.oboco.common.configuration.Configuration;
 import com.gitlab.jeeto.oboco.common.configuration.ConfigurationManager;
-import com.gitlab.jeeto.oboco.common.hash.HashManager;
-import com.gitlab.jeeto.oboco.common.hash.HashManagerFactory;
+import com.gitlab.jeeto.oboco.common.hash.Hash;
+import com.gitlab.jeeto.oboco.common.hash.HashFactory;
 import com.gitlab.jeeto.oboco.common.hash.HashType;
-import com.gitlab.jeeto.oboco.common.image.ImageManager;
-import com.gitlab.jeeto.oboco.common.image.ImageManagerFactory;
-import com.gitlab.jeeto.oboco.common.image.ScaleType;
 import com.gitlab.jeeto.oboco.data.DateHelper;
 import com.gitlab.jeeto.oboco.data.NameHelper;
 import com.gitlab.jeeto.oboco.data.NaturalOrderComparator;
-import com.gitlab.jeeto.oboco.data.bookreader.BookReader;
-import com.gitlab.jeeto.oboco.data.bookreader.BookReaderManager;
+import com.gitlab.jeeto.oboco.data.book.BookReader;
+import com.gitlab.jeeto.oboco.data.book.BookReaderFactory;
+import com.gitlab.jeeto.oboco.data.book.BookType;
+import com.gitlab.jeeto.oboco.data.bookpage.BookPageConfiguration;
+import com.gitlab.jeeto.oboco.data.bookpage.BookPageHelper;
+import com.gitlab.jeeto.oboco.data.bookpage.BookPageType;
+import com.gitlab.jeeto.oboco.data.bookpage.ScaleConfiguration;
+import com.gitlab.jeeto.oboco.data.bookpage.ScaleType;
 import com.gitlab.jeeto.oboco.database.book.Book;
 import com.gitlab.jeeto.oboco.database.book.BookService;
 import com.gitlab.jeeto.oboco.database.bookcollection.BookCollection;
@@ -70,7 +70,7 @@ public class DefaultBookScanner implements BookScanner {
 	private BookScannerMode mode;
 	private BookScannerStatus status;
 	private Date updateDate;
-	private List<BookPage> defaultBookPageList;
+	private List<BookPageConfiguration> defaultBookPageConfigurationList;
 	
 	public DefaultBookScanner() {
 		super();
@@ -78,77 +78,7 @@ public class DefaultBookScanner implements BookScanner {
 		this.mode = null;
 		this.status = BookScannerStatus.STOPPED;
 		this.updateDate = null;
-		this.defaultBookPageList = new ArrayList<BookPage>();
-	}
-	
-	private List<BookPage> createBookPageList() throws Exception {
-		List<BookPage> bookPageList = new ArrayList<BookPage>();
-		
-		BufferedReader bufferedReader = null;
-		try {
-			bufferedReader = new BufferedReader(new FileReader("./data.csv"));
-		    String line = null;
-		    line = bufferedReader.readLine();
-		    if(line != null && line.equals("page,scaleType,scaleWidth,scaleHeight")) {
-			    while((line = bufferedReader.readLine()) != null) {
-			        String[] values = line.split(",");
-			        
-			        Integer page = null;
-			        try {
-			        	page = Integer.valueOf(values[0]);
-			        } catch(Exception e) {
-			        	// pass
-			        }
-			        ScaleType scaleType = null;
-			        try {
-			        	scaleType = ScaleType.valueOf(values[1]);
-			        } catch(Exception e) {
-			        	// pass
-			        }
-			        Integer scaleWidth = null;
-			        try {
-			        	scaleWidth = Integer.valueOf(values[2]);
-			        } catch(Exception e) {
-			        	// pass
-			        }
-			        Integer scaleHeight = null;
-			        try {
-			        	scaleHeight = Integer.valueOf(values[3]);
-			        } catch(Exception e) {
-			        	// pass
-			        }
-			        
-			        BookPage bookPage = getBookPage(bookPageList, page);
-			        if(bookPage == null) {
-			        	bookPage = new BookPage();
-			        	bookPage.setPage(page);
-			    		
-			    		bookPageList.add(bookPage);
-			        }
-			        BookPageConfiguration bookPageConfiguration = new BookPageConfiguration();
-			        bookPageConfiguration.setScaleType(scaleType);
-			        bookPageConfiguration.setScaleWidth(scaleWidth);
-			        bookPageConfiguration.setScaleHeight(scaleHeight);
-					
-					bookPage.getBookPageConfigurationList().add(bookPageConfiguration);
-			    }
-		    }
-		} finally {
-			if(bufferedReader != null) {
-				bufferedReader.close();
-			}
-		}
-		
-		return bookPageList;
-	}
-	
-	private BookPage getBookPage(List<BookPage> bookPageList, Integer page) throws Exception {
-		for(BookPage bookPage: bookPageList) {
-        	if(bookPage.getPage() == page) {
-        		return bookPage;
-        	}
-        }
-		return null;
+		this.defaultBookPageConfigurationList = new ArrayList<BookPageConfiguration>();
 	}
 	
 	public String getId() {
@@ -163,10 +93,10 @@ public class DefaultBookScanner implements BookScanner {
 		return this.status;
 	}
 	
-	private TypeableFile getDirectory() throws ProblemException {
+	private File getDirectory() throws ProblemException {
 		String directoryPath = getConfiguration().getAsString("data.path", "./data");
     	
-		TypeableFile directory = new TypeableFile(directoryPath);
+		File directory = new File(directoryPath);
     	
     	if(directory.isDirectory() == false) {
     		throw new ProblemException(new Problem(500, "PROBLEM", "The directory is invalid: " + directory.getAbsolutePath()));
@@ -175,9 +105,9 @@ public class DefaultBookScanner implements BookScanner {
     	return directory;
 	}
 	
-	private Map<String, List<TypeableFile>> getDirectoryMap() throws ProblemException {
+	private Map<String, List<File>> getDirectoryMap() throws ProblemException {
 		try {
-			Map<String, List<TypeableFile>> directoryMap = new LinkedHashMap<String, List<TypeableFile>>();
+			Map<String, List<File>> directoryMap = new LinkedHashMap<String, List<File>>();
 			
 			Properties dataProperties = new Properties();
 	    	dataProperties.load(new FileInputStream("./data.properties"));
@@ -192,12 +122,12 @@ public class DefaultBookScanner implements BookScanner {
 				
 				String[] directoryPaths = directoryPathsString.split(",");
 				
-				List<TypeableFile> directoryList = new ArrayList<TypeableFile>();
+				List<File> directoryList = new ArrayList<File>();
 				
 				for(String directoryPath: directoryPaths) {
 					directoryPath = directoryPath.trim();
 					
-					TypeableFile directory = new TypeableFile(directoryPath);
+					File directory = new File(directoryPath);
 					
 					if(directory.isDirectory() == false) {
 			    		throw new ProblemException(new Problem(500, "PROBLEM", "The directory is invalid: " + directory.getAbsolutePath()));
@@ -227,17 +157,17 @@ public class DefaultBookScanner implements BookScanner {
 		this.updateDate = DateHelper.getDate();
 		this.status = BookScannerStatus.STARTED;
 		try {
-			this.defaultBookPageList = createBookPageList();
+			this.defaultBookPageConfigurationList = BookPageHelper.getBookPageConfigurations();
 	    	
 			// validate directory
 	    	getDirectory();
 	    	
-	    	Map<String, List<TypeableFile>> directoryMap = getDirectoryMap();
+	    	Map<String, List<File>> directoryMap = getDirectoryMap();
 			
 	    	Integer number = 1;
-			for(Entry<String, List<TypeableFile>> entry: directoryMap.entrySet()) {
+			for(Entry<String, List<File>> entry: directoryMap.entrySet()) {
 				String name = entry.getKey();
-				List<TypeableFile> directoryList = entry.getValue();
+				List<File> directoryList = entry.getValue();
 				
 				BookCollection bookCollection = bookCollectionService.getRootBookCollection(name);
 				
@@ -285,7 +215,7 @@ public class DefaultBookScanner implements BookScanner {
 					bookCollection = bookCollectionService.updateBookCollection(bookCollection);
 				}
 				
-				for(TypeableFile directory: directoryList) {
+				for(File directory: directoryList) {
 				    number = add(number, bookCollection, bookCollection, directory);
 				}
 				
@@ -324,24 +254,22 @@ public class DefaultBookScanner implements BookScanner {
 		this.status = BookScannerStatus.STOPPING;
 	}
     
-	private Integer add(Integer number, BookCollection rootBookCollection, BookCollection parentBookCollection, TypeableFile parentFile) throws Exception {
-		List<FileType> fileTypeList = FileType.getFileTypeList(Type.ARCHIVE);
-		
+	private Integer add(Integer number, BookCollection rootBookCollection, BookCollection parentBookCollection, File parentFile) throws Exception {
 		Integer numberOfBookCollections = parentBookCollection.getNumberOfBookCollections();
 		Integer numberOfBooks = parentBookCollection.getNumberOfBooks();
 		Integer numberOfBookPages = parentBookCollection.getNumberOfBookPages();
 		
-		TypeableFile[] files = parentFile.listTypeableFiles();
+		File[] files = parentFile.listFiles();
     	
-    	List<TypeableFile> fileList = Arrays.asList(files);
-    	fileList.sort(new NaturalOrderComparator<TypeableFile>() {
+    	List<File> fileList = Arrays.asList(files);
+    	fileList.sort(new NaturalOrderComparator<File>() {
     		@Override
-    		public String toString(TypeableFile o) {
+    		public String toString(File o) {
 				return o.getName();
 		   }
     	});
     	
-		for(TypeableFile file: fileList) {
+		for(File file: fileList) {
 			if(BookScannerStatus.STOPPING.equals(this.status)) {
 	    		logger.info("stopping!");
 	    		
@@ -418,9 +346,9 @@ public class DefaultBookScanner implements BookScanner {
 				
 				number = add(number, rootBookCollection, bookCollection, file);
 			} else {
-				FileType fileType = FileType.getFileType(file.getName());
+				BookType bookType = BookType.getBookType(file);
 				
-				if(fileTypeList.contains(fileType)) {
+				if(bookType != null) {
 					Book book = bookService.getBookByRootBookCollectionAndFile(rootBookCollection.getId(), path);
 					Book bookUpdate = bookService.getBookByFile(path, this.updateDate);
 					
@@ -430,14 +358,18 @@ public class DefaultBookScanner implements BookScanner {
 						book = new Book();
 						
 				    	try {
-							processBook(file, book, bookUpdate, BookScannerMode.CREATE);
+							processBook(file, bookType, book, bookUpdate, BookScannerMode.CREATE);
 							
-							processBookPageList(file, book, bookUpdate, BookScannerMode.CREATE);
+							processBookPages(file, bookType, book, bookUpdate, BookScannerMode.CREATE);
 						} catch(Exception e) {
 							logger.error("error create book " + path, e);
 							
 							continue;
 						}
+				    	
+				    	if(book.getNumberOfPages() == null || book.getNumberOfPages() == 0) {
+				    		continue;
+				    	}
 				    	
 				    	book.setFilePath(file.getPath());
 				    	book.setRootBookCollection(rootBookCollection);
@@ -468,14 +400,18 @@ public class DefaultBookScanner implements BookScanner {
 						}
 						
 						try {
-							processBook(file, book, bookUpdate, mode);
+							processBook(file, bookType, book, bookUpdate, mode);
 							
-							processBookPageList(file, book, bookUpdate, mode);
+							processBookPages(file, bookType, book, bookUpdate, mode);
 						} catch(Exception e) {
 							logger.error("error update book " + path, e);
 							
 							continue;
 						}
+						
+						if(book.getNumberOfPages() == null || book.getNumberOfPages() == 0) {
+				    		continue;
+				    	}
 						
 						book.setUpdateDate(this.updateDate);
 						
@@ -519,7 +455,7 @@ public class DefaultBookScanner implements BookScanner {
 		}
 	}
 	
-	protected void processBookCollection(TypeableFile bookCollectionInputFile, BookCollection bookCollection, BookCollection bookCollectionUpdate, BookScannerMode mode) throws Exception {
+	protected void processBookCollection(File bookCollectionInputFile, BookCollection bookCollection, BookCollection bookCollectionUpdate, BookScannerMode mode) throws Exception {
 		if(bookCollectionUpdate != null) {
 			if(BookScannerMode.CREATE.equals(mode)) {
 		    	bookCollection.setName(bookCollectionUpdate.getName());
@@ -527,7 +463,7 @@ public class DefaultBookScanner implements BookScanner {
 			}
 		} else {
 			if(BookScannerMode.CREATE.equals(mode)) {
-				String name = NameHelper.getName(bookCollectionInputFile);
+				String name = FileHelper.getName(bookCollectionInputFile);
 				
 				bookCollection.setName(name);
 				
@@ -538,7 +474,14 @@ public class DefaultBookScanner implements BookScanner {
 		}
 	}
 	
-	protected void processBook(TypeableFile bookInputFile, Book book, Book bookUpdate, BookScannerMode mode) throws Exception {
+	private String getFileId(File bookInputFile) throws Exception {
+		HashFactory hashFactory = HashFactory.getInstance();
+		Hash hash = hashFactory.getHash(HashType.SHA256);
+
+		return hash.calculate(bookInputFile);
+	}
+	
+	protected void processBook(File bookInputFile, BookType bookType, Book book, Book bookUpdate, BookScannerMode mode) throws Exception {
 		if(bookUpdate != null) {
 			if(BookScannerMode.CREATE.equals(mode)) {
 				book.setFileId(bookUpdate.getFileId());
@@ -547,11 +490,11 @@ public class DefaultBookScanner implements BookScanner {
 			}
 		} else {
 			if(BookScannerMode.CREATE.equals(mode)) {
-				String fileId = createFileId(bookInputFile);
+				String fileId = getFileId(bookInputFile);
 		    	
 		    	book.setFileId(fileId);
 		    	
-				String name = NameHelper.getName(bookInputFile);
+				String name = FileHelper.getName(bookInputFile);
 				
 				book.setName(name);
 				
@@ -562,52 +505,53 @@ public class DefaultBookScanner implements BookScanner {
 		}
 	}
 	
-	private List<BookPage> getBookPageList(Book book) throws Exception {
-		List<BookPage> bookPageList = new ArrayList<BookPage>();
+	private List<BookPageConfiguration> getBookPageConfigurations(Book book) throws Exception {
+		List<BookPageConfiguration> bookPageConfigurationList = new ArrayList<BookPageConfiguration>();
     	
-    	for(BookPage defaultBookPage: this.defaultBookPageList) {
-    		Integer defaultPage;
-    		Integer defaultLastPage;
+    	for(BookPageConfiguration defaultBookPageConfiguration: this.defaultBookPageConfigurationList) {
+    		Integer page;
+    		Integer lastPage;
     		
-    		if(defaultBookPage.getPage() != null) {
-    			defaultPage = defaultBookPage.getPage();
-        		defaultLastPage = defaultPage;
+    		if(defaultBookPageConfiguration.getPage() != null) {
+    			page = defaultBookPageConfiguration.getPage();
+        		lastPage = page;
     		} else {
-    			defaultPage = 1;
-        		defaultLastPage = book.getNumberOfPages();
+    			page = 1;
+        		lastPage = book.getNumberOfPages();
     		}
     		
-    		while(defaultPage <= defaultLastPage) {
-	    		for(BookPageConfiguration defaultBookPageConfiguration: defaultBookPage.getBookPageConfigurationList()) {
-		    		BookPage bookPage = getBookPage(bookPageList, defaultPage);
-		    		if(bookPage == null) {
-			    		bookPage = new BookPage();
-						bookPage.setPage(defaultPage);
+    		while(page <= lastPage) {
+	    		for(ScaleConfiguration defaultScaleConfiguration: defaultBookPageConfiguration.getScaleConfigurations()) {
+		    		BookPageConfiguration bookPageConfiguration = BookPageHelper.getBookPageConfiguration(bookPageConfigurationList, page);
+		    		if(bookPageConfiguration == null) {
+			    		bookPageConfiguration = new BookPageConfiguration();
+						bookPageConfiguration.setPage(page);
 						
-						bookPageList.add(bookPage);
+						bookPageConfigurationList.add(bookPageConfiguration);
 		    		}
 		    		
-		    		bookPage.getBookPageConfigurationList().add(defaultBookPageConfiguration);
+		    		bookPageConfiguration.getScaleConfigurations().add(defaultScaleConfiguration);
 	    		}
 	    		
-	    		defaultPage = defaultPage + 1;
+	    		page = page + 1;
     		}
     	}
     	
-    	return bookPageList;
+    	return bookPageConfigurationList;
 	}
     
-	protected void processBookPageList(TypeableFile bookInputFile, Book book, Book bookUpdate, BookScannerMode mode) throws Exception {
+    protected void processBookPages(File bookInputFile, BookType bookType, Book book, Book bookUpdate, BookScannerMode mode) throws Exception {
     	if(bookUpdate != null) {
     		if(BookScannerMode.CREATE.equals(mode)) {
     			book.setNumberOfPages(bookUpdate.getNumberOfPages());
     		}
 		} else {
-			BookReaderManager bookReaderManager = BookReaderManager.getInstance();
 	    	BookReader bookReader = null;
 			try {
 				if(BookScannerMode.CREATE.equals(mode)) {
-					bookReader = bookReaderManager.getBookReader();
+					BookReaderFactory bookReaderFactory = BookReaderFactory.getInstance();
+					
+					bookReader = bookReaderFactory.getBookReader(bookType);
 					bookReader.openBook(bookInputFile);
 		
 					Integer numberOfPages = bookReader.getNumberOfBookPages();
@@ -615,19 +559,19 @@ public class DefaultBookScanner implements BookScanner {
 					book.setNumberOfPages(numberOfPages);
 				}
 				
-				List<BookPage> bookPageList = getBookPageList(book);
+				List<BookPageConfiguration> bookPageConfigurationList = getBookPageConfigurations(book);
 				
-				for(BookPage bookPage: bookPageList) {
-					if(bookPage.getPage() >= 1 && bookPage.getPage() <= book.getNumberOfPages()) {
-						TypeableFile bookPageInputFile = null;
+				for(BookPageConfiguration bookPageConfiguration: bookPageConfigurationList) {
+					if(bookPageConfiguration.getPage() >= 1 && bookPageConfiguration.getPage() <= book.getNumberOfPages()) {
+						File bookPageInputFile = null;
 						try {
-							for(BookPageConfiguration bookPageConfiguration: bookPage.getBookPageConfigurationList()) {
-								TypeableFile bookPageOutputFile = getBookPage(
+							for(ScaleConfiguration scaleConfiguration: bookPageConfiguration.getScaleConfigurations()) {
+								File bookPageOutputFile = getBookPage(
 					    				book, 
-					    				bookPage.getPage(), 
-					    				bookPageConfiguration.getScaleType(), 
-					    				bookPageConfiguration.getScaleWidth(), 
-					    				bookPageConfiguration.getScaleHeight()
+					    				bookPageConfiguration.getPage(), 
+					    				scaleConfiguration.getScaleType(), 
+					    				scaleConfiguration.getScaleWidth(), 
+					    				scaleConfiguration.getScaleHeight()
 					    		);
 								
 								if(BookScannerMode.UPDATE.equals(mode)) {
@@ -640,27 +584,31 @@ public class DefaultBookScanner implements BookScanner {
 								
 								if(bookPageInputFile == null) {
 									if(bookReader == null) {
-										bookReader = bookReaderManager.getBookReader();
+										BookReaderFactory bookReaderFactory = BookReaderFactory.getInstance();
+										
+										bookReader = bookReaderFactory.getBookReader(bookType);
 										bookReader.openBook(bookInputFile);
 									}
 									
-									bookPageInputFile = bookReader.getBookPage(bookPage.getPage() - 1);
+									bookPageInputFile = bookReader.getBookPage(bookPageConfiguration.getPage() - 1);
 								}
 								
-								if(FileType.JPG.equals(bookPageInputFile.getFileType()) 
-										&& bookPageConfiguration.getScaleType() == null 
-										&& bookPageConfiguration.getScaleWidth() == null 
-										&& bookPageConfiguration.getScaleHeight() == null) {
+								BookPageType bookPageType = BookPageType.getBookPageType(bookPageInputFile);
+								
+								if(BookPageType.JPEG.equals(bookPageType) 
+										&& scaleConfiguration.getScaleType() == null 
+										&& scaleConfiguration.getScaleWidth() == null 
+										&& scaleConfiguration.getScaleHeight() == null) {
 									createBookPage(bookPageInputFile, bookPageOutputFile);
 								} else {
-									TypeableFile bookPageInputFile2 = null;
+									File bookPageInputFile2 = null;
 									try {
-										bookPageInputFile2 = createBookPage(
+										bookPageInputFile2 = BookPageHelper.getBookPage(
 												bookPageInputFile, 
-												bookPage.getPage(), 
-												bookPageConfiguration.getScaleType(), 
-												bookPageConfiguration.getScaleWidth(), 
-												bookPageConfiguration.getScaleHeight()
+												BookPageType.JPEG, 
+												scaleConfiguration.getScaleType(), 
+												scaleConfiguration.getScaleWidth(), 
+												scaleConfiguration.getScaleHeight()
 										);
 										
 										createBookPage(bookPageInputFile2, bookPageOutputFile);
@@ -702,17 +650,8 @@ public class DefaultBookScanner implements BookScanner {
 		}
     }
     
-    private String createFileId(TypeableFile bookInputFile) throws Exception {
-    	HashManagerFactory hashManagerFactory = HashManagerFactory.getInstance();
-    	HashManager hashManager = hashManagerFactory.getHashManager(HashType.SHA256);
-    	
-    	String fileId = hashManager.createHash(bookInputFile, HashType.SHA256);
-    	
-    	return fileId;
-    }
-    
-    private TypeableFile getBookPage(Book book, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
-    	TypeableFile directory = getDirectory();
+    private File getBookPage(Book book, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
+    	File directory = getDirectory();
     	
     	String bookPageFilePath = book.getFileId().substring(0, 2) + "/" + book.getFileId().substring(2) + "/" + page;
         if(scaleType != null) {
@@ -726,23 +665,14 @@ public class DefaultBookScanner implements BookScanner {
         }
         bookPageFilePath = bookPageFilePath + ".jpg";
         
-        TypeableFile bookPageFile = new TypeableFile(directory, bookPageFilePath);
+        File bookPageFile = new File(directory, bookPageFilePath);
 		
 		return bookPageFile;
     }
     
-    private TypeableFile createBookPage(TypeableFile bookPageInputFile, Integer page, ScaleType scaleType, Integer scaleWidth, Integer scaleHeight) throws Exception {
-		ImageManagerFactory imageManagerFactory = ImageManagerFactory.getInstance();
-    	ImageManager imageManager = imageManagerFactory.getImageManager(bookPageInputFile.getFileType(), FileType.JPG);
-		
-    	TypeableFile bookPageOutputFile = imageManager.createImage(bookPageInputFile, FileType.JPG, scaleType, scaleWidth, scaleHeight);
-		
-		return bookPageOutputFile;
-	}
-    
-    private void createBookPage(TypeableFile bookPageInputFile, TypeableFile bookPageOutputFile) throws Exception {
-    	TypeableFile bookPageOutputDirectory = bookPageOutputFile.getParentTypeableFile();
-    	TypeableFile bookPageOutputDirectory2 = bookPageOutputDirectory.getParentTypeableFile();
+    private void createBookPage(File bookPageInputFile, File bookPageOutputFile) throws Exception {
+    	File bookPageOutputDirectory = bookPageOutputFile.getParentFile();
+    	File bookPageOutputDirectory2 = bookPageOutputDirectory.getParentFile();
 		
 		if(bookPageOutputDirectory2.isDirectory() == false) {
 			bookPageOutputDirectory2.mkdir();
@@ -786,9 +716,9 @@ public class DefaultBookScanner implements BookScanner {
 		bookPageOutputDirectory2.setLastModified(this.updateDate.getTime());
 	}
     
-    private void updateBookPage(TypeableFile bookPageOutputFile) throws Exception {
-    	TypeableFile bookPageOutputDirectory = bookPageOutputFile.getParentTypeableFile();
-    	TypeableFile bookPageOutputDirectory2 = bookPageOutputDirectory.getParentTypeableFile();
+    private void updateBookPage(File bookPageOutputFile) throws Exception {
+    	File bookPageOutputDirectory = bookPageOutputFile.getParentFile();
+    	File bookPageOutputDirectory2 = bookPageOutputDirectory.getParentFile();
 		
 		bookPageOutputFile.setLastModified(this.updateDate.getTime());
 		bookPageOutputDirectory.setLastModified(this.updateDate.getTime());
@@ -796,12 +726,12 @@ public class DefaultBookScanner implements BookScanner {
     }
     
     private void deleteBookPageByUpdateDate() throws Exception {
-    	TypeableFile directory = getDirectory();
+    	File directory = getDirectory();
     	
     	if(directory.isDirectory()) {
-    		TypeableFile[] bookPageDirectoryList = directory.listTypeableFiles();
+    		File[] bookPageDirectoryList = directory.listFiles();
     		
-			for(TypeableFile bookPageDirectory: bookPageDirectoryList) {
+			for(File bookPageDirectory: bookPageDirectoryList) {
 				if(BookScannerStatus.STOPPING.equals(this.status)) {
 		    		logger.info("stopping!");
 		    		
@@ -811,9 +741,9 @@ public class DefaultBookScanner implements BookScanner {
 				if(bookPageDirectory.isDirectory()) {
 					Date bookPageDirectoryUpdateDate = new Date(bookPageDirectory.lastModified());
 					
-					TypeableFile[] bookPageDirectoryList2 = bookPageDirectory.listTypeableFiles();
+					File[] bookPageDirectoryList2 = bookPageDirectory.listFiles();
 					
-					for(TypeableFile bookPageDirectory2: bookPageDirectoryList2) {
+					for(File bookPageDirectory2: bookPageDirectoryList2) {
 						if(BookScannerStatus.STOPPING.equals(this.status)) {
 				    		logger.info("stopping!");
 				    		
@@ -823,9 +753,9 @@ public class DefaultBookScanner implements BookScanner {
 						if(bookPageDirectory2.isDirectory()) {
 							Date bookPageDirectoryUpdateDate2 = new Date(bookPageDirectory2.lastModified());
 							
-							TypeableFile[] bookPageFileList = bookPageDirectory2.listTypeableFiles();
+							File[] bookPageFileList = bookPageDirectory2.listFiles();
 							
-							for(TypeableFile bookPageFile: bookPageFileList) {
+							for(File bookPageFile: bookPageFileList) {
 								if(bookPageFile.isFile()) {
 									Date bookPageUpdateDate = new Date(bookPageFile.lastModified());
 									

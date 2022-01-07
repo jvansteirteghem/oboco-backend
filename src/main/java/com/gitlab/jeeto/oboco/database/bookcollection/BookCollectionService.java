@@ -463,7 +463,7 @@ public class BookCollectionService {
 		
 		String bookCollectionListQueryString = " where 1 = 1";
 		
-		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage = 0";
+		bookCollectionListQueryString = bookCollectionListQueryString + " and bc.rootBookCollection.id = :rootBookCollectionId and bc.numberOfBookPages > 0 and bcm.user.id = :userId and bcm.bookPage <> bc.numberOfBookPages";
 		
 		String normalizedName = null;
 		if(BookCollectionSearchType.NAME.equals(searchType)) {

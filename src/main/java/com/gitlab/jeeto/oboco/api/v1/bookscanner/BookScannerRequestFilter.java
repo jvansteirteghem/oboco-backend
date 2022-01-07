@@ -12,9 +12,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.Provider;
 
+import com.gitlab.jeeto.oboco.api.ProblemDto;
 import com.gitlab.jeeto.oboco.data.bookscanner.BookScanner;
 import com.gitlab.jeeto.oboco.data.bookscanner.BookScannerStatus;
-import com.gitlab.jeeto.oboco.problem.ProblemDto;
 
 @Provider
 @Priority(Priorities.USER)

@@ -31,7 +31,8 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 import com.gitlab.jeeto.oboco.api.LinkableDto;
 import com.gitlab.jeeto.oboco.api.PageableListDto;
 import com.gitlab.jeeto.oboco.api.PageableListDtoHelper;
-import com.gitlab.jeeto.oboco.common.image.ScaleType;
+import com.gitlab.jeeto.oboco.api.ProblemDto;
+import com.gitlab.jeeto.oboco.data.bookpage.ScaleType;
 import com.gitlab.jeeto.oboco.database.Graph;
 import com.gitlab.jeeto.oboco.database.GraphHelper;
 import com.gitlab.jeeto.oboco.database.Linkable;
@@ -40,7 +41,6 @@ import com.gitlab.jeeto.oboco.database.book.Book;
 import com.gitlab.jeeto.oboco.database.book.BookService;
 import com.gitlab.jeeto.oboco.database.user.User;
 import com.gitlab.jeeto.oboco.problem.Problem;
-import com.gitlab.jeeto.oboco.problem.ProblemDto;
 import com.gitlab.jeeto.oboco.problem.ProblemException;
 import com.gitlab.jeeto.oboco.server.authentication.Authentication;
 import com.gitlab.jeeto.oboco.server.authentication.UserPrincipal;
@@ -173,10 +173,9 @@ public class BookByBookCollectionResource {
 	)
 	@APIResponses({
 		@APIResponse(responseCode = "200", description = "The page.", content = @Content(mediaType = "image/jpeg")),
-		@APIResponse(responseCode = "400", description = "The problem: PROBLEM_BOOK_COLLECTION_ID_INVALID, PROBLEM_BOOK_ID_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "401", description = "The problem: PROBLEM_USER_NOT_AUTHENTICATED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "403", description = "The problem: PROBLEM_USER_NOT_AUTHORIZED", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
-		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND, PROBLEM_PAGE_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
+		@APIResponse(responseCode = "404", description = "The problem: PROBLEM_USER_ROOT_BOOK_COLLECTION_NOT_FOUND, PROBLEM_BOOK_COLLECTION_NOT_FOUND, PROBLEM_BOOK_NOT_FOUND, PROBLEM_BOOK_PAGE_NOT_FOUND", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "500", description = "The problem: PROBLEM", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class))),
 		@APIResponse(responseCode = "503", description = "The problem: PROBLEM_BOOK_SCANNER_STATUS_INVALID", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDto.class)))
     })
@@ -184,10 +183,12 @@ public class BookByBookCollectionResource {
 	@GET
 	@Produces({"image/jpeg"})
 	public Response getBookPageAsByBookCollection(
-			@Parameter(name = "scaleType", description = "The scaleType. The scaleType is DEFAULT, FIT or FILL.", required = false) @QueryParam("scaleType") ScaleType scaleType, 
+			@Parameter(name = "scaleType", description = "The scaleType. The scaleType is DEFAULT.", required = false) @QueryParam("scaleType") ScaleType scaleType, 
 			@Parameter(name = "scaleWidth", description = "The scaleWidth.", required = false) @QueryParam("scaleWidth") Integer scaleWidth, 
 			@Parameter(name = "scaleHeight", description = "The scaleHeight.", required = false) @QueryParam("scaleHeight") Integer scaleHeight, 
 			@Context Request request) throws ProblemException {
+		Integer page = 1;
+		
 		User user = ((UserPrincipal) securityContext.getUserPrincipal()).getUser();
 		
 		if(user.getRootBookCollection() == null) {
@@ -202,12 +203,18 @@ public class BookByBookCollectionResource {
 			book = bookPageableList.getElements().get(0);
 		}
 		
-        if(book == null) {
-        	throw new ProblemException(new Problem(400, "PROBLEM_BOOK_ID_INVALID", "The book.id is invalid."));
+		if(book == null) {
+        	throw new ProblemException(new Problem(404, "PROBLEM_BOOK_NOT_FOUND", "The book is not found."));
+        }
+        
+        if(page < 1 || page > book.getNumberOfPages()) {
+        	throw new ProblemException(new Problem(404, "PROBLEM_BOOK_PAGE_NOT_FOUND", "The bookPage is not found."));
         }
         
         String tagValue = book.getFileId();
-        tagValue = tagValue + "-page1";
+        if(page != null) {
+        	tagValue = tagValue + "-page" + page;
+        }
         if(scaleType != null) {
         	tagValue = tagValue + "-scaleType" + scaleType;
         }

@@ -20,6 +20,8 @@ public class NaturalOrderComparatorTest extends TestCase {
 		listName.add("bc02p002.jpg");
 		listName.add("bc02p003.jpg");
 		listName.add("bc02p005.jpg");
+		listName.add("ac02p001.jpg");
+		listName.add("\u00E0c02p001.jpg");
 		
 		listName.sort(new NaturalOrderComparator<String>() {
         	@Override

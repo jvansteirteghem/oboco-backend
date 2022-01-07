@@ -24,6 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
+import com.gitlab.jeeto.oboco.api.ProblemDto;
 import com.gitlab.jeeto.oboco.database.Graph;
 import com.gitlab.jeeto.oboco.database.GraphHelper;
 import com.gitlab.jeeto.oboco.database.book.Book;
@@ -32,7 +33,6 @@ import com.gitlab.jeeto.oboco.database.bookmark.BookMarkReference;
 import com.gitlab.jeeto.oboco.database.bookmark.BookMarkService;
 import com.gitlab.jeeto.oboco.database.user.User;
 import com.gitlab.jeeto.oboco.problem.Problem;
-import com.gitlab.jeeto.oboco.problem.ProblemDto;
 import com.gitlab.jeeto.oboco.problem.ProblemException;
 import com.gitlab.jeeto.oboco.server.authentication.Authentication;
 import com.gitlab.jeeto.oboco.server.authentication.UserPrincipal;

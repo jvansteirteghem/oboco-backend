@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
-import com.gitlab.jeeto.oboco.problem.ProblemDto;
+import com.gitlab.jeeto.oboco.api.ProblemDto;
 
 @Authorization
 @Provider

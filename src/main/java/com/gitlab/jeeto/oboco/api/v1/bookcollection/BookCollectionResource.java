@@ -26,6 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement
 
 import com.gitlab.jeeto.oboco.api.PageableListDto;
 import com.gitlab.jeeto.oboco.api.PageableListDtoHelper;
+import com.gitlab.jeeto.oboco.api.ProblemDto;
 import com.gitlab.jeeto.oboco.api.v1.book.BookByBookCollectionResource;
 import com.gitlab.jeeto.oboco.api.v1.bookmark.BookMarkByBookCollectionResource;
 import com.gitlab.jeeto.oboco.database.Graph;
@@ -35,7 +36,6 @@ import com.gitlab.jeeto.oboco.database.bookcollection.BookCollection;
 import com.gitlab.jeeto.oboco.database.bookcollection.BookCollectionService;
 import com.gitlab.jeeto.oboco.database.user.User;
 import com.gitlab.jeeto.oboco.problem.Problem;
-import com.gitlab.jeeto.oboco.problem.ProblemDto;
 import com.gitlab.jeeto.oboco.problem.ProblemException;
 import com.gitlab.jeeto.oboco.server.authentication.Authentication;
 import com.gitlab.jeeto.oboco.server.authentication.UserPrincipal;
