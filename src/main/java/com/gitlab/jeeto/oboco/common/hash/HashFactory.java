@@ -2,6 +2,7 @@ package com.gitlab.jeeto.oboco.common.hash;
 
 import com.gitlab.jeeto.oboco.common.Factory;
 import com.gitlab.jeeto.oboco.common.FactoryManager;
+import com.gitlab.jeeto.oboco.common.hash.jdk.JdkHashFactory;
 
 public class HashFactory extends Factory {
 	private static HashFactory instance;

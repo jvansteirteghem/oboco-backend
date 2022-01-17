@@ -27,10 +27,10 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<quarkus-plugin.version>2.2.3.Final</quarkus-plugin.version>
+		<quarkus-plugin.version>2.6.2.Final</quarkus-plugin.version>
 		<quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
 		<quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-		<quarkus.platform.version>2.2.3.Final</quarkus.platform.version>
+		<quarkus.platform.version>2.6.2.Final</quarkus.platform.version>
 		<surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
 		<!-- <<< quarkus -->
 	</properties>
@@ -102,13 +102,18 @@
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-smallrye-openapi</artifactId>
 		</dependency>
-		
-		<!-- java.lang.ClassNotFoundException: io.netty.internal.tcnative.SSLPrivateKeyMethod -->
 		<dependency>
-			<groupId>io.netty</groupId>
-			<artifactId>netty-tcnative</artifactId>
-			<version>2.0.31.Final</version>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-awt</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-awt-deployment</artifactId>
+		</dependency>
+		<dependency>
+	      <groupId>io.quarkus</groupId>
+	      <artifactId>quarkus-netty</artifactId>
+	    </dependency>
 		<!-- <<< quarkus -->
 		
 		<!-- jwt -->
@@ -170,24 +175,22 @@
 		</dependency>
 		
 		<!-- imageio -->
-		<!--
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
-			<version>3.6.4</version>
+			<version>3.8.1</version>
 		</dependency>
-		-->
 		
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-core</artifactId>
-			<version>3.6.4</version>
+			<version>3.8.1</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-metadata</artifactId>
-			<version>3.6.4</version>
+			<version>3.8.1</version>
 		</dependency>
 		
 		<!-- test -->
@@ -384,7 +387,7 @@
 			</build>
 			<properties>
 				<quarkus.package.type>native</quarkus.package.type>
-				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.SevenZipJBindingArchiveIOFactory,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.image.TwelveMonkeysImageIOFactory,--initialize-at-run-time=org.libjpegturbo.turbojpeg,--initialize-at-run-time=io.netty.internal.tcnative.SSL,-J-Dorg.graalvm.version=21.0.0.0</quarkus.native.additional-build-args>
+				<quarkus.native.additional-build-args>-H:ResourceConfigurationFiles=resource-configuration.json,-H:ReflectionConfigurationFiles=reflection-configuration.json,-H:JNIConfigurationFiles=jni-configuration.json,-H:+JNI,--initialize-at-run-time=com.gitlab.jeeto.oboco.common.archive.sevenzipjbinding.SevenZipJBindingArchiveIOFactory,--initialize-at-run-time=com.twelvemonkeys.image.ImageUtil,--initialize-at-run-time=com.twelvemonkeys.imageio.color,-J-Dorg.graalvm.version=21.3.0.0</quarkus.native.additional-build-args>
 			</properties>
 		</profile>
 	</profiles>

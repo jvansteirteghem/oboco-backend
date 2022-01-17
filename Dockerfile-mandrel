@@ -6,11 +6,11 @@ ARG OBOCO_DATABASE_NAME
 RUN apt-get clean
 RUN apt-get autoclean
 RUN apt-get update && apt-get -y upgrade
-RUN apt-get -y install gcc zlib1g-dev build-essential wget
+RUN apt-get -y install build-essential libz-dev zlib1g-dev wget libfreetype6-dev
 
-RUN wget https://github.com/graalvm/mandrel/releases/download/mandrel-21.2.0.0-Final/mandrel-java11-linux-amd64-21.2.0.0-Final.tar.gz -P /tmp
-RUN tar xf /tmp/mandrel-java11-linux-amd64-21.2.0.0-Final.tar.gz -C /opt
-RUN ln -s /opt/mandrel-java11-21.2.0.0-Final /opt/mandrel-java11
+RUN wget https://github.com/graalvm/mandrel/releases/download/mandrel-21.3.0.0-Final/mandrel-java11-linux-amd64-21.3.0.0-Final.tar.gz -P /tmp
+RUN tar xf /tmp/mandrel-java11-linux-amd64-21.3.0.0-Final.tar.gz -C /opt
+RUN ln -s /opt/mandrel-java11-21.3.0.0-Final /opt/mandrel-java11
 
 ENV JAVA_HOME=/opt/mandrel-java11
 ENV GRAALVM_HOME=/opt/mandrel-java11
@@ -29,17 +29,47 @@ RUN mvn --version
 COPY pom.xml /usr/src/app/
 RUN mvn -f /usr/src/app/pom.xml -B de.qaware.maven:go-offline-maven-plugin:1.2.5:resolve-dependencies
 COPY src /usr/src/app/src
-COPY src/non-packaged-resources/lib-native/turbojpeg/linux/amd64/libturbojpeg.so /usr/java/packages/lib/libturbojpeg.so
 RUN sed -i "s/quarkus\.datasource\.db\-kind\=.*/quarkus\.datasource\.db\-kind\=${OBOCO_DATABASE_NAME}/" /usr/src/app/src/main/resources/application.properties \
  && sed -i "s/quarkus\.datasource\.username\=.*/quarkus\.datasource\.username\=/" /usr/src/app/src/main/resources/application.properties \
  && sed -i "s/quarkus\.datasource\.password\=.*/quarkus\.datasource\.password\=/" /usr/src/app/src/main/resources/application.properties \
  && sed -i "s/quarkus\.datasource\.jdbc\.url\=.*/quarkus\.datasource\.jdbc\.url\=/" /usr/src/app/src/main/resources/application.properties
 RUN mvn -f /usr/src/app/pom.xml -Pnative clean package
 
-## Stage 2 : create the docker final image
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+## Stage 2 : build dependencies
+FROM registry.access.redhat.com/ubi8/ubi-minimal as build-dependencies
 
 RUN microdnf update
+RUN microdnf install freetype fontconfig
+
+## Stage 3 : create the docker final image
+FROM quay.io/quarkus/quarkus-micro-image:1.0
+
+COPY --from=build-dependencies \
+   /lib64/libfreetype.so.6 \
+   /lib64/libgcc_s.so.1 \
+   /lib64/libbz2.so.1 \
+   /lib64/libpng16.so.16 \
+   /lib64/libm.so.6 \
+   /lib64/libbz2.so.1 \
+   /lib64/libexpat.so.1 \
+   /lib64/libuuid.so.1 \
+   /lib64/
+
+COPY --from=build-dependencies \
+   /usr/lib64/libfontconfig.so.1 \
+   /usr/lib64/
+
+COPY --from=build-dependencies \
+    /usr/share/fonts /usr/share/fonts
+
+COPY --from=build-dependencies \
+    /usr/share/fontconfig /usr/share/fontconfig
+
+COPY --from=build-dependencies \
+    /usr/lib/fontconfig /usr/lib/fontconfig
+
+COPY --from=build-dependencies \
+     /etc/fonts /etc/fonts
 
 WORKDIR /work/
 COPY --from=build /usr/src/app/target/*-runner /work/application

@@ -9,8 +9,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.gitlab.jeeto.oboco.common.image.JdkImageReader.JdkPngImageReader;
-import com.gitlab.jeeto.oboco.common.image.TwelveMonkeysImageWriter.TwelveMonkeysJpegImageWriter;
+import com.gitlab.jeeto.oboco.common.image.jdk.JdkImageReader.JdkPngImageReader;
+import com.gitlab.jeeto.oboco.common.image.twelvemonkeys.TwelveMonkeysImageWriter.TwelveMonkeysJpegImageWriter;
 
 import junit.framework.TestCase;
 
