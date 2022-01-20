@@ -329,12 +329,10 @@ public class BookMarkService {
 	}
 	
 	@Transactional
-	public BookCollectionMark createOrUpdateBookMarksByUserAndBookCollection(User user, BookCollection bookCollection, Integer bookPage, Graph graph) throws ProblemException {
+	public BookCollectionMark createOrUpdateBookMarksByUserAndBookCollection(User user, BookCollection bookCollection, List<Book> bookList, Integer bookPage, Graph graph) throws ProblemException {
 		Date updateDate = DateHelper.getDate();
 		
 		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
-		
-		List<Book> bookList = getBookService().getBooksByUserAndBookCollection(user, bookCollection.getId());
 		
 		for(Book book: bookList) {
 			BookMark bookMark = getBookMarkByUserAndFile(user, book.getFileId());
@@ -398,10 +396,8 @@ public class BookMarkService {
 	}
 	
 	@Transactional
-	public void deleteBookMarksByUserAndBookCollection(User user, BookCollection bookCollection) throws ProblemException {
+	public void deleteBookMarksByUserAndBookCollection(User user, BookCollection bookCollection, List<Book> bookList) throws ProblemException {
 		Map<Long, BookCollection> referencedBookCollectionMap = new HashMap<Long, BookCollection>();
-		
-		List<Book> bookList = getBookService().getBooksByUserAndBookCollection(user, bookCollection.getId());
 		
 		for(Book book: bookList) {
 			BookMark bookMark = getBookMarkByUserAndFile(user, book.getFileId());

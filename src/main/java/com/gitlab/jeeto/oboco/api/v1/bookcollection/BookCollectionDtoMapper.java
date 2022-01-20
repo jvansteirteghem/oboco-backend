@@ -40,6 +40,7 @@ public class BookCollectionDtoMapper {
 			bookCollectionDto.setName(bookCollection.getName());
 			bookCollectionDto.setNumberOfBookCollections(bookCollection.getNumberOfBookCollections());
 			bookCollectionDto.setNumberOfBooks(bookCollection.getNumberOfBooks());
+			bookCollectionDto.setNumberOfBookPages(bookCollection.getNumberOfBookPages());
 			
 			if(graph != null) {
 				if(graph.containsKey("parentBookCollection")) {
