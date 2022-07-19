@@ -1,3 +1,5 @@
 page,scaleType,scaleWidth,scaleHeight
 1,DEFAULT,300,200
 1,DEFAULT,200,300
+1,DEFAULT,450,300
+1,DEFAULT,300,450

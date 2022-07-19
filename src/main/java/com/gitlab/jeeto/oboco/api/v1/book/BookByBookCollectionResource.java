@@ -86,7 +86,7 @@ public class BookByBookCollectionResource {
 	@Path("")
 	@GET
 	public Response getBooksByBookCollection(
-			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, NEW, TO_READ, LATEST_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookFilterType filterType, 
+			@Parameter(name = "filterType", description = "The filterType. The filterType is ALL, NEW, LATEST, LATEST_READ, TO_READ, READ, READING or UNREAD.", required = false) @QueryParam("filterType") BookFilterType filterType, 
 			@Parameter(name = "page", description = "The page. The page is >= 1.", required = false) @DefaultValue("1") @QueryParam("page") Integer page, 
 			@Parameter(name = "pageSize", description = "The pageSize. The pageSize is >= 1 and <= 100.", required = false) @DefaultValue("25") @QueryParam("pageSize") Integer pageSize, 
 			@Parameter(name = "graph", description = "The graph. The full graph is (bookCollection,bookMark).", required = false) @DefaultValue("()") @QueryParam("graph") String graphValue) throws ProblemException {
@@ -109,10 +109,12 @@ public class BookByBookCollectionResource {
 			bookPageableList = bookService.getAllBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		} else if(BookFilterType.NEW.equals(filterType)) {
 			bookPageableList = bookService.getNewBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
-		} else if(BookFilterType.TO_READ.equals(filterType)) {
-			bookPageableList = bookService.getToReadBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+		} else if(BookFilterType.LATEST.equals(filterType)) {
+			bookPageableList = bookService.getLatestBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		} else if(BookFilterType.LATEST_READ.equals(filterType)) {
 			bookPageableList = bookService.getLatestReadBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
+		} else if(BookFilterType.TO_READ.equals(filterType)) {
+			bookPageableList = bookService.getToReadBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		} else if(BookFilterType.READ.equals(filterType)) {
 			bookPageableList = bookService.getReadBooksByUserAndBookCollection(user, bookCollectionId, page, pageSize, graph);
 		} else if(BookFilterType.READING.equals(filterType)) {
